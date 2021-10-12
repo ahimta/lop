@@ -1,0 +1,5 @@
+pre-commit:
+  parallel: false
+  commands:
+    continuous-integration:
+      run: ./scripts/continuous-integration.sh

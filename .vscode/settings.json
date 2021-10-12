@@ -1,0 +1,6 @@
+{
+  "debug.allowBreakpointsEverywhere": true,
+  "editor.formatOnPaste": true,
+  "editor.formatOnSave": true,
+  "editor.rulers": [80]
+}
