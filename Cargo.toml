@@ -9,6 +9,10 @@ license = "GPLv3"
 keywords = ["mincut", "maxflow", "sports"]
 categories = ["algorithms", "data-structures", "games", "mathematics", "simulation"]
 
+[lib]
+# SEE: https://doc.rust-lang.org/reference/linkage.html
+crate-type   = ["rlib", "staticlib", "cdylib"]
+
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
