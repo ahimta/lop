@@ -4,8 +4,10 @@ set -o errexit
 set -o pipefail
 set -o nounset
 
+echo "Checking formatting..." >&2
 cargo fmt --quiet --all -- --check
 
+echo "Cleaning..." >&2
 cargo clean
 
 echo "Testing debug..." >&2
