@@ -33,6 +33,25 @@ sh ./install-nix-2.3.16
 rm install-nix-2.3.16
 ```
 
+## Getting Started (Flutter)
+
+```bash
+sudo snap install flutter --classic
+flutter config --no-analytics
+dart --disable-analytics
+flutter sdk-path
+flutter upgrade
+flutter doctor
+
+# FIXME: Uncomment once Flutter desktop is final (it's beta at the moment).
+# flutter config --enable-linux-desktop
+# sudo apt-get install clang cmake ninja-build pkg-config libgtk-3-dev
+```
+
+### Resources
+
+- [Official Flutter Install Guide](https://flutter.dev/docs/get-started/install/linux)
+
 ## Continuous Integration
 
 ```bash
@@ -90,6 +109,12 @@ cargo build
 cargo test
 ```
 
+## Snippets (Flutter)
+
+```bash
+flutter pub add english_words
+```
+
 ## Record of Setup of Already Generated Configuration
 
 ```bash
@@ -97,6 +122,20 @@ cargo test
 # options are only supported in nightly builds. To fix this, we used
 # `rustfmt --help=config` which only includes supported options.
 rustfmt --edition 2018 --print-config default rustfmt.toml
+```
+
+## Record of Setup of Already Generated Configuration (Flutter)
+
+```bash
+flutter create \
+  --template app \
+  --project-name clod \
+  --description "lop frontend." \
+  --org com.lop \
+  --platforms android,ios,web \
+  --android-language kotlin \
+  --ios-language swift \
+  clod
 ```
 
 ## General Resources
