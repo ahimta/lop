@@ -4,11 +4,11 @@ set -o errexit
 set -o pipefail
 set -o nounset
 
-echo "Checking formatting..." >&2
-cargo fmt --quiet --all -- --check
-
 echo "Cleaning..." >&2
 cargo clean
+
+echo "Checking formatting..." >&2
+cargo fmt --quiet --all -- --check
 
 echo "Testing debug..." >&2
 RUST_BACKTRACE=1 cargo run --quiet --jobs "$(nproc)"
