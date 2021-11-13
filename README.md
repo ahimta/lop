@@ -11,6 +11,8 @@ Milking the mincut-maxflow cow.
 
 ```bash
 curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf | sh
+rustup target add aarch64-linux-android
+rustup target add x86_64-linux-android
 rustup component add rustfmt
 rustup component add clippy
 
