@@ -115,6 +115,7 @@ cargo test
 
 ```bash
 flutter pub add english_words
+flutter pub remove english_words
 ```
 
 ## Record of Setup of Already Generated Configuration

@@ -10,8 +10,6 @@ use super::mincut_maxflow::common::FlowEdge;
 use super::mincut_maxflow::common::FlowNode;
 use super::mincut_maxflow::MincutMaxflow;
 
-// FIXME: Add frontend (probably using Flutter) that uses the algorithm.
-
 pub struct Tournament {
   pub teams: HashMap<Rc<String>, Rc<Team>>,
   pub matches_left: HashMap<(Rc<String>, Rc<String>), usize>,
