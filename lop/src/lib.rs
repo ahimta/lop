@@ -5,6 +5,7 @@ use std::boxed::Box;
 use std::collections::HashSet;
 use std::ffi::CString;
 use std::os::raw::c_char;
+use std::ptr;
 use std::rc::Rc;
 
 use tournament_prediction::Team;
@@ -127,4 +128,16 @@ pub extern "C" fn predict_some_tournaments(
   }
 
   0
+}
+
+/// # Panics
+#[allow(clippy::not_unsafe_ptr_arg_deref)]
+#[no_mangle]
+pub extern "C" fn predict_some_tournaments_free(
+  eliminated_teams: *mut *const EliminatedTeamNative,
+) {
+  unsafe {
+    Box::from_raw(*eliminated_teams as *mut EliminatedTeamNative);
+    *eliminated_teams = ptr::null();
+  }
 }

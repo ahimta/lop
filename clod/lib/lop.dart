@@ -31,6 +31,16 @@ final _PredictSomeTournament _predictSomeTournamentNative = _lop
         "predict_some_tournaments")
     .asFunction();
 
+typedef _PredictSomeTournamentFreeNative = Void Function(
+    Pointer<Pointer<_EliminatedTeamNative>>);
+typedef _PredictSomeTournamentFree = void Function(
+    Pointer<Pointer<_EliminatedTeamNative>>);
+
+final _PredictSomeTournamentFree _predictSomeTournamentFreeNative = _lop
+    .lookup<NativeFunction<_PredictSomeTournamentFreeNative>>(
+        "predict_some_tournaments_free")
+    .asFunction();
+
 List<EliminatedTeam> predictSomeTournament() {
   // FIXME: Answer Stackoverflow question.
   // SEE: https://stackoverflow.com/questions/67313913/dart-flutter-ffiforeign-function-interface-calling-a-native-function-with-out.
@@ -52,6 +62,8 @@ List<EliminatedTeam> predictSomeTournament() {
 
     ts.add(EliminatedTeam(id, eids));
   }
+
+  _predictSomeTournamentFreeNative(y);
 
   return ts;
 }
