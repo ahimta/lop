@@ -1,5 +1,7 @@
 # Lop
 
+[![Rust](https://github.com/ahimta/lop/actions/workflows/continuous-integration.yml/badge.svg)](https://github.com/ahimta/lop/actions/workflows/continuous-integration.yml)
+
 Milking the mincut-maxflow cow.
 
 ## Recommended Environment
