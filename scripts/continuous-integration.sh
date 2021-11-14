@@ -4,6 +4,8 @@ set -o errexit
 set -o pipefail
 set -o nounset
 
+cd ./lop
+
 echo "Cleaning..." >&2
 cargo clean
 

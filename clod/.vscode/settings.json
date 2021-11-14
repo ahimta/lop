@@ -1,9 +1,4 @@
 {
-  "debug.allowBreakpointsEverywhere": true,
-  "editor.formatOnPaste": true,
-  "editor.formatOnSave": true,
-  "editor.rulers": [80],
-
   // NOTE: `debug.openDebug` (along with the `[dart]` section) is as per Dart
   // recommended VS Code settings.
   // SEE: https://dartcode.org/docs/recommended-settings/
@@ -13,14 +8,6 @@
   "debug.openDebug": "openOnDebugBreak",
 
   "[dart]": {
-    // Automatically format code on save and during typing of certain characters
-    // (like `;` and `}`).
-    "editor.formatOnSave": true,
-    "editor.formatOnType": true,
-
-    // Draw a guide line at 80 characters, where Dart's formatting will wrap code.
-    "editor.rulers": [80],
-
     // Disables built-in highlighting of words that match your selection. Without
     // this, all instances of the selected text will be highlighted, interfering
     // with Dart's ability to highlight only exact references to the selected variable.

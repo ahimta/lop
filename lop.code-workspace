@@ -1,0 +1,49 @@
+{
+  "folders": [
+    {
+      "name": "Root",
+      "path": "./"
+    },
+    {
+      "name": "Core",
+      "path": "lop"
+    },
+    {
+      "name": "Frontend",
+      "path": "clod"
+    }
+  ],
+  "extensions": {
+    "recommendations": [
+      "dart-code.flutter",
+      "editorconfig.editorconfig",
+      "esbenp.prettier-vscode",
+      "ms-azuretools.vscode-docker",
+      "rust-lang.rust",
+      "vadimcn.vscode-lldb",
+      "vscode-icons-team.vscode-icons"
+    ]
+  },
+  "settings": {
+    "debug.allowBreakpointsEverywhere": true,
+    "editor.formatOnPaste": true,
+    "editor.formatOnSave": true,
+    "editor.rulers": [80]
+  },
+  "tasks": {
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "Continuous Integration",
+        "type": "process",
+        "group": {
+          "kind": "test",
+          "isDefault": true
+        },
+        "options": { "cwd": "${workspaceFolder}" },
+        "problemMatcher": ["$rustc"],
+        "command": "./scripts/continuous-integration.sh"
+      }
+    ]
+  }
+}

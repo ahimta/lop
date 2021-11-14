@@ -6,6 +6,7 @@ repository = "https://github.com/ahimta/lop"
 edition = "2018"
 authors = ["Abdullah Alansari <ahimta@gmail.com>"]
 license = "GPLv3"
+readme = "../README.md"
 keywords = ["mincut", "maxflow", "sports"]
 categories = ["algorithms", "data-structures", "games", "mathematics", "simulation"]
 

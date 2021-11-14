@@ -34,14 +34,16 @@ class _EliminatedTeamsWidgetState extends State<EliminatedTeamsWidget> {
       ),
       body: ListView(
         padding: const EdgeInsets.symmetric(vertical: 8),
-        children: _eliminatedTeams.map((e) => ListTile(
-              leading: const Icon(
-                Icons.facebook,
-                size: 42,
-              ),
-              title: Text(e.id),
-              subtitle: Text(e.eliminatingTeamsIds.join(', ')),
-            )).toList(),
+        children: _eliminatedTeams
+            .map((e) => ListTile(
+                  leading: const Icon(
+                    Icons.facebook,
+                    size: 42,
+                  ),
+                  title: Text(e.id),
+                  subtitle: Text(e.eliminatingTeamsIds.join(', ')),
+                ))
+            .toList(),
       ),
     );
   }

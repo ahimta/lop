@@ -9,8 +9,8 @@
       "type": "lldb",
       "request": "launch",
       "preLaunchTask": "Rust: cargo build - lop",
-      "program": "${workspaceRoot}/target/debug/lop",
-      "cwd": "${workspaceRoot}"
+      "program": "${workspaceFolder}/target/debug/lop",
+      "cwd": "${workspaceFolder}"
     }
   ]
 }

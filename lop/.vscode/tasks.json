@@ -29,17 +29,6 @@
       "subcommand": "run",
       "problemMatcher": ["$rustc"],
       "label": "Rust: cargo run - lop"
-    },
-    {
-      "label": "Continuous Integration",
-      "type": "process",
-      "group": {
-        "kind": "build",
-        "isDefault": true
-      },
-      "options": { "cwd": "${workspaceRoot}" },
-      "problemMatcher": ["$rustc"],
-      "command": "./scripts/continuous-integration.sh"
     }
   ]
 }
