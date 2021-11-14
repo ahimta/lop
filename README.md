@@ -76,7 +76,7 @@ docker run \
   ./scripts/continuous-integration.sh
 ```
 
-## Using Nix
+## Using Nix (not functional and only as a starting point)
 
 ```bash
 nix-shell \
