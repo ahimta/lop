@@ -6,7 +6,7 @@ set -o nounset
 
 ROOT_DIR="$(realpath "$(pwd)")"
 
-cd "$ROOT_DIR/lop"
+cd "$ROOT_DIR/boa"
 
 echo "Cleaning..." >&2
 cargo clean
@@ -61,8 +61,8 @@ X86_64_DIR="$ROOT_DIR/clod/android/app/src/main/jniLibs/x86_64"
 mkdir --parents "$X86_64_DIR"
 cd "$ROOT_DIR/clod/android/app/src/main/jniLibs/x86_64"
 ln --force --symbolic \
-  ../../../../../../../lop/target/x86_64-linux-android/release/liblop.so \
-  liblop.so
+  ../../../../../../../boa/target/x86_64-linux-android/release/libboa.so \
+  libboa.so
 cd "$ROOT_DIR/clod"
 
 echo "Cleaning Flutter build..."

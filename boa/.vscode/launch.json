@@ -8,8 +8,8 @@
       "name": "Debug Rust with LLDB",
       "type": "lldb",
       "request": "launch",
-      "preLaunchTask": "Rust: cargo build - lop",
-      "program": "${workspaceFolder}/target/debug/lop",
+      "preLaunchTask": "Rust: cargo build - boa",
+      "program": "${workspaceFolder}/target/debug/boa",
       "cwd": "${workspaceFolder}"
     }
   ]

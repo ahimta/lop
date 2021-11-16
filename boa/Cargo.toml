@@ -1,5 +1,5 @@
 [package]
-name = "lop"
+name = "boa"
 description = "Milking the mincut-maxflow cow."
 version = "0.1.0"
 repository = "https://github.com/ahimta/lop"

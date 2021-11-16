@@ -1,4 +1,4 @@
-use lop::test;
+use boa::test;
 
 fn main() {
   test();

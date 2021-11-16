@@ -8,7 +8,7 @@ import 'package:ffi/ffi.dart';
 // SEE: https://github.com/dart-lang/samples/tree/master/ffi
 // SEE: https://api.flutter.dev/flutter/dart-ffi/dart-ffi-library.html
 final DynamicLibrary _lop = Platform.isAndroid
-    ? DynamicLibrary.open('liblop.so')
+    ? DynamicLibrary.open('libboa.so')
     : DynamicLibrary.process();
 
 class _EliminatedTeamNative extends Struct {
@@ -74,7 +74,7 @@ final _PredictSomeTournamentFree _predictSomeTournamentFreeNative = _lop
     )
     .asFunction();
 
-/// Predict according to lop's algorithmic model.
+/// Predict according to boa's algorithmic model.
 List<EliminatedTeam> predictSomeTournament() {
   // FIXME: Answer Stackoverflow question.
   // SEE: https://stackoverflow.com/questions/67313913/dart-flutter-ffiforeign-function-interface-calling-a-native-function-with-out.
@@ -87,7 +87,7 @@ List<EliminatedTeam> predictSomeTournament() {
     nativeEliminatedTeamsCount,
     nativeEliminatedTeams,
   );
-  // FIXME: Better end-to-end error-handling (i.e: from lop to UI).
+  // FIXME: Better end-to-end error-handling (i.e: from boa to UI).
   final count = statusCode == 0 ? nativeEliminatedTeamsCount.value : 0;
 
   final eliminatedTeams = <EliminatedTeam>[];

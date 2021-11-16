@@ -8,27 +8,27 @@
       "subcommand": "check",
       "problemMatcher": ["$rustc"],
       "group": "build",
-      "label": "Rust: cargo check - lop"
+      "label": "Rust: cargo check - boa"
     },
     {
       "type": "cargo",
       "subcommand": "build",
       "problemMatcher": ["$rustc"],
       "group": "build",
-      "label": "Rust: cargo build - lop"
+      "label": "Rust: cargo build - boa"
     },
     {
       "type": "cargo",
       "subcommand": "test",
       "problemMatcher": ["$rustc"],
       "group": "test",
-      "label": "Rust: cargo test - lop"
+      "label": "Rust: cargo test - boa"
     },
     {
       "type": "cargo",
       "subcommand": "run",
       "problemMatcher": ["$rustc"],
-      "label": "Rust: cargo run - lop"
+      "label": "Rust: cargo run - boa"
     }
   ]
 }
