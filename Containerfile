@@ -29,6 +29,7 @@ ARG ANDROID_SDK_ROOT=/tmp/Android/Sdk
 # SEE: https://developer.android.com/studio/index.html#downloads
 ARG ANDROID_SDK_TOOLS=7583922
 ARG ANDROID_SDK_TOOLS_CHECKSUM_SHA256=124f2d5115eee365df6cf3228ffbca6fc3911d16f8025bebd5b1c6e2fcfa7faf
+# NOTE: This is the latest version that seems to work with Rust.
 ARG NDK_VERSION=22.1.7171670
 # SEE: https://developer.android.com/studio/command-line/sdkmanager
 ARG SDKMANAGER=${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager
