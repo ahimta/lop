@@ -68,6 +68,9 @@ cd "$ROOT_DIR/clod"
 echo "Cleaning Flutter build..."
 flutter clean
 
+echo "Linting Flutter..."
+flutter analyze --fatal-infos --fatal-warnings
+
 mkdir --parents "/tmp/hacky-path-for-strange-path-created-by-flutter"
 ln --force --symbolic \
   "/tmp/hacky-path-for-strange-path-created-by-flutter" \
