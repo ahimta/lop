@@ -2,9 +2,9 @@ name: Rust
 
 on:
   push:
-    branches: [ master ]
+    branches: [master]
   pull_request:
-    branches: [ master ]
+    branches: [master]
 
 env:
   CARGO_TERM_COLOR: always
@@ -13,9 +13,9 @@ jobs:
   continuous-integration:
     runs-on: ubuntu-18.04
     steps:
-    - uses: actions/checkout@v2
-    - uses: docker/setup-buildx-action@v1
-    - name: Continuous Integration
-      run: |
-        docker build --tag lop --file ./Containerfile .
-        docker run --mount type=bind,src="$PWD",dst=/lop --rm --user "$(id --user):$(id --group)" --workdir /lop lop
+      - uses: actions/checkout@v2
+      - uses: docker/setup-buildx-action@v1
+      - name: Continuous Integration
+        run: |
+          docker build --tag lop --file ./Containerfile .
+          docker run --mount type=bind,src="$PWD",dst=/lop --rm --user "$(id --user):$(id --group)" --workdir /lop lop
