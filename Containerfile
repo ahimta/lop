@@ -16,6 +16,7 @@ RUN apt-get -qq install --yes \
   lib32stdc++6 \
   lib32z1 \
   openjdk-11-jdk \
+  shellcheck \
   tar \
   unzip \
   wget \

@@ -6,7 +6,18 @@ set -o nounset
 
 ROOT_DIR="$(realpath "$(pwd)")"
 
-cd "$ROOT_DIR/boa"
+echo "Linting scripts..."
+# NOTE: `wiki-link-count` lists pages for error explanations and only works if
+# we remove `--format=gcc` which we use because it allows us to directly go to
+# the offending line.
+shellcheck \
+  --check-sourced \
+  --enable=all \
+  --severity=style \
+  --wiki-link-count=1 \
+  --format=gcc scripts/*
+
+cd "${ROOT_DIR}/boa"
 
 echo "Cleaning..." >&2
 cargo clean
@@ -19,15 +30,17 @@ cargo fmt --quiet --all -- --check
 # instances.
 
 # NOTE: We use `22.1.7171670` because it's the latest version that doesn't produce the `-lgcc` error.
-ANDROID_NDK_PATH="$ANDROID_SDK_ROOT/ndk/22.1.7171670"
+# NOTE: Suppressed error of undefined variable since this is an environment variable.
+# shellcheck disable=SC2154
+ANDROID_NDK_PATH="${ANDROID_SDK_ROOT}/ndk/22.1.7171670"
 
 echo "Building Android aarch64..." >&2
-AARCH64_LINKER="$ANDROID_NDK_PATH/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android30-clang"
-CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER="$AARCH64_LINKER" cargo build --quiet --target aarch64-linux-android --release
+AARCH64_LINKER="${ANDROID_NDK_PATH}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android30-clang"
+CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER="${AARCH64_LINKER}" cargo build --quiet --target aarch64-linux-android --release
 
 echo "Building Android x86_64..." >&2
-X86_64_LINKER="$ANDROID_NDK_PATH/toolchains/llvm/prebuilt/linux-x86_64/bin/x86_64-linux-android30-clang"
-CARGO_TARGET_X86_64_LINUX_ANDROID_LINKER="$X86_64_LINKER" cargo build --quiet --target x86_64-linux-android --release
+X86_64_LINKER="${ANDROID_NDK_PATH}/toolchains/llvm/prebuilt/linux-x86_64/bin/x86_64-linux-android30-clang"
+CARGO_TARGET_X86_64_LINUX_ANDROID_LINKER="${X86_64_LINKER}" cargo build --quiet --target x86_64-linux-android --release
 
 echo "Testing debug..." >&2
 RUST_BACKTRACE=1 cargo run --quiet --jobs "$(nproc)"
@@ -57,13 +70,13 @@ cargo clippy --quiet -- \
   \
   -A clippy::redundant_pub_crate
 
-X86_64_DIR="$ROOT_DIR/clod/android/app/src/main/jniLibs/x86_64"
-mkdir --parents "$X86_64_DIR"
-cd "$ROOT_DIR/clod/android/app/src/main/jniLibs/x86_64"
+X86_64_DIR="${ROOT_DIR}/clod/android/app/src/main/jniLibs/x86_64"
+mkdir --parents "${X86_64_DIR}"
+cd "${ROOT_DIR}/clod/android/app/src/main/jniLibs/x86_64"
 ln --force --symbolic \
   ../../../../../../../boa/target/x86_64-linux-android/release/libboa.so \
   libboa.so
-cd "$ROOT_DIR/clod"
+cd "${ROOT_DIR}/clod"
 
 echo "Cleaning Flutter build..."
 flutter clean
