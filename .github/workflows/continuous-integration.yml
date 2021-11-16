@@ -18,4 +18,4 @@ jobs:
     - name: Continuous Integration
       run: |
         docker build --tag lop --file ./Containerfile .
-        docker run --mount type=bind,src="$PWD",dst=/project --rm --user "$(id --user):$(id --group)" --workdir /project lop
+        docker run --mount type=bind,src="$PWD",dst=/lop --rm --user "$(id --user):$(id --group)" --workdir /lop lop

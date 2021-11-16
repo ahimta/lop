@@ -88,9 +88,9 @@ RUN chmod 777 /.dartServer
 # SEE: https://developer.android.com/studio/command-line/variables
 ENV ANDROID_SDK_ROOT ${ANDROID_SDK_ROOT}
 
-# NOTE: `/project` should be mounted when running the container.
+# NOTE: `/lop` should be mounted when running the container.
 # NOTE: We use `ENTRYPOINT` instead of `CMD` deliberately as it doesn't use a
 # shell and doesn't allow using arbitrary commands that we probably don't
 # support.
 # SEE: https://docs.docker.com/engine/reference/builder/#entrypoint
-ENTRYPOINT /project/scripts/continuous-integration.sh
+ENTRYPOINT /lop/scripts/continuous-integration.sh

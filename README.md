@@ -74,10 +74,10 @@ flutter doctor
 # anything for build if `Containerfile` changes.
 docker build --tag lop --file ./Containerfile . \
   && docker run \
-    --mount type=bind,src="$PWD",dst=/project \
+    --mount type=bind,src="$PWD",dst=/lop \
     --rm \
     --user "$(id --user):$(id --group)" \
-    --workdir /project \
+    --workdir /lop \
     lop
 ```
 
