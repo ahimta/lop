@@ -19,6 +19,7 @@
       "editorconfig.editorconfig",
       "esbenp.prettier-vscode",
       "ms-azuretools.vscode-docker",
+      "naco-siren.gradle-language",
       "rust-lang.rust",
       "vadimcn.vscode-lldb",
       "vscode-icons-team.vscode-icons"
