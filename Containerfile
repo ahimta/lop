@@ -21,7 +21,8 @@ RUN apt-get -qq install --yes \
   wget \
   > /dev/null
 
-ARG ANDROID_BUILD_TOOLS=31.0.0
+# NOTE: This is the latest version that seems to work with Rust.
+ARG ANDROID_BUILD_TOOLS=29.0.2
 # NOTE: API level `30` is for Android `11`/`R`.
 ARG ANDROID_COMPILE_SDK=30
 ARG ANDROID_SDK_ROOT=/tmp/Android/Sdk
