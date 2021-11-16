@@ -78,33 +78,39 @@ final _PredictSomeTournamentFree _predictSomeTournamentFreeNative = _lop
 List<EliminatedTeam> predictSomeTournament() {
   // FIXME: Answer Stackoverflow question.
   // SEE: https://stackoverflow.com/questions/67313913/dart-flutter-ffiforeign-function-interface-calling-a-native-function-with-out.
-  // FIXME: More descriptive names.
-  final x = calloc.allocate<Uint64>(sizeOf<Uint64>());
-  final y = calloc.allocate<Pointer<_EliminatedTeamNative>>(
+  final nativeEliminatedTeamsCount = calloc.allocate<Uint64>(sizeOf<Uint64>());
+  final nativeEliminatedTeams = calloc.allocate<Pointer<_EliminatedTeamNative>>(
     sizeOf<Pointer<_EliminatedTeamNative>>(),
   );
 
-  final statusCode = _predictSomeTournamentNative(x, y);
+  final statusCode = _predictSomeTournamentNative(
+    nativeEliminatedTeamsCount,
+    nativeEliminatedTeams,
+  );
   // FIXME: Better end-to-end error-handling (i.e: from lop to UI).
-  final count = statusCode == 0 ? x.value : 0;
+  final count = statusCode == 0 ? nativeEliminatedTeamsCount.value : 0;
 
-  final ts = <EliminatedTeam>[];
+  final eliminatedTeams = <EliminatedTeam>[];
   for (var i = 0; i < count; i++) {
-    final id = y.value[i].id.toDartString();
-    final eids = <String>[];
+    final eliminatedTeamId = nativeEliminatedTeams.value[i].id.toDartString();
+    final eliminatingTeamsIds = <String>[];
 
-    for (var j = 0; j < y.value[i].eliminating_teams_ids_count; j++) {
-      eids.add(y.value[i].eliminating_teams_ids[j].toDartString());
+    for (var j = 0;
+        j < nativeEliminatedTeams.value[i].eliminating_teams_ids_count;
+        j++) {
+      eliminatingTeamsIds.add(
+        nativeEliminatedTeams.value[i].eliminating_teams_ids[j].toDartString(),
+      );
     }
 
-    ts.add(EliminatedTeam(id, eids));
+    eliminatedTeams.add(EliminatedTeam(eliminatedTeamId, eliminatingTeamsIds));
   }
 
-  _predictSomeTournamentFreeNative(y);
+  _predictSomeTournamentFreeNative(nativeEliminatedTeams);
 
   calloc
-    ..free(x)
-    ..free(y);
+    ..free(nativeEliminatedTeamsCount)
+    ..free(nativeEliminatedTeams);
 
-  return ts;
+  return eliminatedTeams;
 }

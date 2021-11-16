@@ -33,13 +33,13 @@ class _EliminatedTeamsWidgetState extends State<EliminatedTeamsWidget> {
           padding: const EdgeInsets.symmetric(vertical: 8),
           children: _eliminatedTeams
               .map(
-                (final e) => ListTile(
+                (final eliminatedTeam) => ListTile(
                   leading: const Icon(
                     Icons.facebook,
                     size: 42,
                   ),
-                  title: Text(e.id),
-                  subtitle: Text(e.eliminatingTeamsIds.join(', ')),
+                  title: Text(eliminatedTeam.id),
+                  subtitle: Text(eliminatedTeam.eliminatingTeamsIds.join(', ')),
                 ),
               )
               .toList(),
