@@ -4,7 +4,9 @@ set -o errexit
 set -o pipefail
 set -o nounset
 
-cd ./lop
+ROOT_DIR="$(realpath "$(pwd)")"
+
+cd "$ROOT_DIR/lop"
 
 echo "Cleaning..." >&2
 cargo clean
@@ -54,3 +56,24 @@ cargo clippy --quiet -- \
   -W clippy::nursery \
   \
   -A clippy::redundant_pub_crate
+
+X86_64_DIR="$ROOT_DIR/clod/android/app/src/main/jniLibs/x86_64"
+mkdir --parents "$X86_64_DIR"
+cd "$ROOT_DIR/clod/android/app/src/main/jniLibs/x86_64"
+ln --force --symbolic \
+  ../../../../../../../lop/target/x86_64-linux-android/release/liblop.so \
+  liblop.so
+cd "$ROOT_DIR/clod"
+
+echo "Cleaning Flutter build..."
+flutter clean
+
+mkdir --parents "/tmp/hacky-path-for-strange-path-created-by-flutter"
+ln --force --symbolic \
+  "/tmp/hacky-path-for-strange-path-created-by-flutter" \
+  "$(pwd)/android/?"
+
+echo "Bulding APK..."
+flutter build apk --debug
+flutter build apk --profile
+flutter build apk --release

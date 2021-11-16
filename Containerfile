@@ -51,6 +51,37 @@ RUN echo y | ${SDKMANAGER} "build-tools;${ANDROID_BUILD_TOOLS}" >/dev/null
 RUN echo y | ${SDKMANAGER} "ndk;${NDK_VERSION}" >/dev/null
 RUN echo y | ${SDKMANAGER} --licenses >/dev/null
 
+ARG FLUTTER=2.5.3
+ARG FLUTTER_CHECKSUM_SHA256=b32d04a9fa5709326b4e724e0de64ff1b2b70268f89dd3c748e6360ac937fe01
+ARG FLUTTER_SDK_ROOT=/tmp/flutter
+
+# SEE: https://flutter.dev/docs/get-started/install/linux
+# SEE: https://github.com/flutter/flutter/blob/master/dev/ci/docker_linux/Dockerfile
+RUN echo Installing Flutter SDK...
+RUN wget -qq --output-document=flutter-sdk.zip \
+  https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_${FLUTTER}-stable.tar.xz
+RUN echo ${FLUTTER_CHECKSUM_SHA256} flutter-sdk.zip > flutter-sdk.zip.sha256sum-check-file
+RUN sha256sum --check --quiet --strict flutter-sdk.zip.sha256sum-check-file
+RUN tar xf flutter-sdk.zip
+RUN mv flutter ${FLUTTER_SDK_ROOT}
+ENV PATH "${PATH}:${FLUTTER_SDK_ROOT}/bin"
+RUN flutter config --no-analytics
+RUN dart --disable-analytics
+RUN flutter precache
+RUN yes | flutter doctor --android-licenses
+# NOTE: Only `Flutter` and `Android toolchain` need to be available. We can
+# enforce this, easily (maybe using grep), programmatically so this must be
+# checked manually whenever this file changes.
+RUN flutter doctor
+
+# NOTE: We have to do this because Flutter seems to write to it and the
+# container data/rootfs premissions maybe different when it's run (e.g: `--user`
+# used with `docker run`).
+RUN mkdir --parents /.config/flutter
+RUN chmod -R 777 /.config/flutter
+RUN chmod -R 777 /tmp/flutter/bin/cache
+RUN chmod -R 777 /tmp/flutter/version
+
 # SEE: https://developer.android.com/studio/command-line/variables
 ENV ANDROID_SDK_ROOT ${ANDROID_SDK_ROOT}
 
