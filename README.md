@@ -41,6 +41,7 @@ rm install-nix-2.3.16
 
 ```bash
 sudo snap install flutter --classic
+flutter bash-completion >> ~/.local/share/bash-completion/completions/flutter
 flutter config --no-analytics
 dart --disable-analytics
 flutter sdk-path
