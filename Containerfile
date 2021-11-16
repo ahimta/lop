@@ -82,6 +82,8 @@ RUN mkdir --parents /.config/flutter
 RUN chmod -R 777 /.config/flutter
 RUN chmod -R 777 /tmp/flutter/bin/cache
 RUN chmod -R 777 /tmp/flutter/version
+RUN mkdir --parents /.dartServer
+RUN chmod 777 /.dartServer
 
 # SEE: https://developer.android.com/studio/command-line/variables
 ENV ANDROID_SDK_ROOT ${ANDROID_SDK_ROOT}
