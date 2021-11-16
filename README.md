@@ -75,8 +75,7 @@ docker run \
   --rm \
   --user "$(id --user):$(id --group)" \
   --workdir /project \
-  lop \
-  ./scripts/continuous-integration.sh
+  lop
 ```
 
 ## Using Nix (not functional and only as a starting point)

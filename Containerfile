@@ -87,4 +87,8 @@ RUN chmod -R 777 /tmp/flutter/version
 ENV ANDROID_SDK_ROOT ${ANDROID_SDK_ROOT}
 
 # NOTE: `/project` should be mounted when running the container.
-CMD /project/scripts/continuous-integration.sh
+# NOTE: We use `ENTRYPOINT` instead of `CMD` deliberately as it doesn't use a
+# shell and doesn't allow using arbitrary commands that we probably don't
+# support.
+# SEE: https://docs.docker.com/engine/reference/builder/#entrypoint
+ENTRYPOINT /project/scripts/continuous-integration.sh
