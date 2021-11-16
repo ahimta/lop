@@ -78,11 +78,12 @@ final _PredictSomeTournamentFree _predictSomeTournamentFreeNative = _lop
 List<EliminatedTeam> predictSomeTournament() {
   // FIXME: Answer Stackoverflow question.
   // SEE: https://stackoverflow.com/questions/67313913/dart-flutter-ffiforeign-function-interface-calling-a-native-function-with-out.
+  // FIXME: More descriptive names.
   final x = calloc.allocate<Uint64>(sizeOf<Uint64>());
-  // FIXME: Memory-leak.
   final y = calloc.allocate<Pointer<_EliminatedTeamNative>>(
     sizeOf<Pointer<_EliminatedTeamNative>>(),
   );
+
   final statusCode = _predictSomeTournamentNative(x, y);
   // FIXME: Better end-to-end error-handling (i.e: from lop to UI).
   final count = statusCode == 0 ? x.value : 0;
@@ -100,6 +101,10 @@ List<EliminatedTeam> predictSomeTournament() {
   }
 
   _predictSomeTournamentFreeNative(y);
+
+  calloc
+    ..free(x)
+    ..free(y);
 
   return ts;
 }
