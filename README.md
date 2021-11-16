@@ -68,14 +68,17 @@ flutter doctor
 
 ```bash
 # FIXME: Use rootles `podman` once it's ready and more mainstream.
-docker build --tag lop --file ./Containerfile .
 
-docker run \
-  --mount type=bind,src="$PWD",dst=/project \
-  --rm \
-  --user "$(id --user):$(id --group)" \
-  --workdir /project \
-  lop
+# NOTE: This avoids the common occurrence of changing `Containerfile` and
+# forgetting to call build and Docker/Podman caching should only do
+# anything for build if `Containerfile` changes.
+docker build --tag lop --file ./Containerfile . \
+  && docker run \
+    --mount type=bind,src="$PWD",dst=/project \
+    --rm \
+    --user "$(id --user):$(id --group)" \
+    --workdir /project \
+    lop
 ```
 
 ## Using Nix (not functional and only as a starting point)
