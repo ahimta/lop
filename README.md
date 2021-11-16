@@ -148,7 +148,12 @@ flutter create \
 
 ## General Resources
 
-- [DevDocs](https://devdocs.io/rust/)
+- [DevDocs (many technologies' docs)](https://devdocs.io)
+- [grep.app (searching all the code in the internet)](https://grep.app)
+- [linux.die.net (more manpages than available locally)](https://linux.die.net)
+- [man7.org (for superior manpages)](https://www.man7.org)
+- [IBM z/OS Library Functions (POSIX functions not in any other manpages)](https://www.ibm.com/docs/en/zos/2.5.0?topic=reference-library-functions)
+- [flutter.dev](https://flutter.dev)
 - [Rust by Example](https://doc.rust-lang.org/rust-by-example)
 - [The Rustonomicon](https://doc.rust-lang.org/nomicon)
 - [Premier League](https://www.premierleague.com/clubs)
