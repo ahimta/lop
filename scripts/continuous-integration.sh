@@ -84,8 +84,12 @@ flutter clean
 echo "Linting Flutter..."
 flutter analyze --fatal-infos --fatal-warnings
 
+# NOTE: `--no-dereference` has to be used here as otherwise the hacky-path would
+# link to itself (removing the path first doesn't fix this). This is quite
+# nuanced and a comment wouldn't be enough to explain it without confusing the
+# reader.
 mkdir --parents "/tmp/hacky-path-for-strange-path-created-by-flutter"
-ln --force --symbolic \
+ln --force --no-dereference --symbolic \
   "/tmp/hacky-path-for-strange-path-created-by-flutter" \
   "$(pwd)/android/?"
 
