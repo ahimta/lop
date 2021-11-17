@@ -72,10 +72,10 @@ cargo clippy --quiet -- \
 
 X86_64_DIR="${ROOT_DIR}/clod/android/app/src/main/jniLibs/x86_64"
 mkdir --parents "${X86_64_DIR}"
-cd "${ROOT_DIR}/clod/android/app/src/main/jniLibs/x86_64"
 ln --force --symbolic \
   ../../../../../../../boa/target/x86_64-linux-android/release/libboa.so \
-  libboa.so
+  "${X86_64_DIR}/libboa.so"
+
 cd "${ROOT_DIR}/clod"
 
 echo "Cleaning Flutter build..."
