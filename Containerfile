@@ -59,11 +59,11 @@ ARG FLUTTER_SDK_ROOT=/tmp/flutter
 # SEE: https://flutter.dev/docs/get-started/install/linux
 # SEE: https://github.com/flutter/flutter/blob/master/dev/ci/docker_linux/Dockerfile
 RUN echo Installing Flutter SDK...
-RUN wget -qq --output-document=flutter-sdk.zip \
+RUN wget -qq --output-document=flutter-sdk.tar.xz \
   https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_${FLUTTER}-stable.tar.xz
-RUN echo ${FLUTTER_CHECKSUM_SHA256} flutter-sdk.zip > flutter-sdk.zip.sha256sum-check-file
-RUN sha256sum --check --quiet --strict flutter-sdk.zip.sha256sum-check-file
-RUN tar xf flutter-sdk.zip
+RUN echo ${FLUTTER_CHECKSUM_SHA256} flutter-sdk.tar.xz > flutter-sdk.tar.xz.sha256sum-check-file
+RUN sha256sum --check --quiet --strict flutter-sdk.tar.xz.sha256sum-check-file
+RUN tar xf flutter-sdk.tar.xz
 RUN mv flutter ${FLUTTER_SDK_ROOT}
 ENV PATH "${PATH}:${FLUTTER_SDK_ROOT}/bin"
 RUN flutter config --no-analytics
