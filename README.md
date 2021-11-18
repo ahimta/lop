@@ -74,7 +74,7 @@ flutter doctor
 ./scripts/continuous-integration.sh
 ```
 
-## Using Docker (and Podman in the future)
+## Using Podman/Docker
 
 ```bash
 # NOTE: This avoids the common occurrence of changing `Containerfile` and
