@@ -29,10 +29,10 @@ USER lop
 WORKDIR /home/lop
 
 RUN echo Installing Rust dependencies...
-RUN rustup target add aarch64-linux-android
-RUN rustup target add x86_64-linux-android
-RUN rustup component add rustfmt
-RUN rustup component add clippy
+RUN rustup --quiet target add aarch64-linux-android
+RUN rustup --quiet target add x86_64-linux-android
+RUN rustup --quiet component add rustfmt
+RUN rustup --quiet component add clippy
 
 # NOTE: This is the latest version that seems to work with Rust.
 ARG ANDROID_BUILD_TOOLS=29.0.2
@@ -60,7 +60,7 @@ RUN rm android-sdk.zip
 RUN mkdir --parents ${ANDROID_SDK_ROOT}/cmdline-tools
 RUN mv android-sdk/cmdline-tools ${ANDROID_SDK_ROOT}/cmdline-tools/latest
 RUN rmdir android-sdk
-RUN echo y | ${SDKMANAGER} "platforms;android-${ANDROID_COMPILE_SDK}"
+RUN echo y | ${SDKMANAGER} "platforms;android-${ANDROID_COMPILE_SDK}" >/dev/null
 RUN echo y | ${SDKMANAGER} "platform-tools" >/dev/null
 RUN echo y | ${SDKMANAGER} "build-tools;${ANDROID_BUILD_TOOLS}" >/dev/null
 RUN echo y | ${SDKMANAGER} "ndk;${NDK_VERSION}" >/dev/null
@@ -81,10 +81,10 @@ RUN tar xf flutter-sdk.tar.xz
 RUN rm flutter-sdk.tar.xz
 RUN mv flutter ${FLUTTER_SDK_ROOT}
 ENV PATH "${PATH}:${FLUTTER_SDK_ROOT}/bin"
-RUN flutter config --no-analytics
-RUN dart --disable-analytics
-RUN flutter precache
-RUN yes | flutter doctor --android-licenses
+RUN flutter config --no-analytics >/dev/null
+RUN dart --disable-analytics >/dev/null
+RUN flutter precache >/dev/null
+RUN yes | flutter doctor --android-licenses >/dev/null
 # NOTE: Only `Flutter` and `Android toolchain` need to be available. We can
 # enforce this, easily (maybe using grep), programmatically so this must be
 # checked manually whenever this file changes.
@@ -97,7 +97,7 @@ COPY --chown=lop:lop . /lop
 WORKDIR /lop
 RUN git restore --staged .
 RUN git restore .
-RUN git clean -dx --force
+RUN git clean -dx --force --quiet
 
 # NOTE: We use `ENTRYPOINT` instead of `CMD` deliberately as it doesn't use a
 # shell and doesn't allow using arbitrary commands that we probably don't

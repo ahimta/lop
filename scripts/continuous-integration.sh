@@ -83,9 +83,9 @@ echo "Cleaning Flutter build..."
 flutter clean
 
 echo "Linting Flutter..."
-flutter analyze --fatal-infos --fatal-warnings
+flutter analyze --fatal-infos --fatal-warnings >/dev/null
 
 echo "Bulding APK..."
-flutter build apk --debug
-flutter build apk --profile
-flutter build apk --release
+flutter build apk --debug >/dev/null
+flutter build apk --profile >/dev/null
+flutter build apk --release >/dev/null
