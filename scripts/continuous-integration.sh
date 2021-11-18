@@ -80,7 +80,7 @@ ln --force --symbolic \
 cd "${ROOT_DIR}/clod"
 
 echo "Cleaning Flutter build..."
-flutter clean
+flutter clean >/dev/null
 
 echo "Linting Flutter..."
 flutter analyze --fatal-infos --fatal-warnings >/dev/null
