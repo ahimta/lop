@@ -26,6 +26,11 @@ snap install --classic lefthook
 lefthook install
 lefthook run pre-commit
 
+echo 'deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_20.04/ /' | sudo tee /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list
+curl -fsSL https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable/xUbuntu_20.04/Release.key | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/devel_kubic_libcontainers_stable.gpg > /dev/null
+sudo apt update
+sudo apt install podman
+
 # SEE: https://nixos.org/download.html#nix-verify-installation
 curl -o install-nix-2.3.16 https://releases.nixos.org/nix/nix-2.3.16/install
 curl -o install-nix-2.3.16.asc https://releases.nixos.org/nix/nix-2.3.16/install.asc
@@ -36,6 +41,11 @@ gpg2 --verify ./install-nix-2.3.16.asc
 sh ./install-nix-2.3.16
 rm install-nix-2.3.16
 ```
+
+### Resources
+
+- [Installing Podman for Ubuntu 20.04 LTS](https://software.opensuse.org//download.html?project=devel%3Akubic%3Alibcontainers%3Astable&package=podman)
+- [Fully Rootless Podman Setup](https://github.com/containers/podman/blob/main/docs/tutorials/rootless_tutorial.md)
 
 ## Getting Started (Flutter)
 
@@ -67,18 +77,11 @@ flutter doctor
 ## Using Docker (and Podman in the future)
 
 ```bash
-# FIXME: Use rootles `podman` once it's ready and more mainstream.
-
 # NOTE: This avoids the common occurrence of changing `Containerfile` and
 # forgetting to call build and Docker/Podman caching should only do
 # anything for build if `Containerfile` changes.
-docker build --tag lop --file ./Containerfile . \
-  && docker run \
-    --mount type=bind,src="$PWD",dst=/lop \
-    --rm \
-    --user "$(id --user):$(id --group)" \
-    --workdir /lop \
-    lop
+# FIXME: Pass context (`.`) explicitly, just like in GitHub action.
+podman build --tag lop --file ./Containerfile && podman run --rm lop
 ```
 
 ## Using Nix (not functional and only as a starting point)

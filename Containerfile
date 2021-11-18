@@ -1,14 +1,10 @@
+# SEE: https://docs.docker.com/develop/develop-images/dockerfile_best-practices
+
 FROM rust:1.55
 
 # FIXME: Answer Stackoverflow questions after making sure everything works.
 # SEE: https://stackoverflow.com/questions/65262340/cmdline-tools-could-not-determine-sdk-root
 # SEE: https://stackoverflow.com/questions/17963508/how-to-install-android-sdk-build-tools-on-the-command-line
-
-RUN echo Installing Rust dependencies...
-RUN rustup target add aarch64-linux-android
-RUN rustup target add x86_64-linux-android
-RUN rustup component add rustfmt
-RUN rustup component add clippy
 
 RUN echo Installing Android dependencies...
 RUN apt-get -qq update --yes
@@ -21,6 +17,20 @@ RUN apt-get -qq install --yes \
   unzip \
   wget \
   > /dev/null
+
+# NOTE: We drop all privileges as we no longer need them.
+# NOTE: `--no-log-init` is to avoid a possibly rare case of disk exhaustion.
+# SEE: https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#user
+RUN groupadd --system lop
+RUN useradd --create-home --no-log-init --system --gid lop lop
+USER lop
+WORKDIR /home/lop
+
+RUN echo Installing Rust dependencies...
+RUN rustup target add aarch64-linux-android
+RUN rustup target add x86_64-linux-android
+RUN rustup component add rustfmt
+RUN rustup component add clippy
 
 # NOTE: This is the latest version that seems to work with Rust.
 ARG ANDROID_BUILD_TOOLS=29.0.2
@@ -75,20 +85,15 @@ RUN yes | flutter doctor --android-licenses
 # checked manually whenever this file changes.
 RUN flutter doctor
 
-# NOTE: We have to do this because Flutter seems to write to it and the
-# container data/rootfs premissions maybe different when it's run (e.g: `--user`
-# used with `docker run`).
-RUN mkdir --parents /.config/flutter
-RUN chmod -R 777 /.config/flutter
-RUN chmod -R 777 /tmp/flutter/bin/cache
-RUN chmod -R 777 /tmp/flutter/version
-RUN mkdir --parents /.dartServer
-RUN chmod 777 /.dartServer
-
 # SEE: https://developer.android.com/studio/command-line/variables
 ENV ANDROID_SDK_ROOT ${ANDROID_SDK_ROOT}
 
-# NOTE: `/lop` should be mounted when running the container.
+COPY --chown=lop:lop . /lop
+WORKDIR /lop
+RUN git restore --staged .
+RUN git restore .
+RUN git clean -fdx
+
 # NOTE: We use `ENTRYPOINT` instead of `CMD` deliberately as it doesn't use a
 # shell and doesn't allow using arbitrary commands that we probably don't
 # support.

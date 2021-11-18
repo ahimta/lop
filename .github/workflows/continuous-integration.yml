@@ -16,6 +16,8 @@ jobs:
       - uses: actions/checkout@v2
       - uses: docker/setup-buildx-action@v1
       - name: Continuous Integration
+        # NOTE: We use Docker instead of Podman here because there doesn't seem
+        # to be a supported way to use Podman in GitHub Actions
         run: |
           docker build --tag lop --file ./Containerfile .
-          docker run --mount type=bind,src="$PWD",dst=/lop --rm --user "$(id --user):$(id --group)" --workdir /lop lop
+          docker run --mount type=bind,src="$PWD",dst=/lop --rm lop
