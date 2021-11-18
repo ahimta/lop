@@ -1,6 +1,6 @@
 # SEE: https://docs.docker.com/develop/develop-images/dockerfile_best-practices
 
-FROM rust:1.56.1-bullseye
+FROM rust:1.56.1-slim-bullseye
 
 # FIXME: Answer Stackoverflow questions after making sure everything works.
 # SEE: https://stackoverflow.com/questions/65262340/cmdline-tools-could-not-determine-sdk-root
@@ -9,6 +9,7 @@ FROM rust:1.56.1-bullseye
 RUN echo Installing Android dependencies...
 RUN apt-get -qq update --yes
 RUN apt-get -qq install --yes \
+  git \
   lib32stdc++6 \
   lib32z1 \
   openjdk-11-jdk \
@@ -16,6 +17,7 @@ RUN apt-get -qq install --yes \
   tar \
   unzip \
   wget \
+  xz-utils \
   > /dev/null
 
 # NOTE: We drop all privileges as we no longer need them.
