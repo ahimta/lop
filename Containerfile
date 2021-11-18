@@ -97,7 +97,7 @@ COPY --chown=lop:lop . /lop
 WORKDIR /lop
 RUN git restore --staged .
 RUN git restore .
-RUN git clean -fdx
+RUN git clean -dx --force
 
 # NOTE: We use `ENTRYPOINT` instead of `CMD` deliberately as it doesn't use a
 # shell and doesn't allow using arbitrary commands that we probably don't
