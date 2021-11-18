@@ -10,12 +10,13 @@ echo "Linting scripts..."
 # NOTE: `wiki-link-count` lists pages for error explanations and only works if
 # we remove `--format=gcc` which we use because it allows us to directly go to
 # the offending line.
-shellcheck \
+# NOTE: We use `xargs` because `shellcheck` doesn't deal with directories.
+find ./scripts -type f -print0 | xargs shellcheck \
   --check-sourced \
   --enable=all \
   --severity=style \
   --wiki-link-count=1 \
-  --format=gcc scripts/*
+  --format=gcc
 
 cd "${ROOT_DIR}/boa"
 
