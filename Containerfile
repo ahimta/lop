@@ -6,7 +6,7 @@ FROM rust:1.56.1-slim-bullseye
 # SEE: https://stackoverflow.com/questions/65262340/cmdline-tools-could-not-determine-sdk-root
 # SEE: https://stackoverflow.com/questions/17963508/how-to-install-android-sdk-build-tools-on-the-command-line
 
-RUN echo Installing Android dependencies...
+RUN echo Installing dependencies...
 RUN apt-get -qq update --yes
 RUN apt-get -qq install --yes \
   git \
