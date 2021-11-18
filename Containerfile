@@ -1,6 +1,6 @@
 # SEE: https://docs.docker.com/develop/develop-images/dockerfile_best-practices
 
-FROM rust:1.55
+FROM rust:1.56.1-bullseye
 
 # FIXME: Answer Stackoverflow questions after making sure everything works.
 # SEE: https://stackoverflow.com/questions/65262340/cmdline-tools-could-not-determine-sdk-root
