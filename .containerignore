@@ -1,0 +1,21 @@
+# NOTE: Generated using `git status --ignored --porcelain=v1`.
+# NOTE: This files is important for fast copies to image as otherwise most time
+# would be wasted on generated files.
+boa/target/
+clod/.dart_tool/
+clod/.idea/
+clod/.packages
+clod/android/.gradle/
+clod/android/app/src/main/java/
+clod/android/app/src/main/jniLibs/
+clod/android/clod_android.iml
+clod/android/gradle/wrapper/gradle-wrapper.jar
+clod/android/gradlew
+clod/android/gradlew.bat
+clod/android/local.properties
+clod/build/
+clod/clod.iml
+clod/ios/Flutter/Generated.xcconfig
+clod/ios/Flutter/flutter_export_environment.sh
+clod/ios/Runner/GeneratedPluginRegistrant.h
+clod/ios/Runner/GeneratedPluginRegistrant.m
