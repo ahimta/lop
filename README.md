@@ -80,8 +80,7 @@ flutter doctor
 # NOTE: This avoids the common occurrence of changing `Containerfile` and
 # forgetting to call build and Docker/Podman caching should only do
 # anything for build if `Containerfile` changes.
-# FIXME: Pass context (`.`) explicitly, just like in GitHub action.
-podman build --tag lop --file ./Containerfile && podman run --rm lop
+podman build --tag lop --file ./Containerfile . && podman run --rm lop
 ```
 
 ## Using Nix (not functional and only as a starting point)
