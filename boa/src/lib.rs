@@ -2,7 +2,6 @@ mod mincut_maxflow;
 pub mod tournament_prediction;
 
 use std::boxed::Box;
-use std::collections::HashSet;
 use std::ffi::CString;
 use std::os::raw::c_char;
 use std::ptr;
@@ -31,7 +30,7 @@ pub extern "C" fn test_native() {
 /// # Panics
 #[allow(clippy::not_unsafe_ptr_arg_deref)]
 #[no_mangle]
-pub extern "C" fn predict_some_tournaments(
+pub extern "C" fn predict_tournament_eliminated_teams_native(
   eliminated_teams_count: *mut u64,
   eliminated_teams: *mut *const EliminatedTeamNative,
 ) -> i32 {
@@ -91,18 +90,8 @@ pub extern "C" fn predict_some_tournaments(
     .collect(),
   };
 
-  let tournament_prediction =
-    tournament_prediction::predict_tournament(&tournament);
-
-  let local_eliminated_teams: Vec<(Rc<String>, HashSet<Rc<String>>)> =
-    tournament_prediction
-      .teams
-      .into_iter()
-      .filter(|(_, team_prediction)| team_prediction.eliminated)
-      .map(|(team_id, team_prediction)| {
-        (team_id, team_prediction.eliminating_teams)
-      })
-      .collect();
+  let local_eliminated_teams =
+    tournament_prediction::predict_tournament_eliminated_teams(&tournament);
 
   let ets = Box::into_raw(
     (&local_eliminated_teams)
@@ -133,7 +122,7 @@ pub extern "C" fn predict_some_tournaments(
 /// # Panics
 #[allow(clippy::not_unsafe_ptr_arg_deref)]
 #[no_mangle]
-pub extern "C" fn predict_some_tournaments_free(
+pub extern "C" fn predict_tournament_eliminated_teams_native_free(
   eliminated_teams: *mut *const EliminatedTeamNative,
 ) {
   unsafe {

@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::collections::VecDeque;
-use std::marker::PhantomData;
 use std::rc::Rc;
 
 use super::mincut_maxflow::calculate_mincut_maxflow;
@@ -10,9 +9,12 @@ use super::mincut_maxflow::common::FlowEdge;
 use super::mincut_maxflow::common::FlowNode;
 use super::mincut_maxflow::MincutMaxflow;
 
+pub type TeamId = String;
+pub type EliminatedTeams = HashMap<Rc<TeamId>, HashSet<Rc<TeamId>>>;
+
 pub struct Tournament {
-  pub teams: HashMap<Rc<String>, Rc<Team>>,
-  pub matches_left: HashMap<(Rc<String>, Rc<String>), usize>,
+  pub teams: HashMap<Rc<TeamId>, Rc<Team>>,
+  pub matches_left: HashMap<(Rc<TeamId>, Rc<TeamId>), usize>,
 }
 
 #[derive(Debug)]
@@ -22,44 +24,12 @@ pub struct Team {
   pub matches_left: usize,
 }
 
-pub struct TournamentPrediction {
-  pub teams: HashMap<Rc<String>, TeamPrediction>,
-  constructor_guard: PhantomData<()>,
-}
-
-impl TournamentPrediction {
-  const fn new(teams: HashMap<Rc<String>, TeamPrediction>) -> Self {
-    Self {
-      teams,
-      constructor_guard: PhantomData,
-    }
-  }
-}
-
-#[derive(Debug, Eq, PartialEq)]
-pub struct TeamPrediction {
-  pub eliminated: bool,
-  pub eliminating_teams: HashSet<Rc<String>>,
-  constructor_guard: PhantomData<()>,
-}
-
-impl TeamPrediction {
-  const fn new(
-    eliminated: bool,
-    eliminating_teams: HashSet<Rc<String>>,
-  ) -> Self {
-    Self {
-      eliminated,
-      eliminating_teams,
-      constructor_guard: PhantomData,
-    }
-  }
-}
-
 /// # Panics
 #[allow(clippy::too_many_lines)]
 #[must_use]
-pub fn predict_tournament(tournament: &Tournament) -> TournamentPrediction {
+pub fn predict_tournament_eliminated_teams(
+  tournament: &Tournament,
+) -> EliminatedTeams {
   const TEAMS_COUNT_MIN: usize = 2;
   const TEAMS_COUNT_MAX: usize = 500;
   const MATCHES_LEFT_COUNT_MIN: usize = 1;
@@ -95,7 +65,7 @@ pub fn predict_tournament(tournament: &Tournament) -> TournamentPrediction {
     );
   }
 
-  let matches_left_by_team: HashMap<Rc<String>, usize> = (&tournament
+  let matches_left_by_team: HashMap<Rc<TeamId>, usize> = (&tournament
     .matches_left)
     .iter()
     .flat_map(|((node1, node2), matches_left)| {
@@ -259,42 +229,27 @@ pub fn predict_tournament(tournament: &Tournament) -> TournamentPrediction {
     .iter()
     .map(|(id, _)| FlowNode::new(Rc::clone(id)))
     .collect();
-  let predictions = mincut_maxflow_results
-    .into_iter()
-    .map(
-      |(
-        team_node,
-        MincutMaxflow {
-          mincut,
-          source_full,
-          ..
-        },
-      )| {
-        let eliminated = !source_full;
-        let eliminating_teams = if eliminated {
-          mincut
-            .into_iter()
-            .filter(|node| all_teams_nodes.contains(node))
-            .map(|node| node.id)
-            .collect()
-        } else {
-          HashSet::new()
-        };
 
-        (
-          team_node.id,
-          TeamPrediction::new(eliminated, eliminating_teams),
-        )
-      },
-    )
+  let eliminated_teams: EliminatedTeams = mincut_maxflow_results
+    .into_iter()
+    .filter(|(_, MincutMaxflow { source_full, .. })| !source_full)
+    .map(|(team_node, MincutMaxflow { mincut, .. })| {
+      let eliminating_teams = mincut
+        .into_iter()
+        .filter(|node| all_teams_nodes.contains(node))
+        .map(|node| node.id)
+        .collect();
+
+      (team_node.id, eliminating_teams)
+    })
     .collect();
 
-  TournamentPrediction::new(predictions)
+  eliminated_teams
 }
 
 struct TestExample {
   tournament: Tournament,
-  expected_tournament_prediction: TournamentPrediction,
+  expected_eliminated_teams: EliminatedTeams,
 }
 
 #[allow(clippy::too_many_lines)]
@@ -354,40 +309,24 @@ pub(super) fn test() {
         })
         .collect(),
       },
-      expected_tournament_prediction: TournamentPrediction::new(
-        vec![
-          (
-            Rc::new("atlanta".to_string()),
-            TeamPrediction::new(false, vec![].into_iter().collect()),
-          ),
-          (
-            Rc::new("montreal".to_string()),
-            TeamPrediction::new(
-              true,
-              vec!["atlanta".to_string()]
-                .into_iter()
-                .map(Rc::new)
-                .collect(),
-            ),
-          ),
-          (
-            Rc::new("new-york".to_string()),
-            TeamPrediction::new(false, vec![].into_iter().collect()),
-          ),
-          (
-            Rc::new("philadelphia".to_string()),
-            TeamPrediction::new(
-              true,
-              vec!["atlanta", "new-york"]
-                .into_iter()
-                .map(|team_id| Rc::new(team_id.to_string()))
-                .collect(),
-            ),
-          ),
-        ]
-        .into_iter()
-        .collect(),
-      ),
+      expected_eliminated_teams: vec![
+        (
+          Rc::new("montreal".to_string()),
+          vec!["atlanta".to_string()]
+            .into_iter()
+            .map(Rc::new)
+            .collect(),
+        ),
+        (
+          Rc::new("philadelphia".to_string()),
+          vec!["atlanta", "new-york"]
+            .into_iter()
+            .map(|team_id| Rc::new(team_id.to_string()))
+            .collect(),
+        ),
+      ]
+      .into_iter()
+      .collect(),
     },
     TestExample {
       tournament: Tournament {
@@ -456,53 +395,30 @@ pub(super) fn test() {
         })
         .collect(),
       },
-      expected_tournament_prediction: TournamentPrediction::new(
+      expected_eliminated_teams: vec![(
+        Rc::new("detroit".to_string()),
         vec![
-          (
-            Rc::new("baltimore".to_string()),
-            TeamPrediction::new(false, vec![].into_iter().collect()),
-          ),
-          (
-            Rc::new("boston".to_string()),
-            TeamPrediction::new(false, vec![].into_iter().collect()),
-          ),
-          (
-            Rc::new("detroit".to_string()),
-            TeamPrediction::new(
-              true,
-              vec![
-                "baltimore".to_string(),
-                "boston".to_string(),
-                "new-york".to_string(),
-              ]
-              .into_iter()
-              .map(Rc::new)
-              .collect(),
-            ),
-          ),
-          (
-            Rc::new("new-york".to_string()),
-            TeamPrediction::new(false, vec![].into_iter().collect()),
-          ),
-          (
-            Rc::new("toronto".to_string()),
-            TeamPrediction::new(false, vec![].into_iter().collect()),
-          ),
+          "baltimore".to_string(),
+          "boston".to_string(),
+          "new-york".to_string(),
         ]
         .into_iter()
+        .map(Rc::new)
         .collect(),
-      ),
+      )]
+      .into_iter()
+      .collect(),
     },
   ];
 
   for TestExample {
     tournament,
-    expected_tournament_prediction,
+    expected_eliminated_teams,
   } in examples
   {
     assert_eq!(
-      predict_tournament(&tournament).teams,
-      expected_tournament_prediction.teams
+      predict_tournament_eliminated_teams(&tournament),
+      expected_eliminated_teams
     );
   }
 }

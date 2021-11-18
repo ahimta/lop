@@ -22,7 +22,7 @@ class EliminatedTeamsWidget extends StatefulWidget {
 }
 
 class _EliminatedTeamsWidgetState extends State<EliminatedTeamsWidget> {
-  final _eliminatedTeams = predictSomeTournament();
+  final _eliminatedTeams = predictTournamentEliminatedTeams();
 
   @override
   Widget build(final BuildContext context) => Scaffold(

@@ -55,7 +55,7 @@ typedef _PredictSomeTournament = int Function(
 
 final _PredictSomeTournament _predictSomeTournamentNative = _lop
     .lookup<NativeFunction<_PredictSomeTournamentNative>>(
-      'predict_some_tournaments',
+      'predict_tournament_eliminated_teams_native',
     )
     .asFunction();
 
@@ -70,12 +70,12 @@ typedef _PredictSomeTournamentFree = void Function(
 
 final _PredictSomeTournamentFree _predictSomeTournamentFreeNative = _lop
     .lookup<NativeFunction<_PredictSomeTournamentFreeNative>>(
-      'predict_some_tournaments_free',
+      'predict_tournament_eliminated_teams_native_free',
     )
     .asFunction();
 
 /// Predict according to boa's algorithmic model.
-List<EliminatedTeam> predictSomeTournament() {
+List<EliminatedTeam> predictTournamentEliminatedTeams() {
   // FIXME: Answer Stackoverflow question.
   // SEE: https://stackoverflow.com/questions/67313913/dart-flutter-ffiforeign-function-interface-calling-a-native-function-with-out.
   final nativeEliminatedTeamsCount = calloc.allocate<Uint64>(sizeOf<Uint64>());
