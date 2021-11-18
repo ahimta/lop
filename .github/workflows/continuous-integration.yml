@@ -20,4 +20,4 @@ jobs:
         # to be a supported way to use Podman in GitHub Actions
         run: |
           docker build --tag lop --file ./Containerfile .
-          docker run --mount type=bind,src="$PWD",dst=/lop --rm lop
+          docker run --rm lop
