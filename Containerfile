@@ -53,11 +53,13 @@ RUN wget -qq --output-document=android-sdk.zip \
 RUN echo ${ANDROID_SDK_TOOLS_CHECKSUM_SHA256} android-sdk.zip > android-sdk.zip.sha256sum-check-file
 RUN sha256sum --check --quiet --strict android-sdk.zip.sha256sum-check-file
 RUN unzip -qq android-sdk.zip -d android-sdk
+RUN rm android-sdk.zip
 # NOTE: This is the expected path as implied by this error message:
 # Error: Could not determine SDK root.
 # Error: Either specify it explicitly with --sdk_root= or move this package into its expected location: <sdk>/cmdline-tools/latest/
 RUN mkdir --parents ${ANDROID_SDK_ROOT}/cmdline-tools
 RUN mv android-sdk/cmdline-tools ${ANDROID_SDK_ROOT}/cmdline-tools/latest
+RUN rmdir android-sdk
 RUN echo y | ${SDKMANAGER} "platforms;android-${ANDROID_COMPILE_SDK}"
 RUN echo y | ${SDKMANAGER} "platform-tools" >/dev/null
 RUN echo y | ${SDKMANAGER} "build-tools;${ANDROID_BUILD_TOOLS}" >/dev/null
@@ -76,6 +78,7 @@ RUN wget -qq --output-document=flutter-sdk.tar.xz \
 RUN echo ${FLUTTER_CHECKSUM_SHA256} flutter-sdk.tar.xz > flutter-sdk.tar.xz.sha256sum-check-file
 RUN sha256sum --check --quiet --strict flutter-sdk.tar.xz.sha256sum-check-file
 RUN tar xf flutter-sdk.tar.xz
+RUN rm flutter-sdk.tar.xz
 RUN mv flutter ${FLUTTER_SDK_ROOT}
 ENV PATH "${PATH}:${FLUTTER_SDK_ROOT}/bin"
 RUN flutter config --no-analytics
