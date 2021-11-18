@@ -71,7 +71,8 @@ flutter doctor
 
 ```bash
 # NOTE: This is the core and includes all checks, builds, tests, etc...
-./scripts/continuous-integration.sh
+./scripts/continuous-integration.sh &&
+  xdg-open /usr/share/sounds/freedesktop/stereo/phone-incoming-call.oga
 ```
 
 ## Using Podman/Docker
@@ -80,7 +81,9 @@ flutter doctor
 # NOTE: This avoids the common occurrence of changing `Containerfile` and
 # forgetting to call build and Docker/Podman caching should only do
 # anything for build if `Containerfile` changes.
-podman build --tag lop --file ./Containerfile . && podman run --rm lop
+podman build --tag lop --file ./Containerfile . &&
+  podman run --rm lop &&
+  xdg-open /usr/share/sounds/freedesktop/stereo/phone-incoming-call.oga
 ```
 
 ## Using Nix (not functional and only as a starting point)
