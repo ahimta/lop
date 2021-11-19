@@ -25,7 +25,7 @@ echo "Linting scripts..."
 # we remove `--format=gcc` which we use because it allows us to directly go to
 # the offending line.
 # NOTE: We use `xargs` because `shellcheck` doesn't deal with directories.
-find ./scripts -type f -print0 | xargs shellcheck \
+find ./scripts -type f -print0 | xargs --null shellcheck \
   --check-sourced \
   --enable=all \
   --severity=style \
