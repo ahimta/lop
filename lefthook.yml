@@ -2,4 +2,7 @@ pre-commit:
   parallel: false
   commands:
     continuous-integration:
-      run: podman build --tag lop --file ./Containerfile . && podman run --rm lop
+      run: |
+        trap ./scripts/notify-user.sh EXIT
+        podman build --tag lop --file ./Containerfile .
+        podman run --rm lop

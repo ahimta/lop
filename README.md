@@ -22,6 +22,8 @@ mkdir -p ~/.local/share/bash-completion/completions
 rustup completions bash >> ~/.local/share/bash-completion/completions/rustup
 rustup completions bash cargo >> ~/.local/share/bash-completion/completions/cargo
 
+sudo apt install -qq --yes mpv >/dev/null
+
 snap install --classic lefthook
 lefthook install
 lefthook run pre-commit
@@ -71,8 +73,7 @@ flutter doctor
 
 ```bash
 # NOTE: This is the core and includes all checks, builds, tests, etc...
-./scripts/continuous-integration.sh; \
-  xdg-open /usr/share/sounds/freedesktop/stereo/phone-incoming-call.oga
+./scripts/continuous-integration.sh
 ```
 
 ## Using Podman/Docker
@@ -83,7 +84,7 @@ flutter doctor
 # anything for build if `Containerfile` changes.
 (podman build --tag lop --file ./Containerfile . &&
   podman run --rm lop); \
-  xdg-open /usr/share/sounds/freedesktop/stereo/phone-incoming-call.oga
+  ./scripts/notify-user.sh
 ```
 
 ## Using Nix (not functional and only as a starting point)
