@@ -4,10 +4,12 @@ set -o errexit
 set -o pipefail
 set -o nounset
 
+ROOT_DIR="$(realpath "$(pwd)")"
+
 function on-exit-trap {
   local EXIT_CODE="$?"
 
-  ./scripts/notify-user.sh
+  "${ROOT_DIR}/scripts/notify-user.sh"
 
   if test "${EXIT_CODE}" -eq "0"; then
     echo "============================SUCCEEDED============================" >&2
@@ -17,8 +19,6 @@ function on-exit-trap {
 }
 
 trap on-exit-trap EXIT
-
-ROOT_DIR="$(realpath "$(pwd)")"
 
 echo "Linting scripts..."
 # NOTE: `wiki-link-count` lists pages for error explanations and only works if

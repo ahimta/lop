@@ -121,7 +121,9 @@ RUN ${SET_SHELL_SAFE_OPTIONS}; \
 COPY --chown=lop:lop . /lop
 WORKDIR /lop
 RUN ${SET_SHELL_SAFE_OPTIONS}; \
-  git restore --staged .; \
+  # NOTE: We don't do `git restore --staged .` here because it discards changes
+  # about to be committed. This is important for pre-commit checks and maybe
+  # even useful for other usecases.
   git restore .; \
   git clean -dx --force --quiet;
 
