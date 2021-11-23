@@ -45,7 +45,7 @@ RUN ${SET_SHELL_SAFE_OPTIONS}; \
 RUN ${SET_SHELL_SAFE_OPTIONS}; \
   groupadd --system lop; \
   useradd --create-home --no-log-init --system --gid lop lop;
-USER lop
+USER lop:lop
 WORKDIR /home/lop
 ARG HOME=/home/lop
 
