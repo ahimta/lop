@@ -17,7 +17,7 @@ ARG SET_SHELL_SAFE_OPTIONS="set -eu"
 
 # NOTE: This is important as otherwise this would depend on the base-image.
 ENV LANG C.UTF-8
-ENV DEBIAN_FRONTEND=noninteractive
+ENV DEBIAN_FRONTEND noninteractive
 
 RUN ${SET_SHELL_SAFE_OPTIONS}; \
   echo Installing dependencies...; \
