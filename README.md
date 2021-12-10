@@ -183,6 +183,13 @@ flutter create \
 - [Flow Network Code](https://algs4.cs.princeton.edu/code/edu/princeton/cs/algs4/FlowNetwork.java.html)
 - [Flow Edge Code](https://algs4.cs.princeton.edu/code/edu/princeton/cs/algs4/FlowEdge.java.html)
 
+## Possible Usecases/Ideas
+
+- Pandemic contagion depending on quarantine/curfew decisions
+- Tournament elimination
+- Job/request matching
+- And much much more that can be found from the academic-resources section here
+
 ## Credits
 
 All credits for algorithm used (Ford Fulkerson) core-implementation (originally
