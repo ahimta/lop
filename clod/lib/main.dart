@@ -29,20 +29,26 @@ class _EliminatedTeamsWidgetState extends State<EliminatedTeamsWidget> {
         appBar: AppBar(
           title: const Text('Eliminated Teams'),
         ),
-        body: ListView(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          children: _eliminatedTeams
-              .map(
-                (final eliminatedTeam) => ListTile(
-                  leading: const Icon(
-                    Icons.facebook,
-                    size: 42,
-                  ),
-                  title: Text(eliminatedTeam.id),
-                  subtitle: Text(eliminatedTeam.eliminatingTeamsIds.join(', ')),
-                ),
+        body: _eliminatedTeams.isEmpty
+            ? const Center(
+                child:
+                    Text('No eliminated teams: all teams have a chance to win'),
               )
-              .toList(),
-        ),
+            : ListView(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                children: _eliminatedTeams
+                    .map(
+                      (final eliminatedTeam) => ListTile(
+                        leading: const Icon(
+                          Icons.facebook,
+                          size: 42,
+                        ),
+                        title: Text(eliminatedTeam.id),
+                        subtitle:
+                            Text(eliminatedTeam.eliminatingTeamsIds.join(', ')),
+                      ),
+                    )
+                    .toList(),
+              ),
       );
 }
