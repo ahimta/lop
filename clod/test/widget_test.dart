@@ -9,6 +9,9 @@ import 'package:clod/main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+// FIXME: Tests fail due to FFI and lax Flutter/Dart behavior makes this hard to
+// diagnose and fix.
+// SEE: https://github.com/dart-lang/ffi/issues/39#issuecomment-991745282
 void main() {
   testWidgets('Counter increments smoke test', (final tester) async {
     // Build our app and trigger a frame.
