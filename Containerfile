@@ -8,6 +8,13 @@ LABEL author "Abdullah Alansari <ahimta@gmail.com>"
 # SEE: https://github.com/docker-library/ruby/blob/49168590766ac3eb0ad286154b2e01760b79f4b2/3.0/bullseye/Dockerfile
 # SEE: https://github.com/flutter/flutter/blob/570e39d38b799e91abe4f73f120ce494049c4ff0/dev/ci/docker_linux/Dockerfile
 
+# NOTE: Multi-stage builds were considered but when trying to implement them
+# they turned to have very little to no benefit and only increase complexity.
+
+# NOTE: Alpine images were considered but dismissed as they provide no value for
+# our use-cases. Especially as the image/container isn't used in production
+# devices/environments.
+
 # NOTE: Most lightweight shells don't support `pipefail` so we must keep in mind
 # that commands that use a pipe only fail if the last command fail.
 # NOTE: We use short options because long options don't with base-image.
