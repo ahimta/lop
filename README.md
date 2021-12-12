@@ -163,7 +163,7 @@ flutter create \
 - [flutter.dev](https://flutter.dev)
 - [Rust by Example](https://doc.rust-lang.org/rust-by-example)
 - [The Rustonomicon](https://doc.rust-lang.org/nomicon)
-- [Premier League](https://www.premierleague.com/clubs)
+- [Premier League - Results Page (can easily be used to convert to our format)](https://www.premierleague.com/results)
 - [Programming Rust: Fast, Safe Systems Development](https://read.amazon.com/?asin=B0979PWD4Z&language=en-US)
 - [Rust Official Formatter](https://github.com/rust-lang/rustfmt)
 - [Lefthook](https://github.com/evilmartians/lefthook)
