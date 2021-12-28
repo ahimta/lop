@@ -33,9 +33,12 @@ impl ResidualEdge {
     } else {
       self.flow + delta
     };
-    if new_flow > self.capacity {
-      panic!("Overflow ({:?}, {:?}).", self, delta);
-    }
+    assert!(
+      new_flow <= self.capacity,
+      "Overflow ({:?}, {:?}).",
+      self,
+      delta,
+    );
     self.flow = new_flow;
   }
 
@@ -60,8 +63,11 @@ impl ResidualEdge {
   }
 
   fn ensure_valid_node(&self, node: &FlowNode) {
-    if !(*node == self.from || *node == self.to) {
-      panic!("Invalid node ({:?}, {:?}).", self, node);
-    }
+    assert!(
+      *node == self.from || *node == self.to,
+      "Invalid node ({:?}, {:?}).",
+      self,
+      node,
+    );
   }
 }

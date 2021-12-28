@@ -23,18 +23,21 @@ impl ResidualGraph {
     const EDGES_COUNT_MIN: usize = 1;
     const EDGES_COUNT_MAX: usize = 10 * 1000;
 
-    if edges.len() < EDGES_COUNT_MIN || edges.len() > EDGES_COUNT_MAX {
-      panic!("Invalid edges length ({:?}).", edges.len());
-    }
-    if edges.len()
-      != edges
-        .iter()
-        .map(|FlowEdge { from, to, .. }| from.join(to))
-        .collect::<HashSet<_>>()
-        .len()
-    {
-      panic!("Duplicate edges ({:?}).", edges);
-    }
+    assert!(
+      edges.len() >= EDGES_COUNT_MIN && edges.len() <= EDGES_COUNT_MAX,
+      "Invalid edges length ({:?}).",
+      edges.len(),
+    );
+    assert!(
+      edges.len()
+        == edges
+          .iter()
+          .map(|FlowEdge { from, to, .. }| from.join(to))
+          .collect::<HashSet<_>>()
+          .len(),
+      "Duplicate edges ({:?}).",
+      edges,
+    );
 
     let nodes: HashSet<FlowNode> = edges
       .iter()
@@ -43,18 +46,19 @@ impl ResidualGraph {
       })
       .collect();
 
-    if !nodes.contains(source_node) || !nodes.contains(sink_node) {
-      panic!(
-        "Invalid source or sink ({:?}, {:?}, {:?}).",
-        source_node, sink_node, nodes
-      );
-    }
-    if source_node == sink_node {
-      panic!(
-        "Source must not equal sink ({:?}, {:?}).",
-        source_node, sink_node
-      );
-    }
+    assert!(
+      nodes.contains(source_node) && nodes.contains(sink_node),
+      "Invalid source or sink ({:?}, {:?}, {:?}).",
+      source_node,
+      sink_node,
+      nodes,
+    );
+    assert!(
+      source_node != sink_node,
+      "Source must not equal sink ({:?}, {:?}).",
+      source_node,
+      sink_node,
+    );
 
     // NOTE: `BTreeMap` used instead of `HashMap` because `RefCell` doesn't seem
     // to work with `HashMap`. This is contagious and causes other components to

@@ -93,14 +93,18 @@ fn ensure_feasibility(
   current_max_flow: Flow,
 ) {
   let source_excess = current_max_flow + get_excess(graph, source_node);
-  if source_excess != Flow::Regular(0) {
-    panic!("Invalid excess at source ({:?}).", source_excess);
-  }
+  assert!(
+    source_excess == Flow::Regular(0),
+    "Invalid excess at source ({:?}).",
+    source_excess,
+  );
 
   let sink_excess = current_max_flow - get_excess(graph, sink_node);
-  if sink_excess != Flow::Regular(0) {
-    panic!("Invalid excess at sink ({:?}).", sink_excess);
-  }
+  assert!(
+    sink_excess == Flow::Regular(0),
+    "Invalid excess at sink ({:?}).",
+    sink_excess,
+  );
 
   for node in graph.nodes() {
     if node == source_node || node == sink_node {
@@ -108,9 +112,11 @@ fn ensure_feasibility(
     }
 
     let excess = get_excess(graph, node);
-    if excess != Flow::Regular(0) {
-      panic!("Invalid net flow out of ({:?}).", node);
-    }
+    assert!(
+      excess == Flow::Regular(0),
+      "Invalid net flow out of ({:?}).",
+      node,
+    );
   }
 }
 
@@ -237,26 +243,26 @@ fn ensure_optimality(
 ) {
   ensure_feasibility(graph, source_node, sink_node, mincut_maxflow.maxflow);
 
-  if !mincut_maxflow.mincut.contains(source_node) {
-    panic!(
-      "Source not in min-cut ({:?}. {:?}).",
-      source_node, mincut_maxflow.mincut
-    );
-  }
-  if mincut_maxflow.mincut.contains(sink_node) {
-    panic!(
-      "Sink in min-cut ({:?}, {:?}).",
-      sink_node, mincut_maxflow.mincut
-    );
-  }
+  assert!(
+    mincut_maxflow.mincut.contains(source_node),
+    "Source not in min-cut ({:?}. {:?}).",
+    source_node,
+    mincut_maxflow.mincut,
+  );
+  assert!(
+    !mincut_maxflow.mincut.contains(sink_node),
+    "Sink in min-cut ({:?}, {:?}).",
+    sink_node,
+    mincut_maxflow.mincut,
+  );
 
   let mincut_flow = get_mincut_flow(graph, mincut_maxflow);
-  if mincut_maxflow.maxflow != mincut_flow {
-    panic!(
-      "Max-flow flow ({:?}) doesn't match min-cut flow ({:?}).",
-      mincut_maxflow.maxflow, mincut_flow
-    );
-  }
+  assert!(
+    mincut_maxflow.maxflow == mincut_flow,
+    "Max-flow flow ({:?}) doesn't match min-cut flow ({:?}).",
+    mincut_maxflow.maxflow,
+    mincut_flow,
+  );
 }
 
 fn get_mincut_flow(

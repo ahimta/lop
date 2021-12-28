@@ -34,35 +34,32 @@ pub fn predict_tournament_eliminated_teams(
   const MATCHES_LEFT_COUNT_MIN: usize = 1;
   const MATCHES_LEFT_COUNT_MAX: usize = 1000;
 
-  if tournament.teams.len() < TEAMS_COUNT_MIN
-    || tournament.teams.len() > TEAMS_COUNT_MAX
-  {
-    panic!("Invalid no. of teams ({:?}).", tournament.teams.len());
-  }
+  assert!(
+    tournament.teams.len() >= TEAMS_COUNT_MIN
+      && tournament.teams.len() <= TEAMS_COUNT_MAX,
+    "Invalid no. of teams ({:?}).",
+    tournament.teams.len()
+  );
 
-  if tournament.matches_left.len() < MATCHES_LEFT_COUNT_MIN
-    || tournament.matches_left.len() > MATCHES_LEFT_COUNT_MAX
-  {
-    panic!(
-      "Invalid no. of matches-left ({:?}).",
-      tournament.matches_left.len()
-    );
-  }
+  assert!(
+    tournament.matches_left.len() >= MATCHES_LEFT_COUNT_MIN
+      && tournament.matches_left.len() <= MATCHES_LEFT_COUNT_MAX,
+    "Invalid no. of matches-left ({:?}).",
+    tournament.matches_left.len(),
+  );
 
-  if tournament.matches_left.len()
-    != tournament
-      .matches_left
-      .keys()
-      .into_iter()
-      .map(|(id1, id2)| (id1.min(id2), id1.max(id2)))
-      .collect::<HashSet<_>>()
-      .len()
-  {
-    panic!(
-      "Duplicate matches-left entries ({:?}).",
-      tournament.matches_left
-    );
-  }
+  assert!(
+    tournament.matches_left.len()
+      == tournament
+        .matches_left
+        .keys()
+        .into_iter()
+        .map(|(id1, id2)| (id1.min(id2), id1.max(id2)))
+        .collect::<HashSet<_>>()
+        .len(),
+    "Duplicate matches-left entries ({:?}).",
+    tournament.matches_left,
+  );
 
   let matches_left_by_team: HashMap<Rc<TeamId>, usize> = (&tournament
     .matches_left)
@@ -195,11 +192,9 @@ pub fn predict_tournament_eliminated_teams(
           let other_team_wins = *teams_wins.get(other_team_node).unwrap();
           let own_team_max_wins =
             team.matches_won + matches_left_by_team.get(team_id).unwrap_or(&0);
-          if other_team_wins > own_team_max_wins {
-            // NOTE: This case can't happen because otherwise the function would
-            // have returned earlier.
-            panic!("Impossible case.");
-          }
+          // NOTE: This case can't happen because otherwise the function would
+          // have returned earlier.
+          assert!(other_team_wins <= own_team_max_wins, "Impossible case.");
           let capacity = Flow::Regular(own_team_max_wins - other_team_wins);
 
           FlowEdge::new(FlowNode::clone(from), to, capacity)

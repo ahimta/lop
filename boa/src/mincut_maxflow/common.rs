@@ -6,9 +6,7 @@ use std::ops;
 use std::rc::Rc;
 
 pub(super) fn ensure_valid_edge_nodes(from: &FlowNode, to: &FlowNode) {
-  if from == to {
-    panic!("Invalid edge nodes ({:?}, ({:?}).", from, to);
-  }
+  assert!(from != to, "Invalid edge nodes ({:?}, ({:?}).", from, to);
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Ord, PartialOrd)]
@@ -21,12 +19,12 @@ const JOINED_WITH_TAG: &str = "-joined-with-";
 
 impl FlowNode {
   pub(crate) fn new(id: Rc<String>) -> Self {
-    if id.contains(JOINED_WITH_TAG) {
-      panic!(
-        "Only joined nodes can contain the joined-with tag value ({:?}, {:?}).",
-        id, JOINED_WITH_TAG
-      );
-    }
+    assert!(
+      !id.contains(JOINED_WITH_TAG),
+      "Only joined nodes can contain the joined-with tag value ({:?}, {:?}).",
+      id,
+      JOINED_WITH_TAG,
+    );
 
     Self::internal_new(id)
   }
@@ -44,9 +42,11 @@ impl FlowNode {
   fn internal_new(id: Rc<String>) -> Self {
     const NODE_ID_LENGTH_MIN: usize = 1;
     const NODE_ID_LENGTH_MAX: usize = 10 * 1000;
-    if id.len() < NODE_ID_LENGTH_MIN || id.len() > NODE_ID_LENGTH_MAX {
-      panic!("Invalid node ID ({:?}).", id);
-    }
+    assert!(
+      id.len() >= NODE_ID_LENGTH_MIN && id.len() <= NODE_ID_LENGTH_MAX,
+      "Invalid node ID ({:?}).",
+      id,
+    );
 
     Self {
       id,
