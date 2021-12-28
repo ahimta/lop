@@ -1,5 +1,6 @@
 # syntax=docker/dockerfile:1
-FROM rust:1.56.1-slim-bullseye
+# SEE: https://hub.docker.com/_/rust
+FROM rust:1.57.0-slim-bullseye
 LABEL author "Abdullah Alansari <ahimta@gmail.com>"
 
 # SEE: https://docs.docker.com/develop/develop-images/dockerfile_best-practices
