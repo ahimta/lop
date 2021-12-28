@@ -21,7 +21,7 @@ impl ResidualGraph {
     sink_node: &FlowNode,
   ) -> Self {
     const EDGES_COUNT_MIN: usize = 1;
-    const EDGES_COUNT_MAX: usize = 100;
+    const EDGES_COUNT_MAX: usize = 10 * 1000;
 
     if edges.len() < EDGES_COUNT_MIN || edges.len() > EDGES_COUNT_MAX {
       panic!("Invalid edges length ({:?}).", edges.len());

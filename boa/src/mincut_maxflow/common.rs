@@ -43,7 +43,7 @@ impl FlowNode {
 
   fn internal_new(id: Rc<String>) -> Self {
     const NODE_ID_LENGTH_MIN: usize = 1;
-    const NODE_ID_LENGTH_MAX: usize = 100;
+    const NODE_ID_LENGTH_MAX: usize = 10 * 1000;
     if id.len() < NODE_ID_LENGTH_MIN || id.len() > NODE_ID_LENGTH_MAX {
       panic!("Invalid node ID ({:?}).", id);
     }
