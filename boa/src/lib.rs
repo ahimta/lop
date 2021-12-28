@@ -43,7 +43,6 @@ pub extern "C" fn predict_tournament_eliminated_teams_native(
         Team {
           matches_won: 83,
           matches_lost: 71,
-          matches_left: 8,
         },
       ),
       (
@@ -51,7 +50,6 @@ pub extern "C" fn predict_tournament_eliminated_teams_native(
         Team {
           matches_won: 80,
           matches_lost: 79,
-          matches_left: 3,
         },
       ),
       (
@@ -59,7 +57,6 @@ pub extern "C" fn predict_tournament_eliminated_teams_native(
         Team {
           matches_won: 78,
           matches_lost: 78,
-          matches_left: 6,
         },
       ),
       (
@@ -67,7 +64,6 @@ pub extern "C" fn predict_tournament_eliminated_teams_native(
         Team {
           matches_won: 77,
           matches_lost: 82,
-          matches_left: 3,
         },
       ),
     ]

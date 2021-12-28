@@ -21,7 +21,6 @@ pub struct Tournament {
 pub struct Team {
   pub matches_won: usize,
   pub matches_lost: usize,
-  pub matches_left: usize,
 }
 
 /// # Panics
@@ -82,14 +81,6 @@ pub fn predict_tournament_eliminated_teams(
       map
     });
 
-  if !(&tournament.teams).iter().all(|(node, t)| {
-    t.matches_left == *matches_left_by_team.get(node).unwrap_or(&0)
-  }) {
-    panic!(
-      "Incorrect matches-left ({:?}, {:?}).",
-      tournament.teams, tournament.matches_left
-    );
-  }
   let source_node = FlowNode::new(Rc::new("s".to_string()));
   let sink_node = FlowNode::new(Rc::new("t".to_string()));
 
@@ -102,7 +93,8 @@ pub fn predict_tournament_eliminated_teams(
         .iter()
         .filter(|(candidate_team_id, _)| *candidate_team_id != team_id)
         .filter(|(_, candidate_team)| {
-          let max_wins = team.matches_won + team.matches_left;
+          let max_wins =
+            team.matches_won + matches_left_by_team.get(team_id).unwrap_or(&0);
           candidate_team.matches_won > max_wins
         })
         .map(|(candidate_team_id, _)| {
@@ -201,7 +193,8 @@ pub fn predict_tournament_eliminated_teams(
           let to = FlowNode::clone(&sink_node);
 
           let other_team_wins = *teams_wins.get(other_team_node).unwrap();
-          let own_team_max_wins = team.matches_won + team.matches_left;
+          let own_team_max_wins =
+            team.matches_won + matches_left_by_team.get(team_id).unwrap_or(&0);
           if other_team_wins > own_team_max_wins {
             // NOTE: This case can't happen because otherwise the function would
             // have returned earlier.
@@ -263,7 +256,6 @@ pub(super) fn test() {
             Team {
               matches_won: 83,
               matches_lost: 71,
-              matches_left: 8,
             },
           ),
           (
@@ -271,7 +263,6 @@ pub(super) fn test() {
             Team {
               matches_won: 80,
               matches_lost: 79,
-              matches_left: 3,
             },
           ),
           (
@@ -279,7 +270,6 @@ pub(super) fn test() {
             Team {
               matches_won: 78,
               matches_lost: 78,
-              matches_left: 6,
             },
           ),
           (
@@ -287,7 +277,6 @@ pub(super) fn test() {
             Team {
               matches_won: 77,
               matches_lost: 82,
-              matches_left: 3,
             },
           ),
         ]
@@ -336,7 +325,6 @@ pub(super) fn test() {
             Team {
               matches_won: 75,
               matches_lost: 59,
-              matches_left: 21,
             },
           ),
           (
@@ -344,7 +332,6 @@ pub(super) fn test() {
             Team {
               matches_won: 71,
               matches_lost: 63,
-              matches_left: 19,
             },
           ),
           (
@@ -352,7 +339,6 @@ pub(super) fn test() {
             Team {
               matches_won: 69,
               matches_lost: 66,
-              matches_left: 13,
             },
           ),
           (
@@ -360,7 +346,6 @@ pub(super) fn test() {
             Team {
               matches_won: 63,
               matches_lost: 72,
-              matches_left: 17,
             },
           ),
           (
@@ -368,7 +353,6 @@ pub(super) fn test() {
             Team {
               matches_won: 49,
               matches_lost: 86,
-              matches_left: 16,
             },
           ),
         ]
