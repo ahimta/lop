@@ -18,9 +18,13 @@ LABEL author "Abdullah Alansari <ahimta@gmail.com>"
 # NOTE: Most lightweight shells don't support `pipefail` so we must keep in mind
 # that commands that use a pipe only fail if the last command fail.
 # NOTE: We use short options because long options don't with base-image.
-# 1. `-e` instad of `-o errexit`.
-# 2. `-u` instad of `-o nounset`.
-ARG SET_SHELL_SAFE_OPTIONS="set -eu"
+# 1. `-e` instad of `-o errexit` set first to catch errors with other `set`s.
+# 2. `-C` instad of `-o noclobber`.
+# 3. `-u` instad of `-o noglob`.
+# 4. `-u` instad of `-o nounset`.
+# SEE: https://devdocs.io/bash/the-set-builtin#set
+# NOTE: We add a space after the first `set` as otherwise it'd fail.
+ARG SET_SHELL_SAFE_OPTIONS="set -e ; set -Cfu"
 
 # NOTE: This is important as otherwise this would depend on the base-image.
 ENV LANG C.UTF-8
