@@ -39,8 +39,10 @@ find ./scripts -type f -print0 | xargs --null shellcheck \
 
 cd "${ROOT_DIR}/boa"
 
-echo "Cleaning..." >&2
-cargo clean
+echo "Cleaning for Rust using 'cargo clean' skipped as it slows build" >&2
+echo "significantly and incremental Rust builds are so reliable and we use" >&2
+echo "tooling/linting that ensures that warnings omitted in incremental" >&2
+echo "fail build." >&2
 
 echo "Checking formatting..." >&2
 cargo fmt --quiet --all -- --check
