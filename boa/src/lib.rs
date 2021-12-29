@@ -109,7 +109,15 @@ pub extern "C" fn predict_tournament_eliminated_teams_native(
 
   unsafe {
     *eliminated_teams_count = local_eliminated_teams.len() as u64;
-    *eliminated_teams = ets;
+    // NOTE: We have to use `NULL` when an array is empty as otherwise
+    // deallocation would fail with a misaligned pointer on Android x86_64 (and
+    // probably any Linux system). This is to be expected as it might be
+    // considered an empty allocation (which has some subtleties).
+    *eliminated_teams = if *eliminated_teams_count == 0 {
+      ptr::null()
+    } else {
+      ets
+    };
   }
 
   0
@@ -122,6 +130,10 @@ pub extern "C" fn predict_tournament_eliminated_teams_native_free(
   eliminated_teams: *mut *const EliminatedTeamNative,
 ) {
   unsafe {
+    if (*eliminated_teams).is_null() {
+      return;
+    }
+
     Box::from_raw(*eliminated_teams as *mut EliminatedTeamNative);
     *eliminated_teams = ptr::null();
   }
