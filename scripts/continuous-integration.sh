@@ -39,10 +39,12 @@ find ./scripts -type f -print0 | xargs --null shellcheck \
 
 cd "${ROOT_DIR}/boa"
 
+echo >&2
 echo "Cleaning for Rust using 'cargo clean' skipped as it slows build" >&2
 echo "significantly and incremental Rust builds are so reliable and we use" >&2
 echo "tooling/linting that ensures that warnings omitted in incremental" >&2
 echo "fail build." >&2
+echo >&2
 
 echo "Checking formatting..." >&2
 cargo fmt --quiet --all -- --check
@@ -100,8 +102,12 @@ ln --force --symbolic \
 
 cd "${ROOT_DIR}/clod"
 
-echo "Cleaning Flutter build..."
-flutter clean >/dev/null
+echo >&2
+echo "Cleaning for Flutter using 'flutter clean' skipped as it slows build" >&2
+echo "significantly and incremental Flutter builds are so reliable and we" >&2
+echo "use tooling/linting that ensures that warnings omitted in incremental" >&2
+echo "fail build." >&2
+echo >&2
 
 echo "Linting Flutter..."
 flutter analyze --fatal-infos --fatal-warnings >/dev/null
