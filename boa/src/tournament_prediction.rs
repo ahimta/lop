@@ -12,12 +12,13 @@ use super::mincut_maxflow::MincutMaxflow;
 pub type TeamId = String;
 pub type EliminatedTeams = HashMap<Rc<TeamId>, HashSet<Rc<TeamId>>>;
 
+#[derive(Eq, PartialEq, Debug)]
 pub struct Tournament {
   pub teams: HashMap<Rc<TeamId>, Rc<Team>>,
   pub matches_left: HashMap<(Rc<TeamId>, Rc<TeamId>), usize>,
 }
 
-#[derive(Debug)]
+#[derive(Eq, PartialEq, Debug)]
 pub struct Team {
   pub matches_won: usize,
   pub matches_lost: usize,

@@ -23,5 +23,26 @@ panic='abort'
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+# NOTE: We avoid using default-features as much as possible.
+# SEE: https://doc.rust-lang.org/stable/cargo/reference/features.html#dependency-features
+# SEE: https://doc.rust-lang.org/stable/cargo/reference/features.html#command-line-feature-options
+
 [dependencies]
 clippy = "0.0.302"
+
+# NOTE: We disable default-features for `reqwest` primarily to avoid
+# `native-tls` feature would require `openssl` for Android which is feasible but
+# adds unnecessary complexity and so we use the `rustls-tls` feature which is
+# much easier to build.
+# SEE: https://docs.rs/reqwest/0.11.7/reqwest/#optional-features
+reqwest = { version = "0.11.7", default-features = false, features = ["blocking", "gzip", "brotli", "deflate", "rustls-tls"] }
+
+serde_json = { version = "1.0.72", default-features = false }
+# NOTE: Must add the "derive" feature (which isn't included in official docs)
+# for the typed examples to work.
+# SEE: https://github.com/serde-rs/json/issues/728#issuecomment-725961686
+serde = { version = "1.0.131", default-features = false, features = ["derive"] }
+
+itertools = "0.10.3"
+
+chrono = "0.4.19"

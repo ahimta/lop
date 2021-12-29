@@ -1,18 +1,23 @@
 mod mincut_maxflow;
+mod tournament_fetching;
 pub mod tournament_prediction;
 
 use std::boxed::Box;
 use std::ffi::CString;
 use std::os::raw::c_char;
 use std::ptr;
-use std::rc::Rc;
-
-use tournament_prediction::Team;
-use tournament_prediction::Tournament;
 
 pub fn test() {
   mincut_maxflow::test();
   tournament_prediction::test();
+  tournament_fetching::test();
+
+  println!(
+    "prediction: {:?}",
+    tournament_prediction::predict_tournament_eliminated_teams(
+      &tournament_fetching::fetch_tournament()
+    )
+  );
 }
 
 #[repr(C)]
@@ -36,56 +41,7 @@ pub extern "C" fn predict_tournament_eliminated_teams_native(
 ) -> i32 {
   eprintln!("hello world!");
 
-  let tournament = Tournament {
-    teams: vec![
-      (
-        "atlanta",
-        Team {
-          matches_won: 83,
-          matches_lost: 71,
-        },
-      ),
-      (
-        "philadelphia",
-        Team {
-          matches_won: 80,
-          matches_lost: 79,
-        },
-      ),
-      (
-        "new-york",
-        Team {
-          matches_won: 78,
-          matches_lost: 78,
-        },
-      ),
-      (
-        "montreal",
-        Team {
-          matches_won: 77,
-          matches_lost: 82,
-        },
-      ),
-    ]
-    .into_iter()
-    .map(|(team_id, team)| (Rc::new(team_id.to_string()), Rc::new(team)))
-    .collect(),
-    matches_left: vec![
-      (("atlanta", "philadelphia"), 1),
-      (("atlanta", "new-york"), 6),
-      (("atlanta", "montreal"), 1),
-      (("philadelphia", "montreal"), 2),
-    ]
-    .into_iter()
-    .map(|((team_id1, team_id2), matches_left)| {
-      (
-        (Rc::new(team_id1.to_string()), Rc::new(team_id2.to_string())),
-        matches_left,
-      )
-    })
-    .collect(),
-  };
-
+  let tournament = tournament_fetching::fetch_tournament();
   let local_eliminated_teams =
     tournament_prediction::predict_tournament_eliminated_teams(&tournament);
 
