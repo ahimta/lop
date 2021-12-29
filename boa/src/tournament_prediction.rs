@@ -3,6 +3,8 @@ use std::collections::HashSet;
 use std::collections::VecDeque;
 use std::rc::Rc;
 
+use itertools::Itertools;
+
 use super::mincut_maxflow::calculate_mincut_maxflow;
 use super::mincut_maxflow::common::Flow;
 use super::mincut_maxflow::common::FlowEdge;
@@ -129,14 +131,12 @@ pub fn predict_tournament_eliminated_teams(
         .map(|(other_team_node, _)| other_team_node)
         .collect();
 
-      let mut other_teams_nodes_combinations: Vec<(&FlowNode, &FlowNode)> =
-        Vec::new();
-      for i in 0..(&other_teams_nodes).len() {
-        for j in (i + 1)..(&other_teams_nodes).len() {
-          other_teams_nodes_combinations
-            .push(((&other_teams_nodes)[i], (&other_teams_nodes)[j]));
-        }
-      }
+      let other_teams_nodes_combinations: Vec<(&FlowNode, &FlowNode)> =
+        other_teams_nodes
+          .iter()
+          .combinations(2)
+          .map(|nodes| (*nodes[0], *nodes[1]))
+          .collect();
 
       let games_left_edges: Vec<FlowEdge> = (&other_teams_nodes_combinations)
         .iter()
