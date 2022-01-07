@@ -16,6 +16,10 @@ LABEL author "Abdullah Alansari <ahimta@gmail.com>"
 # our use-cases. Especially as the image/container isn't used in production
 # devices/environments.
 
+# NOTE: Using BASH was considered instead of default DASH/SH because Podman
+# complains that they are not part of the OCI image format.
+# SEE: https://docs.docker.com/engine/reference/builder/#shell
+
 # NOTE: Most lightweight shells don't support `pipefail` so we must keep in mind
 # that commands that use a pipe only fail if the last command fail.
 # NOTE: We use short options because long options don't with base-image.
