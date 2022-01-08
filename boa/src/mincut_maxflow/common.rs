@@ -1,5 +1,4 @@
 use std::cmp::Ordering;
-use std::convert::TryFrom;
 use std::hash::Hash;
 use std::marker::PhantomData;
 use std::ops;

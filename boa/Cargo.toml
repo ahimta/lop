@@ -4,8 +4,7 @@ name = "boa"
 description = "Milking the mincut-maxflow cow."
 version = "0.1.0"
 repository = "https://github.com/ahimta/lop"
-# FIXME: Possibly move to latest (2021) and don't forget `rustfmt` snippets.
-edition = "2018"
+edition = "2021"
 authors = ["Abdullah Alansari <ahimta@gmail.com>"]
 license = "GPLv3"
 readme = "../README.md"
@@ -55,7 +54,9 @@ reqwest = { version = "^0.11.7", default-features = false, features = [
   "rustls-tls",
 ] }
 
-serde_json = { version = "^1.0.72", default-features = false }
+serde_json = { version = "^1.0.72", default-features = false, features = [
+  "std",
+] }
 # NOTE: Must add the "derive" feature (which isn't included in official docs)
 # for the typed examples to work.
 # SEE: https://github.com/serde-rs/json/issues/728#issuecomment-725961686

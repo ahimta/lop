@@ -123,6 +123,8 @@ cargo fmt
 cargo check
 cargo build
 cargo test
+
+cargo fix --edition
 ```
 
 ## Snippets (Flutter)
@@ -138,6 +140,8 @@ flutter pub remove english_words
 # NOTE: Generated file causes warnings when `cargo fmt` is called as most
 # options are only supported in nightly builds. To fix this, we used
 # `rustfmt --help=config` which only includes supported options.
+# NOTE: Seems to not support `2021` `edition` and we should use it as soon as
+# it's available.
 rustfmt --edition 2018 --print-config default rustfmt.toml
 ```
 
