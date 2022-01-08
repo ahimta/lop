@@ -10,20 +10,26 @@ authors = ["Abdullah Alansari <ahimta@gmail.com>"]
 license = "GPLv3"
 readme = "../README.md"
 keywords = ["mincut", "maxflow", "sports"]
-categories = ["algorithms", "data-structures", "games", "mathematics", "simulation"]
+categories = [
+  "algorithms",
+  "data-structures",
+  "games",
+  "mathematics",
+  "simulation",
+]
 # NOTE: `rust-version` omitted deliberately to avoid duplication as it's already
 # in `rust-toolchain.toml`.
 
 [lib]
 # SEE: https://doc.rust-lang.org/reference/linkage.html
-crate-type   = ["rlib", "staticlib", "cdylib"]
+crate-type = ["rlib", "staticlib", "cdylib"]
 
 # SEE: https://doc.rust-lang.org/cargo/reference/profiles.html#release
 [profile.release]
 # NOTE: This is important as the default panic behavior (unwind) has undefined
 # behavior for native-libraries/FFI.
 # SEE: https://doc.rust-lang.org/cargo/reference/profiles.html#panic
-panic='abort'
+panic = 'abort'
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -41,14 +47,28 @@ panic='abort'
 # adds unnecessary complexity and so we use the `rustls-tls` feature which is
 # much easier to build.
 # SEE: https://docs.rs/reqwest/0.11.7/reqwest/#optional-features
-reqwest = { version = "^0.11.7", default-features = false, features = ["blocking", "gzip", "brotli", "deflate", "rustls-tls"] }
+reqwest = { version = "^0.11.7", default-features = false, features = [
+  "blocking",
+  "gzip",
+  "brotli",
+  "deflate",
+  "rustls-tls",
+] }
 
 serde_json = { version = "^1.0.72", default-features = false }
 # NOTE: Must add the "derive" feature (which isn't included in official docs)
 # for the typed examples to work.
 # SEE: https://github.com/serde-rs/json/issues/728#issuecomment-725961686
-serde = { version = "^1.0.131", default-features = false, features = ["derive"] }
+serde = { version = "^1.0.131", default-features = false, features = [
+  "derive",
+] }
 
-itertools = { version = "^0.10.3", default-features = false, features = ["use_std"] }
+itertools = { version = "^0.10.3", default-features = false, features = [
+  "use_std",
+] }
 
-chrono = { version = "^0.4.19", default-features = false, features = ["alloc", "std", "clock"] }
+chrono = { version = "^0.4.19", default-features = false, features = [
+  "alloc",
+  "std",
+  "clock",
+] }
