@@ -49,11 +49,16 @@ echo >&2
 echo "Checking formatting..." >&2
 cargo fmt --quiet --all -- --check
 
-echo "Testing debug..." >&2
-RUST_BACKTRACE=1 cargo run --quiet --jobs "$(nproc)"
+export RUST_BACKTRACE=1
 
-echo "Testing release..." >&2
-RUST_BACKTRACE=1 cargo run --quiet --jobs "$(nproc)" --release
+echo "Building & testing debug..." >&2
+# SEE: https://doc.rust-lang.org/cargo/commands/cargo-build.html#feature-selection
+cargo run --quiet --jobs "$(nproc)" --no-default-features
+
+echo "Building & testing release..." >&2
+cargo run --quiet --jobs "$(nproc)" --no-default-features --release
+
+unset RUST_BACKTRACE
 
 echo "Linting..." >&2
 # NOTE: We use all the lints available and make all warnings errors. And to keep

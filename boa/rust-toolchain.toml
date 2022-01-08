@@ -1,0 +1,19 @@
+# NOTE: We couldn't file a complete reference for `rust-toolchain.toml` and this
+# is the best we have.
+# SEE: https://rust-lang.github.io/rustup/overrides.html#the-toolchain-file
+
+# NOTE: This file seems to be the way to go for pinning down Rust tooling
+# versions and this tooling is separate from regular dependencies and seems to
+# be pinnable only via Rust channel/version.
+# SEE: https://stackoverflow.com/questions/70105096/how-to-use-rustup-to-install-use-a-specific-history-version-of-the-component-lik
+
+[toolchain]
+channel = "1.57.0"
+
+# SEE: https://rust-lang.github.io/rustup/concepts/components.html#components
+components = ["clippy", "rustfmt"]
+
+targets = ["x86_64-unknown-linux-gnu", "aarch64-linux-android", "x86_64-linux-android"]
+
+# SEE: https://rust-lang.github.io/rustup/concepts/profiles.html#profiles
+profile = "minimal"

@@ -65,13 +65,6 @@ USER lop:lop
 WORKDIR /home/lop
 ARG HOME=/home/lop
 
-RUN ${SET_SHELL_SAFE_OPTIONS}; \
-  echo Installing Rust dependencies...; \
-  rustup --quiet target add aarch64-linux-android; \
-  rustup --quiet target add x86_64-linux-android; \
-  rustup --quiet component add rustfmt; \
-  rustup --quiet component add clippy;
-
 # FIXME: Answer Stackoverflow questions after making sure everything works.
 # SEE: https://stackoverflow.com/questions/65262340/cmdline-tools-could-not-determine-sdk-root
 # SEE: https://stackoverflow.com/questions/17963508/how-to-install-android-sdk-build-tools-on-the-command-line
@@ -141,7 +134,10 @@ RUN ${SET_SHELL_SAFE_OPTIONS}; \
   # about to be committed. This is important for pre-commit checks and maybe
   # even useful for other usecases.
   git restore .; \
-  git clean -dx --force --quiet;
+  git clean -dx --force --quiet; \
+  # NOTE: This is mostly just to kick of installing all Rust tooling and project
+  # dependencies once and avoiding repeating this for each run/container.
+  (cd boa && cargo --quiet check --no-default-features --jobs "$(nproc)");
 
 # SEE: https://developer.android.com/studio/command-line/variables
 ENV ANDROID_SDK_ROOT ${ANDROID_SDK_ROOT}

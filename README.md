@@ -13,14 +13,6 @@ Milking the mincut-maxflow cow.
 
 ```bash
 curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf | sh
-rustup target add aarch64-linux-android
-rustup target add x86_64-linux-android
-rustup component add rustfmt
-rustup component add clippy
-
-mkdir -p ~/.local/share/bash-completion/completions
-rustup completions bash >> ~/.local/share/bash-completion/completions/rustup
-rustup completions bash cargo >> ~/.local/share/bash-completion/completions/cargo
 
 sudo apt install -qq --yes mpv >/dev/null
 
@@ -74,6 +66,17 @@ flutter doctor
 ```bash
 # NOTE: This is the core and includes all checks, builds, tests, etc...
 ./scripts/continuous-integration.sh
+```
+
+## BASH Completions
+
+```bash
+# NOTE: Make sure first to run continuous-integration/build once so that all
+# tools, for which BASH completions will be generated, have already been
+# installed.
+mkdir --parents ~/.local/share/bash-completion/completions
+rustup completions bash >> ~/.local/share/bash-completion/completions/rustup
+rustup completions bash cargo >> ~/.local/share/bash-completion/completions/cargo
 ```
 
 ## Using Podman/Docker

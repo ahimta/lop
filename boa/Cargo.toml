@@ -1,14 +1,18 @@
+# SEE: https://doc.rust-lang.org/cargo/reference/manifest.html
 [package]
 name = "boa"
 description = "Milking the mincut-maxflow cow."
 version = "0.1.0"
 repository = "https://github.com/ahimta/lop"
+# FIXME: Possibly move to latest (2021) and don't forget `rustfmt` snippets.
 edition = "2018"
 authors = ["Abdullah Alansari <ahimta@gmail.com>"]
 license = "GPLv3"
 readme = "../README.md"
 keywords = ["mincut", "maxflow", "sports"]
 categories = ["algorithms", "data-structures", "games", "mathematics", "simulation"]
+# NOTE: `rust-version` omitted deliberately to avoid duplication as it's already
+# in `rust-toolchain.toml`.
 
 [lib]
 # SEE: https://doc.rust-lang.org/reference/linkage.html
@@ -28,21 +32,23 @@ panic='abort'
 # SEE: https://doc.rust-lang.org/stable/cargo/reference/features.html#command-line-feature-options
 
 [dependencies]
-clippy = "0.0.302"
+# NOTE: We use caret/semver (caret `^`) version-specifier to show intention even
+# though it's the default.
+# SEE: https://doc.rust-lang.org/cargo/reference/specifying-dependencies.html#caret-requirements
 
 # NOTE: We disable default-features for `reqwest` primarily to avoid
 # `native-tls` feature would require `openssl` for Android which is feasible but
 # adds unnecessary complexity and so we use the `rustls-tls` feature which is
 # much easier to build.
 # SEE: https://docs.rs/reqwest/0.11.7/reqwest/#optional-features
-reqwest = { version = "0.11.7", default-features = false, features = ["blocking", "gzip", "brotli", "deflate", "rustls-tls"] }
+reqwest = { version = "^0.11.7", default-features = false, features = ["blocking", "gzip", "brotli", "deflate", "rustls-tls"] }
 
-serde_json = { version = "1.0.72", default-features = false }
+serde_json = { version = "^1.0.72", default-features = false }
 # NOTE: Must add the "derive" feature (which isn't included in official docs)
 # for the typed examples to work.
 # SEE: https://github.com/serde-rs/json/issues/728#issuecomment-725961686
-serde = { version = "1.0.131", default-features = false, features = ["derive"] }
+serde = { version = "^1.0.131", default-features = false, features = ["derive"] }
 
-itertools = "0.10.3"
+itertools = { version = "^0.10.3", default-features = false, features = ["use_std"] }
 
-chrono = "0.4.19"
+chrono = { version = "^0.4.19", default-features = false, features = ["alloc", "std", "clock"] }
