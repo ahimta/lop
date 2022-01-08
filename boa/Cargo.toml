@@ -45,8 +45,8 @@ panic = 'abort'
 # `native-tls` feature would require `openssl` for Android which is feasible but
 # adds unnecessary complexity and so we use the `rustls-tls` feature which is
 # much easier to build.
-# SEE: https://docs.rs/reqwest/0.11.7/reqwest/#optional-features
-reqwest = { version = "^0.11.7", default-features = false, features = [
+# SEE: https://docs.rs/reqwest/0.11.8/reqwest/#optional-features
+reqwest = { version = "^0.11.8", default-features = false, features = [
   "blocking",
   "gzip",
   "brotli",
@@ -54,20 +54,24 @@ reqwest = { version = "^0.11.7", default-features = false, features = [
   "rustls-tls",
 ] }
 
-serde_json = { version = "^1.0.72", default-features = false, features = [
+# SEE: https://docs.rs/serde_json/1.0.74
+serde_json = { version = "^1.0.74", default-features = false, features = [
   "std",
 ] }
 # NOTE: Must add the "derive" feature (which isn't included in official docs)
 # for the typed examples to work.
 # SEE: https://github.com/serde-rs/json/issues/728#issuecomment-725961686
-serde = { version = "^1.0.131", default-features = false, features = [
+# SEE: https://docs.rs/serde/1.0.133
+serde = { version = "^1.0.133", default-features = false, features = [
   "derive",
 ] }
 
+# SEE: https://docs.rs/itertools/0.10.3
 itertools = { version = "^0.10.3", default-features = false, features = [
   "use_std",
 ] }
 
+# SEE: https://docs.rs/chrono/0.4.19
 chrono = { version = "^0.4.19", default-features = false, features = [
   "alloc",
   "std",
