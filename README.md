@@ -65,7 +65,7 @@ flutter doctor
 
 ```bash
 # NOTE: This is the core and includes all checks, builds, tests, etc...
-./scripts/continuous-integration.sh
+RUN_IN_CONTAINER=0 ./scripts/continuous-integration.sh
 ```
 
 ## BASH Completions
@@ -82,11 +82,7 @@ rustup completions bash cargo >> ~/.local/share/bash-completion/completions/carg
 ## Using Podman/Docker
 
 ```bash
-# NOTE: This avoids the common occurrence of changing `Containerfile` and
-# forgetting to call build and Docker/Podman caching should only do
-# anything for build if `Containerfile` changes.
-(podman build --tag lop --file ./Containerfile . &&
-  podman run --rm lop); \
+RUN_IN_CONTAINER=1 ./scripts/continuous-integration.sh podman; \
   ./scripts/notify-user.sh
 ```
 

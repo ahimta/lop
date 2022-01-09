@@ -71,14 +71,12 @@ ARG HOME=/home/lop
 
 # NOTE: This is the latest version that seems to work with Rust.
 ARG ANDROID_BUILD_TOOLS=29.0.2
-# NOTE: API level `30` is for Android `11`/`R`.
-ARG ANDROID_COMPILE_SDK=30
 ARG ANDROID_SDK_ROOT=$HOME/Android/Sdk
 # SEE: https://developer.android.com/studio/index.html#downloads
 ARG ANDROID_SDK_TOOLS=7583922
 ARG ANDROID_SDK_TOOLS_CHECKSUM_SHA256=124f2d5115eee365df6cf3228ffbca6fc3911d16f8025bebd5b1c6e2fcfa7faf
-# NOTE: This is the latest version that seems to work with Rust.
-ARG NDK_VERSION=22.1.7171670
+ARG ANDROID_COMPILE_SDK_VERSION
+ARG ANDROID_NDK_VERSION
 
 RUN ${SET_SHELL_SAFE_OPTIONS}; \
   echo Installing Android SDK/NDK...; \
@@ -96,10 +94,10 @@ RUN ${SET_SHELL_SAFE_OPTIONS}; \
 ENV PATH "${PATH}:${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin"
 # SEE: https://developer.android.com/studio/command-line/sdkmanager
 RUN ${SET_SHELL_SAFE_OPTIONS}; \
-  echo y | sdkmanager "platforms;android-${ANDROID_COMPILE_SDK}" >/dev/null; \
+  echo y | sdkmanager "platforms;android-${ANDROID_COMPILE_SDK_VERSION}" >/dev/null; \
   echo y | sdkmanager "platform-tools" >/dev/null; \
   echo y | sdkmanager "build-tools;${ANDROID_BUILD_TOOLS}" >/dev/null; \
-  echo y | sdkmanager "ndk;${NDK_VERSION}" >/dev/null; \
+  echo y | sdkmanager "ndk;${ANDROID_NDK_VERSION}" >/dev/null; \
   echo y | sdkmanager --licenses >/dev/null;
 
 ARG FLUTTER=2.5.3
@@ -139,8 +137,12 @@ RUN ${SET_SHELL_SAFE_OPTIONS}; \
   # dependencies once and avoiding repeating this for each run/container.
   (cd boa && cargo --quiet check --no-default-features --jobs "$(nproc)");
 
+# NOTE: Only `ANDROID_SDK_ROOT` is an official Android environment-variables.
 # SEE: https://developer.android.com/studio/command-line/variables
 ENV ANDROID_SDK_ROOT ${ANDROID_SDK_ROOT}
+ENV ANDROID_NDK_VERSION ${ANDROID_NDK_VERSION}
+ENV ANDROID_COMPILE_SDK_VERSION ${ANDROID_COMPILE_SDK_VERSION}
+ENV RUN_IN_CONTAINER 0
 
 # NOTE: We use `ENTRYPOINT` instead of `CMD` deliberately as it doesn't use a
 # shell and doesn't allow using arbitrary commands that we probably don't

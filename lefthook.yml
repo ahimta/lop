@@ -4,5 +4,4 @@ pre-commit:
     continuous-integration:
       run: |
         trap ./scripts/notify-user.sh EXIT
-        podman build --tag lop --file ./Containerfile .
-        podman run --rm lop
+        RUN_IN_CONTAINER=1 ./scripts/continuous-integration.sh podman

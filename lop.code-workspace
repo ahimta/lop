@@ -18,6 +18,7 @@
       "dart-code.flutter",
       "editorconfig.editorconfig",
       "esbenp.prettier-vscode",
+      "mikestead.dotenv",
       "ms-azuretools.vscode-docker",
       "naco-siren.gradle-language",
       "rust-lang.rust",
@@ -42,7 +43,10 @@
           "kind": "test",
           "isDefault": true
         },
-        "options": { "cwd": "${workspaceFolder}" },
+        "options": {
+          "env": { "RUN_IN_CONTAINER": "0" },
+          "cwd": "${workspaceFolder}"
+        },
         "problemMatcher": ["$rustc"],
         "command": "./scripts/continuous-integration.sh"
       }

@@ -1,6 +1,8 @@
 # NOTE: Generated using `git status --ignored --porcelain=v1`.
 # NOTE: This files is important for fast copies to image as otherwise most time
 # would be wasted on generated files.
+*.env
+!public.env
 boa/target/
 clod/.dart_tool/
 clod/.idea/

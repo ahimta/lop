@@ -19,5 +19,4 @@ jobs:
         # NOTE: We use Docker instead of Podman here because there doesn't seem
         # to be a supported way to use Podman in GitHub Actions
         run: |
-          docker build --tag lop --file ./Containerfile .
-          docker run --rm lop
+          RUN_IN_CONTAINER=1 ./scripts/continuous-integration.sh docker

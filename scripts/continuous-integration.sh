@@ -9,6 +9,36 @@ set -o noglob
 set -o nounset
 set -o pipefail
 
+# NOTE: The `ANDROID_SDK_ROOT` must be defined and it's typically
+# `$HOME/Android/Sdk`. After adding it, you may have to close all VS Code
+# instances.
+ANDROID_SDK_ROOT="${ANDROID_SDK_ROOT:?"ANDROID_SDK_ROOT env. var. missing!"}"
+RUN_IN_CONTAINER="${RUN_IN_CONTAINER:?"RUN_IN_CONTAINER env. var. missing!"}"
+
+source ./public.env
+
+ANDROID_COMPILE_SDK_VERSION="${ANDROID_COMPILE_SDK_VERSION:?"ANDROID_COMPILE_SDK_VERSION env. var. missing!"}"
+ANDROID_NDK_VERSION="${ANDROID_NDK_VERSION:?"ANDROID_NDK_VERSION env. var. missing!"}"
+
+if [[ "${RUN_IN_CONTAINER}" = "1" ]]; then
+  CONTAINER_COMMAND="${1}"
+
+  # NOTE: This avoids the common occurrence of changing `Containerfile` and
+  # forgetting to call build and Docker/Podman caching should only do
+  # anything for build if `Containerfile` changes.
+  "${CONTAINER_COMMAND}" build \
+    --tag lop \
+    --build-arg ANDROID_COMPILE_SDK_VERSION="${ANDROID_COMPILE_SDK_VERSION}" \
+    --build-arg ANDROID_NDK_VERSION="${ANDROID_NDK_VERSION}" \
+    --file ./Containerfile .
+
+  # NOTE: The `exec` trick avoids the need for an additional wrapper script when
+  # using container.
+  exec "${CONTAINER_COMMAND}" run --rm lop
+fi
+
+# NOTE: Exit-trap and its related logic after container-check because it doesn't
+# work with an `exec`.
 ROOT_DIR="$(realpath "$(pwd)")"
 
 function on-exit-trap {
@@ -31,6 +61,7 @@ echo "Linting scripts..."
 # the offending line.
 # NOTE: We use `xargs` because `shellcheck` doesn't deal with directories.
 find ./scripts -type f -print0 | xargs --null shellcheck \
+  --external-sources \
   --check-sourced \
   --enable=all \
   --severity=style \
@@ -85,18 +116,11 @@ cargo clippy --quiet -- \
   -A clippy::redundant_pub_crate \
   -A clippy::multiple-crate-versions
 
-# NOTE: The `ANDROID_SDK_ROOT` must be defined and it's typically
-# `$HOME/Android/Sdk`. After adding it, you may have to close all VS Code
-# instances.
-
-# NOTE: We use `22.1.7171670` because it's the latest version that doesn't produce the `-lgcc` error.
-# NOTE: Suppressed error of undefined variable since this is an environment variable.
-# shellcheck disable=SC2154
-ANDROID_NDK_PATH="${ANDROID_SDK_ROOT}/ndk/22.1.7171670"
+ANDROID_NDK_PATH="${ANDROID_SDK_ROOT}/ndk/${ANDROID_NDK_VERSION}"
 ANDROID_AR="${ANDROID_NDK_PATH}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android-ar"
 
 echo "Building Android aarch64..." >&2
-AARCH64_COMPILER_AND_LINKER="${ANDROID_NDK_PATH}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android30-clang"
+AARCH64_COMPILER_AND_LINKER="${ANDROID_NDK_PATH}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android${ANDROID_COMPILE_SDK_VERSION}-clang"
 # SEE: https://github.com/rust-embedded/cross/blob/2f1ef07fdaf92ba31e6d6ce0ab4c5dca63ca0aa7/docker/Dockerfile.aarch64-linux-android#L26
 export CC_aarch64_linux_android="${AARCH64_COMPILER_AND_LINKER}"
 export CXX_aarch64_linux_android="${AARCH64_COMPILER_AND_LINKER}"
@@ -105,7 +129,7 @@ export CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER="${AARCH64_COMPILER_AND_LINKER}
 cargo build --quiet --target aarch64-linux-android --release
 
 echo "Building Android x86_64..." >&2
-X86_64_COMPILER_AND_LINKER="${ANDROID_NDK_PATH}/toolchains/llvm/prebuilt/linux-x86_64/bin/x86_64-linux-android30-clang"
+X86_64_COMPILER_AND_LINKER="${ANDROID_NDK_PATH}/toolchains/llvm/prebuilt/linux-x86_64/bin/x86_64-linux-android${ANDROID_COMPILE_SDK_VERSION}-clang"
 export CC_x86_64_linux_android="${X86_64_COMPILER_AND_LINKER}"
 export CXX_x86_64_linux_android="${X86_64_COMPILER_AND_LINKER}"
 export AR_x86_64_linux_android="${ANDROID_AR}"
