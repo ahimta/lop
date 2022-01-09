@@ -1,13 +1,6 @@
 #!/bin/bash
 
-# SEE: https://devdocs.io/bash/the-set-builtin#set
-# NOTE: `errexit` set first to catch errors with other `set`s.
-set -o errexit
-
-set -o noclobber
-set -o noglob
-set -o nounset
-set -o pipefail
+source ./scripts/_base.sh
 
 # NOTE: The `ANDROID_SDK_ROOT` must be defined and it's typically
 # `$HOME/Android/Sdk`. After adding it, you may have to close all VS Code
@@ -44,9 +37,10 @@ ROOT_DIR="$(realpath "$(pwd)")"
 function on-exit-trap {
   local EXIT_CODE="$?"
 
-  "${ROOT_DIR}/scripts/notify-user.sh"
+  cd "${ROOT_DIR}"
+  ./scripts/notify-user.sh
 
-  if test "${EXIT_CODE}" -eq "0"; then
+  if [[ "${EXIT_CODE}" = "0" ]]; then
     echo "============================SUCCEEDED============================" >&2
   else
     echo "=============================FAILED=============================" >&2
