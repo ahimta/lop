@@ -64,22 +64,18 @@ pub fn predict_tournament_eliminated_teams(
     tournament.matches_left,
   );
 
-  let matches_left_by_team: HashMap<Rc<TeamId>, usize> = (&tournament
+  let matches_left_by_team: HashMap<&Rc<TeamId>, usize> = (&tournament
     .matches_left)
     .iter()
-    .flat_map(|((node1, node2), matches_left)| {
-      vec![(node1, matches_left), (node2, matches_left)]
+    .flat_map(|((team_id1, team_id2), matches_left)| {
+      vec![(team_id1, matches_left), (team_id2, matches_left)]
     })
-    .fold(HashMap::new(), |mut map, (node, matches_left)| {
-      let existing_matches_left = match map.get(node) {
-        None => 0,
-        Some(&existing_value) => existing_value,
-      };
-
-      map.insert(Rc::clone(node), existing_matches_left + matches_left);
-
-      map
-    });
+    .into_group_map_by(|(team_id, _)| *team_id)
+    .into_iter()
+    .map(|(team_id, values)| {
+      (team_id, values.into_iter().fold(0, |acc, (_, v)| acc + v))
+    })
+    .collect();
 
   let source_node = FlowNode::new(Rc::new("s".to_string()));
   let sink_node = FlowNode::new(Rc::new("t".to_string()));
