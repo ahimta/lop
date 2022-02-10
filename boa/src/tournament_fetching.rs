@@ -99,30 +99,6 @@ fn process_tournament(
     })
     .collect();
 
-  // FIXME: Consider removing matches-lost as they're irrelevant.
-  let matches_lost: HashMap<&Rc<TeamId>, usize> = all_results
-    .iter()
-    .map(
-      |(
-        (first_team_id, first_team_score),
-        (second_team_id, second_team_score),
-      )| {
-        if first_team_score < second_team_score {
-          (first_team_id, 1)
-        } else if second_team_score < first_team_score {
-          (second_team_id, 1)
-        } else {
-          (second_team_id, 0)
-        }
-      },
-    )
-    .into_group_map_by(|(team_id, _)| *team_id)
-    .into_iter()
-    .map(|(team_id, values)| {
-      (team_id, values.into_iter().fold(0, |acc, (_, v)| acc + v))
-    })
-    .collect();
-
   let teams: HashMap<Rc<TeamId>, Rc<Team>> = all_results
     .iter()
     .flat_map(|((first_team_id, _), (second_team_id, _))| {
@@ -135,7 +111,6 @@ fn process_tournament(
         Rc::clone(team_id),
         Rc::new(Team {
           matches_won: matches_won[team_id],
-          matches_lost: matches_lost[team_id],
         }),
       )
     })
@@ -309,146 +284,26 @@ pub(super) fn test() {
     process_tournament(download_tournament(&IntegrationMode::UseForTest)),
     Tournament {
       teams: vec![
-        (
-          "Watford",
-          Team {
-            matches_won: 4,
-            matches_lost: 11,
-          },
-        ),
-        (
-          "Brentford",
-          Team {
-            matches_won: 5,
-            matches_lost: 6,
-          },
-        ),
-        (
-          "Chelsea",
-          Team {
-            matches_won: 11,
-            matches_lost: 2,
-          },
-        ),
-        (
-          "Norwich City",
-          Team {
-            matches_won: 2,
-            matches_lost: 11,
-          },
-        ),
-        (
-          "Tottenham Hotspur",
-          Team {
-            matches_won: 8,
-            matches_lost: 5,
-          },
-        ),
-        (
-          "Liverpool",
-          Team {
-            matches_won: 12,
-            matches_lost: 1,
-          },
-        ),
-        (
-          "Everton",
-          Team {
-            matches_won: 5,
-            matches_lost: 8,
-          },
-        ),
-        (
-          "Leicester City",
-          Team {
-            matches_won: 6,
-            matches_lost: 6,
-          },
-        ),
-        (
-          "Aston Villa",
-          Team {
-            matches_won: 7,
-            matches_lost: 9,
-          },
-        ),
-        (
-          "Brighton and Hove Albion",
-          Team {
-            matches_won: 4,
-            matches_lost: 4,
-          },
-        ),
-        (
-          "West Ham United",
-          Team {
-            matches_won: 8,
-            matches_lost: 5,
-          },
-        ),
-        (
-          "Manchester United",
-          Team {
-            matches_won: 8,
-            matches_lost: 5,
-          },
-        ),
-        (
-          "Burnley",
-          Team {
-            matches_won: 1,
-            matches_lost: 6,
-          },
-        ),
-        (
-          "Newcastle United",
-          Team {
-            matches_won: 1,
-            matches_lost: 10,
-          },
-        ),
-        (
-          "Wolverhampton Wanderers",
-          Team {
-            matches_won: 7,
-            matches_lost: 7,
-          },
-        ),
-        (
-          "Leeds United",
-          Team {
-            matches_won: 3,
-            matches_lost: 8,
-          },
-        ),
-        (
-          "Manchester City",
-          Team {
-            matches_won: 14,
-            matches_lost: 2,
-          },
-        ),
-        (
-          "Southampton",
-          Team {
-            matches_won: 3,
-            matches_lost: 6,
-          },
-        ),
-        (
-          "Arsenal",
-          Team {
-            matches_won: 10,
-            matches_lost: 6,
-          },
-        ),
-        (
-          "Crystal Palace",
-          Team {
-            matches_won: 4,
-            matches_lost: 5,
-          },
-        )
+        ("Watford", Team { matches_won: 4 }),
+        ("Brentford", Team { matches_won: 5 }),
+        ("Chelsea", Team { matches_won: 11 }),
+        ("Norwich City", Team { matches_won: 2 }),
+        ("Tottenham Hotspur", Team { matches_won: 8 }),
+        ("Liverpool", Team { matches_won: 12 }),
+        ("Everton", Team { matches_won: 5 }),
+        ("Leicester City", Team { matches_won: 6 }),
+        ("Aston Villa", Team { matches_won: 7 }),
+        ("Brighton and Hove Albion", Team { matches_won: 4 }),
+        ("West Ham United", Team { matches_won: 8 }),
+        ("Manchester United", Team { matches_won: 8 }),
+        ("Burnley", Team { matches_won: 1 }),
+        ("Newcastle United", Team { matches_won: 1 }),
+        ("Wolverhampton Wanderers", Team { matches_won: 7 }),
+        ("Leeds United", Team { matches_won: 3 }),
+        ("Manchester City", Team { matches_won: 14 }),
+        ("Southampton", Team { matches_won: 3 }),
+        ("Arsenal", Team { matches_won: 10 }),
+        ("Crystal Palace", Team { matches_won: 4 })
       ]
       .into_iter()
       .map(|(team_id, team)| (Rc::new(team_id.to_string()), Rc::new(team)))

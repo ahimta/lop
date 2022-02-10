@@ -20,10 +20,11 @@ pub struct Tournament {
   pub matches_left: HashMap<(Rc<TeamId>, Rc<TeamId>), usize>,
 }
 
+// NOTE: Using a struct instead of a regular `usize` for future extensibility
+// when the model can take into account other factors.
 #[derive(Eq, PartialEq, Debug)]
 pub struct Team {
   pub matches_won: usize,
-  pub matches_lost: usize,
 }
 
 /// # Panics
@@ -243,34 +244,10 @@ pub(super) fn test() {
     TestExample {
       tournament: Tournament {
         teams: vec![
-          (
-            "atlanta",
-            Team {
-              matches_won: 83,
-              matches_lost: 71,
-            },
-          ),
-          (
-            "philadelphia",
-            Team {
-              matches_won: 80,
-              matches_lost: 79,
-            },
-          ),
-          (
-            "new-york",
-            Team {
-              matches_won: 78,
-              matches_lost: 78,
-            },
-          ),
-          (
-            "montreal",
-            Team {
-              matches_won: 77,
-              matches_lost: 82,
-            },
-          ),
+          ("atlanta", Team { matches_won: 83 }),
+          ("philadelphia", Team { matches_won: 80 }),
+          ("new-york", Team { matches_won: 78 }),
+          ("montreal", Team { matches_won: 77 }),
         ]
         .into_iter()
         .map(|(team_id, team)| (Rc::new(team_id.to_string()), Rc::new(team)))
@@ -312,41 +289,11 @@ pub(super) fn test() {
     TestExample {
       tournament: Tournament {
         teams: vec![
-          (
-            "new-york",
-            Team {
-              matches_won: 75,
-              matches_lost: 59,
-            },
-          ),
-          (
-            "baltimore",
-            Team {
-              matches_won: 71,
-              matches_lost: 63,
-            },
-          ),
-          (
-            "boston",
-            Team {
-              matches_won: 69,
-              matches_lost: 66,
-            },
-          ),
-          (
-            "toronto",
-            Team {
-              matches_won: 63,
-              matches_lost: 72,
-            },
-          ),
-          (
-            "detroit",
-            Team {
-              matches_won: 49,
-              matches_lost: 86,
-            },
-          ),
+          ("new-york", Team { matches_won: 75 }),
+          ("baltimore", Team { matches_won: 71 }),
+          ("boston", Team { matches_won: 69 }),
+          ("toronto", Team { matches_won: 63 }),
+          ("detroit", Team { matches_won: 49 }),
         ]
         .into_iter()
         .map(|(team_id, team)| (Rc::new(team_id.to_string()), Rc::new(team)))
