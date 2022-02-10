@@ -76,29 +76,6 @@ fn process_tournament(
     })
     .collect();
 
-  // NOTE: We calculate matches-left using a clever trick that makes the code
-  // very simple and easily verifiable.
-  let matches_left: HashMap<(Rc<TeamId>, Rc<TeamId>), usize> = all_results
-    .iter()
-    .map(|((first_team_id, _), (second_team_id, _))| {
-      (
-        (
-          first_team_id.min(second_team_id),
-          first_team_id.max(second_team_id),
-        ),
-        1,
-      )
-    })
-    .counts_by(|(team_pair_id, _)| team_pair_id)
-    .iter()
-    .map(|((first_team_id, second_team_id), &matches_played)| {
-      (
-        (Rc::clone(first_team_id), Rc::clone(second_team_id)),
-        MATCHES_PER_TEAM_PAIR.checked_sub(matches_played).unwrap(),
-      )
-    })
-    .collect();
-
   let matches_won: HashMap<&Rc<TeamId>, usize> = all_results
     .iter()
     .map(
@@ -122,6 +99,7 @@ fn process_tournament(
     })
     .collect();
 
+  // FIXME: Consider removing matches-lost as they're irrelevant.
   let matches_lost: HashMap<&Rc<TeamId>, usize> = all_results
     .iter()
     .map(
@@ -159,6 +137,49 @@ fn process_tournament(
           matches_won: matches_won[team_id],
           matches_lost: matches_lost[team_id],
         }),
+      )
+    })
+    .collect();
+
+  let matches_played: HashMap<(&Rc<TeamId>, &Rc<TeamId>), usize> = all_results
+    .iter()
+    .map(|((first_team_id, _), (second_team_id, _))| {
+      (
+        (
+          first_team_id.min(second_team_id),
+          first_team_id.max(second_team_id),
+        ),
+        1,
+      )
+    })
+    .counts_by(|(team_pair_id, _)| team_pair_id)
+    .iter()
+    .map(|((first_team_id, second_team_id), &played)| {
+      ((*first_team_id, *second_team_id), played)
+    })
+    .collect();
+
+  let matches_left: HashMap<(Rc<TeamId>, Rc<TeamId>), usize> = teams
+    .iter()
+    .map(|(team_id, _)| team_id)
+    .combinations(2)
+    .map(|team_pair| (team_pair[0], team_pair[1]))
+    .map(|(first_team_id, second_team_id)| {
+      (
+        (
+          Rc::clone(first_team_id.min(second_team_id)),
+          Rc::clone(first_team_id.max(second_team_id)),
+        ),
+        MATCHES_PER_TEAM_PAIR
+          .checked_sub(
+            *matches_played
+              .get(&(
+                first_team_id.min(second_team_id),
+                first_team_id.max(second_team_id),
+              ))
+              .unwrap_or(&0),
+          )
+          .unwrap(),
       )
     })
     .collect();
@@ -602,6 +623,27 @@ pub(super) fn test() {
         (("Leicester City", "Manchester City"), 1),
         (("Liverpool", "Norwich City"), 1),
         (("Burnley", "Leicester City"), 1),
+        (("Brighton and Hove Albion", "Chelsea"), 2),
+        (("Aston Villa", "Burnley"), 2),
+        (("Crystal Palace", "Norwich City"), 2),
+        (("Brentford", "Manchester City"), 2),
+        (("Burnley", "Manchester United"), 2),
+        (("Burnley", "Watford"), 2),
+        (("Watford", "West Ham United"), 2),
+        (("Brentford", "Manchester United"), 2),
+        (("Leicester City", "Liverpool"), 2),
+        (("Burnley", "Tottenham Hotspur"), 2),
+        (("Leicester City", "Tottenham Hotspur"), 2),
+        (("Crystal Palace", "Watford"), 2),
+        (("Aston Villa", "Leeds United"), 2),
+        (("Brentford", "Southampton"), 2),
+        (("Brighton and Hove Albion", "Tottenham Hotspur"), 2),
+        (("Everton", "Newcastle United"), 2),
+        (("Brighton and Hove Albion", "Manchester United"), 2),
+        (("Arsenal", "Wolverhampton Wanderers"), 2),
+        (("Everton", "Leicester City"), 2),
+        (("Norwich City", "West Ham United"), 2),
+        (("Southampton", "Tottenham Hotspur"), 2),
       ]
       .into_iter()
       .map(|((first_team, second_team), matches_left)| (
