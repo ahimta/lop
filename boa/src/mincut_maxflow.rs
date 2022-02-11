@@ -7,7 +7,7 @@ use std::collections::BTreeMap;
 use std::collections::HashSet;
 use std::collections::VecDeque;
 use std::marker::PhantomData;
-use std::rc::Rc;
+use std::sync::Arc;
 
 use self::common::Flow;
 use self::common::FlowEdge;
@@ -15,7 +15,7 @@ use self::common::FlowNode;
 use self::residual_edge::ResidualEdge;
 use self::residual_graph::ResidualGraph;
 
-type EdgeTo = Rc<RefCell<BTreeMap<FlowNode, Rc<RefCell<ResidualEdge>>>>>;
+type EdgeTo = Arc<RefCell<BTreeMap<FlowNode, Arc<RefCell<ResidualEdge>>>>>;
 
 #[derive(Debug, Eq, PartialEq)]
 pub(super) struct MincutMaxflow {
@@ -49,7 +49,7 @@ pub(super) fn calculate_mincut_maxflow(
   ensure_feasibility(&graph, source_node, sink_node, current_max_flow);
   current_max_flow = get_excess(&graph, sink_node);
 
-  let edge_to: EdgeTo = Rc::new(RefCell::new(BTreeMap::new()));
+  let edge_to: EdgeTo = Arc::new(RefCell::new(BTreeMap::new()));
   let mut marked = HashSet::new();
   while has_augmenting_path(
     &graph,
@@ -59,11 +59,11 @@ pub(super) fn calculate_mincut_maxflow(
     &mut marked,
   ) {
     let bottlenick =
-      get_bottlenick(source_node, sink_node, Rc::clone(&edge_to));
+      get_bottlenick(source_node, sink_node, Arc::clone(&edge_to));
     current_max_flow = augment_flow(
       source_node,
       sink_node,
-      Rc::clone(&edge_to),
+      Arc::clone(&edge_to),
       bottlenick,
       current_max_flow,
     );
@@ -160,7 +160,7 @@ fn has_augmenting_path(
 
       edge_to
         .borrow_mut()
-        .insert(FlowNode::clone(&other), Rc::clone(edge));
+        .insert(FlowNode::clone(&other), Arc::clone(edge));
 
       marked.insert(FlowNode::clone(&other));
       queue.push_back(FlowNode::clone(&other));
@@ -187,7 +187,7 @@ impl SinkToSourceIterator {
 }
 
 impl Iterator for SinkToSourceIterator {
-  type Item = (FlowNode, Rc<RefCell<ResidualEdge>>);
+  type Item = (FlowNode, Arc<RefCell<ResidualEdge>>);
 
   fn next(&mut self) -> Option<Self::Item> {
     if self.current_node == self.source_node {
@@ -195,7 +195,7 @@ impl Iterator for SinkToSourceIterator {
     }
 
     let edge =
-      Rc::clone(self.edge_to.borrow().get(&self.current_node).unwrap());
+      Arc::clone(self.edge_to.borrow().get(&self.current_node).unwrap());
     let node = FlowNode::clone(&self.current_node);
     self.current_node =
       FlowNode::clone(edge.borrow().other(&self.current_node));
@@ -318,8 +318,8 @@ pub(super) fn test() {
       .into_iter()
       .map(|(from, to, capacity)| {
         FlowEdge::new(
-          FlowNode::new(Rc::new(from.to_string())),
-          FlowNode::new(Rc::new(to.to_string())),
+          FlowNode::new(Arc::new(from.to_string())),
+          FlowNode::new(Arc::new(to.to_string())),
           capacity,
         )
       })
@@ -328,7 +328,7 @@ pub(super) fn test() {
       expected_mincut_maxflow: MincutMaxflow {
         mincut: vec![source_node, "2", "3", "6"]
           .into_iter()
-          .map(|s| FlowNode::new(Rc::new(s.to_string())))
+          .map(|s| FlowNode::new(Arc::new(s.to_string())))
           .collect(),
         maxflow: Flow::Regular(28),
         source_full: false,
@@ -350,8 +350,8 @@ pub(super) fn test() {
       .into_iter()
       .map(|(from, to, capacity)| {
         FlowEdge::new(
-          FlowNode::new(Rc::new(from.to_string())),
-          FlowNode::new(Rc::new(to.to_string())),
+          FlowNode::new(Arc::new(from.to_string())),
+          FlowNode::new(Arc::new(to.to_string())),
           capacity,
         )
       })
@@ -360,7 +360,7 @@ pub(super) fn test() {
       expected_mincut_maxflow: MincutMaxflow {
         mincut: vec![source_node]
           .into_iter()
-          .map(|s| FlowNode::new(Rc::new(s.to_string())))
+          .map(|s| FlowNode::new(Arc::new(s.to_string())))
           .collect(),
         maxflow: Flow::Regular(15),
         source_full: true,
@@ -395,8 +395,8 @@ pub(super) fn test() {
       .into_iter()
       .map(|(from, to, capacity)| {
         FlowEdge::new(
-          FlowNode::new(Rc::new(from.to_string())),
-          FlowNode::new(Rc::new(to.to_string())),
+          FlowNode::new(Arc::new(from.to_string())),
+          FlowNode::new(Arc::new(to.to_string())),
           capacity,
         )
       })
@@ -405,7 +405,7 @@ pub(super) fn test() {
       expected_mincut_maxflow: MincutMaxflow {
         mincut: vec![source_node]
           .into_iter()
-          .map(|s| FlowNode::new(Rc::new(s.to_string())))
+          .map(|s| FlowNode::new(Arc::new(s.to_string())))
           .collect(),
         maxflow: Flow::Regular(5),
         source_full: true,
@@ -423,8 +423,8 @@ pub(super) fn test() {
       .into_iter()
       .map(|(from, to, capacity)| {
         FlowEdge::new(
-          FlowNode::new(Rc::new(from.to_string())),
-          FlowNode::new(Rc::new(to.to_string())),
+          FlowNode::new(Arc::new(from.to_string())),
+          FlowNode::new(Arc::new(to.to_string())),
           capacity,
         )
       })
@@ -433,7 +433,7 @@ pub(super) fn test() {
       expected_mincut_maxflow: MincutMaxflow {
         mincut: vec![source_node]
           .into_iter()
-          .map(|s| FlowNode::new(Rc::new(s.to_string())))
+          .map(|s| FlowNode::new(Arc::new(s.to_string())))
           .collect(),
         maxflow: Flow::Regular(200),
         source_full: true,
@@ -450,8 +450,8 @@ pub(super) fn test() {
     assert_eq!(
       calculate_mincut_maxflow(
         &edges,
-        &FlowNode::new(Rc::new(source_node.to_string())),
-        &FlowNode::new(Rc::new(sink_node.to_string()))
+        &FlowNode::new(Arc::new(source_node.to_string())),
+        &FlowNode::new(Arc::new(sink_node.to_string()))
       ),
       expected_mincut_maxflow
     );

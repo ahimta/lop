@@ -2,7 +2,7 @@ use std::cmp::Ordering;
 use std::hash::Hash;
 use std::marker::PhantomData;
 use std::ops;
-use std::rc::Rc;
+use std::sync::Arc;
 
 pub(super) fn ensure_valid_edge_nodes(from: &FlowNode, to: &FlowNode) {
   assert!(from != to, "Invalid edge nodes ({:?}, ({:?}).", from, to);
@@ -10,14 +10,14 @@ pub(super) fn ensure_valid_edge_nodes(from: &FlowNode, to: &FlowNode) {
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Ord, PartialOrd)]
 pub(crate) struct FlowNode {
-  pub(crate) id: Rc<String>,
+  pub(crate) id: Arc<String>,
   constructor_guard: PhantomData<()>,
 }
 
 const JOINED_WITH_TAG: &str = "-joined-with-";
 
 impl FlowNode {
-  pub(crate) fn new(id: Rc<String>) -> Self {
+  pub(crate) fn new(id: Arc<String>) -> Self {
     assert!(
       !id.contains(JOINED_WITH_TAG),
       "Only joined nodes can contain the joined-with tag value ({:?}, {:?}).",
@@ -30,7 +30,7 @@ impl FlowNode {
 
   pub(crate) fn join(&self, other: &Self) -> Self {
     let (Self { id: node1, .. }, Self { id: node2, .. }) = (self, other);
-    Self::internal_new(Rc::new(format!(
+    Self::internal_new(Arc::new(format!(
       "{}-{}-{}",
       node1.min(node2),
       JOINED_WITH_TAG,
@@ -38,7 +38,7 @@ impl FlowNode {
     )))
   }
 
-  fn internal_new(id: Rc<String>) -> Self {
+  fn internal_new(id: Arc<String>) -> Self {
     const NODE_ID_LENGTH_MIN: usize = 1;
     const NODE_ID_LENGTH_MAX: usize = 10 * 1000;
     assert!(

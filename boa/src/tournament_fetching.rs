@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::collections::HashSet;
-use std::rc::Rc;
 use std::string;
+use std::sync::Arc;
 
 use itertools::Itertools;
 
@@ -49,7 +49,7 @@ fn process_tournament(
     name: String,
   }
 
-  type MatchResult = ((Rc<TeamId>, f64), (Rc<TeamId>, f64));
+  type MatchResult = ((Arc<TeamId>, f64), (Arc<TeamId>, f64));
 
   const MATCHES_PER_TEAM_PAIR: usize = 2;
 
@@ -68,15 +68,15 @@ fn process_tournament(
             // FIXME: Make sure to handle cases where a team wins in
             // penalties. Luckily, the primary tournament we use right now
             // doesn't seem to have this case.
-            (Rc::new(first_team.team.name.clone()), first_team.score),
-            (Rc::new(second_team.team.name.clone()), second_team.score),
+            (Arc::new(first_team.team.name.clone()), first_team.score),
+            (Arc::new(second_team.team.name.clone()), second_team.score),
           )
         })
         .collect::<Vec<_>>()
     })
     .collect();
 
-  let matches_won: HashMap<&Rc<TeamId>, usize> = all_results
+  let matches_won: HashMap<&Arc<TeamId>, usize> = all_results
     .iter()
     .map(
       |(
@@ -99,42 +99,43 @@ fn process_tournament(
     })
     .collect();
 
-  let teams: HashMap<Rc<TeamId>, Rc<Team>> = all_results
+  let teams: HashMap<Arc<TeamId>, Arc<Team>> = all_results
     .iter()
     .flat_map(|((first_team_id, _), (second_team_id, _))| {
       vec![first_team_id, second_team_id]
     })
-    .collect::<HashSet<&Rc<TeamId>>>()
+    .collect::<HashSet<&Arc<TeamId>>>()
     .into_iter()
     .map(|team_id| {
       (
-        Rc::clone(team_id),
-        Rc::new(Team {
+        Arc::clone(team_id),
+        Arc::new(Team {
           matches_won: matches_won[team_id],
         }),
       )
     })
     .collect();
 
-  let matches_played: HashMap<(&Rc<TeamId>, &Rc<TeamId>), usize> = all_results
-    .iter()
-    .map(|((first_team_id, _), (second_team_id, _))| {
-      (
+  let matches_played: HashMap<(&Arc<TeamId>, &Arc<TeamId>), usize> =
+    all_results
+      .iter()
+      .map(|((first_team_id, _), (second_team_id, _))| {
         (
-          first_team_id.min(second_team_id),
-          first_team_id.max(second_team_id),
-        ),
-        1,
-      )
-    })
-    .counts_by(|(team_pair_id, _)| team_pair_id)
-    .iter()
-    .map(|((first_team_id, second_team_id), &played)| {
-      ((*first_team_id, *second_team_id), played)
-    })
-    .collect();
+          (
+            first_team_id.min(second_team_id),
+            first_team_id.max(second_team_id),
+          ),
+          1,
+        )
+      })
+      .counts_by(|(team_pair_id, _)| team_pair_id)
+      .iter()
+      .map(|((first_team_id, second_team_id), &played)| {
+        ((*first_team_id, *second_team_id), played)
+      })
+      .collect();
 
-  let matches_left: HashMap<(Rc<TeamId>, Rc<TeamId>), usize> = teams
+  let matches_left: HashMap<(Arc<TeamId>, Arc<TeamId>), usize> = teams
     .iter()
     .map(|(team_id, _)| team_id)
     .combinations(2)
@@ -142,8 +143,8 @@ fn process_tournament(
     .map(|(first_team_id, second_team_id)| {
       (
         (
-          Rc::clone(first_team_id.min(second_team_id)),
-          Rc::clone(first_team_id.max(second_team_id)),
+          Arc::clone(first_team_id.min(second_team_id)),
+          Arc::clone(first_team_id.max(second_team_id)),
         ),
         MATCHES_PER_TEAM_PAIR
           .checked_sub(
@@ -306,7 +307,7 @@ pub(super) fn test() {
         ("Crystal Palace", Team { matches_won: 4 })
       ]
       .into_iter()
-      .map(|(team_id, team)| (Rc::new(team_id.to_string()), Rc::new(team)))
+      .map(|(team_id, team)| (Arc::new(team_id.to_string()), Arc::new(team)))
       .collect(),
       matches_left: vec![
         (("Arsenal", "Leeds United"), 1),
@@ -503,8 +504,8 @@ pub(super) fn test() {
       .into_iter()
       .map(|((first_team, second_team), matches_left)| (
         (
-          Rc::new(first_team.to_string()),
-          Rc::new(second_team.to_string())
+          Arc::new(first_team.to_string()),
+          Arc::new(second_team.to_string())
         ),
         matches_left,
       ))

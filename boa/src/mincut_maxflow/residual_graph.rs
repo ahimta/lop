@@ -2,14 +2,14 @@ use std::cell::RefCell;
 use std::collections::BTreeMap;
 use std::collections::HashSet;
 use std::marker::PhantomData;
-use std::rc::Rc;
+use std::sync::Arc;
 
 use super::residual_edge::ResidualEdge;
 use super::FlowEdge;
 use super::FlowNode;
 
 pub(super) struct ResidualGraph {
-  adjacency_matrix: BTreeMap<FlowNode, Vec<Rc<RefCell<ResidualEdge>>>>,
+  adjacency_matrix: BTreeMap<FlowNode, Vec<Arc<RefCell<ResidualEdge>>>>,
   nodes: HashSet<FlowNode>,
   constructor_guard: PhantomData<()>,
 }
@@ -65,14 +65,14 @@ impl ResidualGraph {
     // use the same type.
     let mut adjacency_matrix: BTreeMap<
       FlowNode,
-      Vec<Rc<RefCell<ResidualEdge>>>,
+      Vec<Arc<RefCell<ResidualEdge>>>,
     > = BTreeMap::new();
     for node in &nodes {
       adjacency_matrix.insert(FlowNode::clone(node), Vec::new());
     }
 
     for edge in edges {
-      let shared_edge = Rc::new(RefCell::new(ResidualEdge::new(
+      let shared_edge = Arc::new(RefCell::new(ResidualEdge::new(
         FlowNode::clone(&edge.from),
         FlowNode::clone(&edge.to),
         edge.capacity,
@@ -80,11 +80,11 @@ impl ResidualGraph {
       adjacency_matrix
         .get_mut(&edge.from)
         .unwrap()
-        .push(Rc::clone(&shared_edge));
+        .push(Arc::clone(&shared_edge));
       adjacency_matrix
         .get_mut(&edge.to)
         .unwrap()
-        .push(Rc::clone(&shared_edge));
+        .push(Arc::clone(&shared_edge));
     }
 
     Self {
@@ -94,7 +94,7 @@ impl ResidualGraph {
     }
   }
 
-  pub(super) fn edges(&self, node: &FlowNode) -> &[Rc<RefCell<ResidualEdge>>] {
+  pub(super) fn edges(&self, node: &FlowNode) -> &[Arc<RefCell<ResidualEdge>>] {
     self.adjacency_matrix.get(node).unwrap()
   }
 

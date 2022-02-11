@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::collections::VecDeque;
-use std::rc::Rc;
+use std::sync::Arc;
 
 use itertools::Itertools;
 
@@ -12,12 +12,12 @@ use super::mincut_maxflow::common::FlowNode;
 use super::mincut_maxflow::MincutMaxflow;
 
 pub type TeamId = String;
-pub type EliminatedTeams = HashMap<Rc<TeamId>, HashSet<Rc<TeamId>>>;
+pub type EliminatedTeams = HashMap<Arc<TeamId>, HashSet<Arc<TeamId>>>;
 
 #[derive(Eq, PartialEq, Debug)]
 pub struct Tournament {
-  pub teams: HashMap<Rc<TeamId>, Rc<Team>>,
-  pub matches_left: HashMap<(Rc<TeamId>, Rc<TeamId>), usize>,
+  pub teams: HashMap<Arc<TeamId>, Arc<Team>>,
+  pub matches_left: HashMap<(Arc<TeamId>, Arc<TeamId>), usize>,
 }
 
 // NOTE: Using a struct instead of a regular `usize` for future extensibility
@@ -65,7 +65,7 @@ pub fn predict_tournament_eliminated_teams(
     tournament.matches_left,
   );
 
-  let matches_left_by_team: HashMap<&Rc<TeamId>, usize> = (&tournament
+  let matches_left_by_team: HashMap<&Arc<TeamId>, usize> = (&tournament
     .matches_left)
     .iter()
     .flat_map(|((team_id1, team_id2), matches_left)| {
@@ -78,8 +78,8 @@ pub fn predict_tournament_eliminated_teams(
     })
     .collect();
 
-  let source_node = FlowNode::new(Rc::new("s".to_string()));
-  let sink_node = FlowNode::new(Rc::new("t".to_string()));
+  let source_node = FlowNode::new(Arc::new("s".to_string()));
+  let sink_node = FlowNode::new(Arc::new("t".to_string()));
 
   let mincut_maxflow_results: HashMap<FlowNode, MincutMaxflow> = (&tournament
     .teams)
@@ -95,7 +95,7 @@ pub fn predict_tournament_eliminated_teams(
           candidate_team.matches_won > max_wins
         })
         .map(|(candidate_team_id, _)| {
-          FlowNode::new(Rc::clone(candidate_team_id))
+          FlowNode::new(Arc::clone(candidate_team_id))
         })
         .collect();
 
@@ -109,18 +109,18 @@ pub fn predict_tournament_eliminated_teams(
 
         let mincut = eliminating_teams_nodes.into_iter().collect();
         return (
-          FlowNode::new(Rc::clone(team_id)),
+          FlowNode::new(Arc::clone(team_id)),
           MincutMaxflow::fake(mincut),
         );
       }
 
-      let other_teams: HashMap<FlowNode, &Rc<Team>> = (&tournament.teams)
+      let other_teams: HashMap<FlowNode, &Arc<Team>> = (&tournament.teams)
         .iter()
         .filter(|(possible_other_team_id, _)| {
           *possible_other_team_id != team_id
         })
         .map(|(other_team_id, other_team)| {
-          (FlowNode::new(Rc::clone(other_team_id)), other_team)
+          (FlowNode::new(Arc::clone(other_team_id)), other_team)
         })
         .collect();
       let other_teams_nodes: Vec<&FlowNode> = (&other_teams)
@@ -145,10 +145,10 @@ pub fn predict_tournament_eliminated_teams(
             node1.join(node2),
             Flow::Regular(
               *(&tournament.matches_left)
-                .get(&(Rc::clone(id1), Rc::clone(id2)))
+                .get(&(Arc::clone(id1), Arc::clone(id2)))
                 .unwrap_or_else(|| {
                   (&tournament.matches_left)
-                    .get(&(Rc::clone(id2), Rc::clone(id1)))
+                    .get(&(Arc::clone(id2), Arc::clone(id1)))
                     .unwrap_or(&0)
                 }),
             ),
@@ -207,13 +207,13 @@ pub fn predict_tournament_eliminated_teams(
       let mincut_maxflow =
         calculate_mincut_maxflow(&edges, &source_node, &sink_node);
 
-      (FlowNode::new(Rc::clone(team_id)), mincut_maxflow)
+      (FlowNode::new(Arc::clone(team_id)), mincut_maxflow)
     })
     .collect();
 
   let all_teams_nodes: HashSet<FlowNode> = (&tournament.teams)
     .iter()
-    .map(|(id, _)| FlowNode::new(Rc::clone(id)))
+    .map(|(id, _)| FlowNode::new(Arc::clone(id)))
     .collect();
 
   let eliminated_teams: EliminatedTeams = mincut_maxflow_results
@@ -250,7 +250,7 @@ pub(super) fn test() {
           ("montreal", Team { matches_won: 77 }),
         ]
         .into_iter()
-        .map(|(team_id, team)| (Rc::new(team_id.to_string()), Rc::new(team)))
+        .map(|(team_id, team)| (Arc::new(team_id.to_string()), Arc::new(team)))
         .collect(),
         matches_left: vec![
           (("atlanta", "philadelphia"), 1),
@@ -261,7 +261,10 @@ pub(super) fn test() {
         .into_iter()
         .map(|((team_id1, team_id2), matches_left)| {
           (
-            (Rc::new(team_id1.to_string()), Rc::new(team_id2.to_string())),
+            (
+              Arc::new(team_id1.to_string()),
+              Arc::new(team_id2.to_string()),
+            ),
             matches_left,
           )
         })
@@ -269,17 +272,17 @@ pub(super) fn test() {
       },
       expected_eliminated_teams: vec![
         (
-          Rc::new("montreal".to_string()),
+          Arc::new("montreal".to_string()),
           vec!["atlanta".to_string()]
             .into_iter()
-            .map(Rc::new)
+            .map(Arc::new)
             .collect(),
         ),
         (
-          Rc::new("philadelphia".to_string()),
+          Arc::new("philadelphia".to_string()),
           vec!["atlanta", "new-york"]
             .into_iter()
-            .map(|team_id| Rc::new(team_id.to_string()))
+            .map(|team_id| Arc::new(team_id.to_string()))
             .collect(),
         ),
       ]
@@ -296,7 +299,7 @@ pub(super) fn test() {
           ("detroit", Team { matches_won: 49 }),
         ]
         .into_iter()
-        .map(|(team_id, team)| (Rc::new(team_id.to_string()), Rc::new(team)))
+        .map(|(team_id, team)| (Arc::new(team_id.to_string()), Arc::new(team)))
         .collect(),
         matches_left: vec![
           (("new-york", "baltimore"), 3),
@@ -312,21 +315,24 @@ pub(super) fn test() {
         .into_iter()
         .map(|((team_id1, team_id2), matches_left)| {
           (
-            (Rc::new(team_id1.to_string()), Rc::new(team_id2.to_string())),
+            (
+              Arc::new(team_id1.to_string()),
+              Arc::new(team_id2.to_string()),
+            ),
             matches_left,
           )
         })
         .collect(),
       },
       expected_eliminated_teams: vec![(
-        Rc::new("detroit".to_string()),
+        Arc::new("detroit".to_string()),
         vec![
           "baltimore".to_string(),
           "boston".to_string(),
           "new-york".to_string(),
         ]
         .into_iter()
-        .map(Rc::new)
+        .map(Arc::new)
         .collect(),
       )]
       .into_iter()
