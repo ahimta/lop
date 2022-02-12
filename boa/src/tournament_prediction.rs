@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 use std::collections::HashSet;
-use std::collections::VecDeque;
 use std::sync::Arc;
 
 use itertools::Itertools;
@@ -9,10 +8,15 @@ use super::mincut_maxflow::calculate_mincut_maxflow;
 use super::mincut_maxflow::common::Flow;
 use super::mincut_maxflow::common::FlowEdge;
 use super::mincut_maxflow::common::FlowNode;
-use super::mincut_maxflow::MincutMaxflow;
 
 pub type TeamId = String;
-pub type EliminatedTeams = HashMap<Arc<TeamId>, HashSet<Arc<TeamId>>>;
+pub type EliminatedTeams = HashMap<Arc<TeamId>, Prediction>;
+
+#[derive(Eq, PartialEq, Debug)]
+pub struct Prediction {
+  pub eliminated_trivially: bool,
+  pub eliminating_teams: HashSet<Arc<TeamId>>,
+}
 
 #[derive(Eq, PartialEq, Debug)]
 pub struct Tournament {
@@ -81,37 +85,38 @@ pub fn predict_tournament_eliminated_teams(
   let source_node = FlowNode::new(Arc::new("s".to_string()));
   let sink_node = FlowNode::new(Arc::new("t".to_string()));
 
-  let mincut_maxflow_results: HashMap<FlowNode, MincutMaxflow> = (&tournament
-    .teams)
+  let all_teams_nodes: HashSet<FlowNode> = (&tournament.teams)
     .iter()
-    .map(|(team_id, team)| -> (FlowNode, MincutMaxflow) {
-      let possible_eliminating_teams_nodes: VecDeque<FlowNode> = (&tournament
-        .teams)
-        .iter()
-        .filter(|(candidate_team_id, _)| *candidate_team_id != team_id)
-        .filter(|(_, candidate_team)| {
-          let max_wins =
-            team.matches_won + matches_left_by_team.get(team_id).unwrap_or(&0);
-          candidate_team.matches_won > max_wins
-        })
-        .map(|(candidate_team_id, _)| {
-          FlowNode::new(Arc::clone(candidate_team_id))
-        })
-        .collect();
+    .map(|(id, _)| FlowNode::new(Arc::clone(id)))
+    .collect();
+
+  let eliminated_teams: EliminatedTeams = (&tournament.teams)
+    .iter()
+    .filter_map(|(team_id, team)| -> Option<(Arc<TeamId>, Prediction)> {
+      let possible_eliminating_teams_nodes: HashSet<Arc<TeamId>> =
+        (&tournament.teams)
+          .iter()
+          .filter(|(candidate_team_id, _)| *candidate_team_id != team_id)
+          .filter(|(_, candidate_team)| {
+            let max_wins = team.matches_won
+              + matches_left_by_team.get(team_id).unwrap_or(&0);
+            candidate_team.matches_won > max_wins
+          })
+          .map(|(candidate_team_id, _)| Arc::clone(candidate_team_id))
+          .collect();
 
       // NOTE: Can't remember why this special-case exists. It's probably for
       // one of the following reasons:
       // 1. The mincut-maxflow algorithm/implementation can't handle it.
       // 2. Even more special-handling has to be done otherwise.
       if !possible_eliminating_teams_nodes.is_empty() {
-        let mut eliminating_teams_nodes = possible_eliminating_teams_nodes;
-        eliminating_teams_nodes.push_front(FlowNode::clone(&source_node));
-
-        let mincut = eliminating_teams_nodes.into_iter().collect();
-        return (
-          FlowNode::new(Arc::clone(team_id)),
-          MincutMaxflow::fake(mincut),
-        );
+        return Some((
+          Arc::clone(team_id),
+          Prediction {
+            eliminated_trivially: true,
+            eliminating_teams: possible_eliminating_teams_nodes,
+          },
+        ));
       }
 
       let other_teams: HashMap<FlowNode, &Arc<Team>> = (&tournament.teams)
@@ -207,26 +212,24 @@ pub fn predict_tournament_eliminated_teams(
       let mincut_maxflow =
         calculate_mincut_maxflow(&edges, &source_node, &sink_node);
 
-      (FlowNode::new(Arc::clone(team_id)), mincut_maxflow)
-    })
-    .collect();
+      if mincut_maxflow.source_full {
+        return None;
+      }
 
-  let all_teams_nodes: HashSet<FlowNode> = (&tournament.teams)
-    .iter()
-    .map(|(id, _)| FlowNode::new(Arc::clone(id)))
-    .collect();
-
-  let eliminated_teams: EliminatedTeams = mincut_maxflow_results
-    .into_iter()
-    .filter(|(_, MincutMaxflow { source_full, .. })| !source_full)
-    .map(|(team_node, MincutMaxflow { mincut, .. })| {
-      let eliminating_teams = mincut
+      let eliminating_teams = mincut_maxflow
+        .mincut
         .into_iter()
         .filter(|node| all_teams_nodes.contains(node))
         .map(|node| node.id)
         .collect();
 
-      (team_node.id, eliminating_teams)
+      Some((
+        Arc::clone(team_id),
+        Prediction {
+          eliminated_trivially: false,
+          eliminating_teams,
+        },
+      ))
     })
     .collect();
 
@@ -273,17 +276,23 @@ pub(super) fn test() {
       expected_eliminated_teams: vec![
         (
           Arc::new("montreal".to_string()),
-          vec!["atlanta".to_string()]
-            .into_iter()
-            .map(Arc::new)
-            .collect(),
+          Prediction {
+            eliminated_trivially: true,
+            eliminating_teams: vec!["atlanta"]
+              .into_iter()
+              .map(|team_id| Arc::new(team_id.to_string()))
+              .collect(),
+          },
         ),
         (
           Arc::new("philadelphia".to_string()),
-          vec!["atlanta", "new-york"]
-            .into_iter()
-            .map(|team_id| Arc::new(team_id.to_string()))
-            .collect(),
+          Prediction {
+            eliminated_trivially: false,
+            eliminating_teams: vec!["atlanta", "new-york"]
+              .into_iter()
+              .map(|team_id| Arc::new(team_id.to_string()))
+              .collect(),
+          },
         ),
       ]
       .into_iter()
@@ -326,14 +335,13 @@ pub(super) fn test() {
       },
       expected_eliminated_teams: vec![(
         Arc::new("detroit".to_string()),
-        vec![
-          "baltimore".to_string(),
-          "boston".to_string(),
-          "new-york".to_string(),
-        ]
-        .into_iter()
-        .map(Arc::new)
-        .collect(),
+        Prediction {
+          eliminated_trivially: true,
+          eliminating_teams: vec!["baltimore", "boston", "new-york"]
+            .into_iter()
+            .map(|team_id| Arc::new(team_id.to_string()))
+            .collect(),
+        },
       )]
       .into_iter()
       .collect(),

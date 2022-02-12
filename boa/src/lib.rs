@@ -50,9 +50,12 @@ pub extern "C" fn predict_tournament_eliminated_teams_native(
       .iter()
       .map(|(id, eliminating_teams_ids)| EliminatedTeamNative {
         id: CString::new(String::clone(id)).unwrap().into_raw(),
-        eliminating_teams_ids_count: eliminating_teams_ids.len() as u64,
+        eliminating_teams_ids_count: eliminating_teams_ids
+          .eliminating_teams
+          .len() as u64,
         eliminating_teams_ids: Box::into_raw(
           eliminating_teams_ids
+            .eliminating_teams
             .iter()
             .map(|s| CString::new(String::clone(s)).unwrap().into_raw())
             .collect::<Vec<_>>()

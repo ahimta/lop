@@ -25,19 +25,6 @@ pub(super) struct MincutMaxflow {
   constructor_guard: PhantomData<()>,
 }
 
-impl MincutMaxflow {
-  pub(super) const fn fake(
-    domain_acceptable_mincut: HashSet<FlowNode>,
-  ) -> Self {
-    Self {
-      mincut: domain_acceptable_mincut,
-      maxflow: Flow::Regular(0),
-      source_full: false,
-      constructor_guard: PhantomData,
-    }
-  }
-}
-
 pub(super) fn calculate_mincut_maxflow(
   edges: &[FlowEdge],
   source_node: &FlowNode,
