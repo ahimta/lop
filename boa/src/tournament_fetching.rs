@@ -9,6 +9,9 @@ use super::tournament_prediction::Team;
 use super::tournament_prediction::TeamId;
 use super::tournament_prediction::Tournament;
 
+const WIN_FACTOR: usize = 3;
+const DRAW_FACTOR: usize = 1;
+
 enum IntegrationMode {
   #[allow(dead_code)]
   GenerateForTest,
@@ -64,6 +67,10 @@ fn process_tournament(
         .map(|ContentItem { teams, .. }| {
           let (first_team, second_team) = &teams;
 
+          // FIXME: Make sure scores aren't fractional and convert them to
+          // `usize` to avoid landmines (some already happened but not
+          // committed).
+
           (
             // FIXME: Make sure to handle cases where a team wins in
             // penalties. Luckily, the primary tournament we use right now
@@ -99,6 +106,27 @@ fn process_tournament(
     })
     .collect();
 
+  let matches_drawn: HashMap<&Arc<TeamId>, usize> = all_results
+    .iter()
+    .map(
+      |(
+        (first_team_id, first_team_score),
+        (second_team_id, second_team_score),
+      )| {
+        if (first_team_score - second_team_score).abs() < 0.01 {
+          (first_team_id, 1)
+        } else {
+          (second_team_id, 0)
+        }
+      },
+    )
+    .into_group_map_by(|(team_id, _)| *team_id)
+    .into_iter()
+    .map(|(team_id, values)| {
+      (team_id, values.into_iter().fold(0, |acc, (_, v)| acc + v))
+    })
+    .collect();
+
   let teams: HashMap<Arc<TeamId>, Arc<Team>> = all_results
     .iter()
     .flat_map(|((first_team_id, _), (second_team_id, _))| {
@@ -112,7 +140,8 @@ fn process_tournament(
         Arc::new(Team {
           // FIXME: Make sure there's a test to cover this (e.g: using all
           // tournament states).
-          matches_won: *matches_won.get(team_id).unwrap_or(&0),
+          matches_won: WIN_FACTOR * *matches_won.get(team_id).unwrap_or(&0)
+            + DRAW_FACTOR * *matches_drawn.get(team_id).unwrap_or(&0),
         }),
       )
     })
@@ -148,16 +177,17 @@ fn process_tournament(
           Arc::clone(first_team_id.min(second_team_id)),
           Arc::clone(first_team_id.max(second_team_id)),
         ),
-        MATCHES_PER_TEAM_PAIR
-          .checked_sub(
-            *matches_played
-              .get(&(
-                first_team_id.min(second_team_id),
-                first_team_id.max(second_team_id),
-              ))
-              .unwrap_or(&0),
-          )
-          .unwrap(),
+        WIN_FACTOR
+          * MATCHES_PER_TEAM_PAIR
+            .checked_sub(
+              *matches_played
+                .get(&(
+                  first_team_id.min(second_team_id),
+                  first_team_id.max(second_team_id),
+                ))
+                .unwrap_or(&0),
+            )
+            .unwrap(),
       )
     })
     .collect();
@@ -281,227 +311,372 @@ fn download_tournament(integration_mode: &IntegrationMode) -> Vec<String> {
   tournament_results_pages_json_non_parsed
 }
 
-#[allow(clippy::too_many_lines)]
+#[allow(clippy::too_many_lines, clippy::identity_op)]
 pub(super) fn test() {
   assert_eq!(
     process_tournament(download_tournament(&IntegrationMode::UseForTest)),
     Tournament {
       teams: vec![
-        ("Watford", Team { matches_won: 4 }),
-        ("Brentford", Team { matches_won: 5 }),
-        ("Chelsea", Team { matches_won: 11 }),
-        ("Norwich City", Team { matches_won: 2 }),
-        ("Tottenham Hotspur", Team { matches_won: 8 }),
-        ("Liverpool", Team { matches_won: 12 }),
-        ("Everton", Team { matches_won: 5 }),
-        ("Leicester City", Team { matches_won: 6 }),
-        ("Aston Villa", Team { matches_won: 7 }),
-        ("Brighton and Hove Albion", Team { matches_won: 4 }),
-        ("West Ham United", Team { matches_won: 8 }),
-        ("Manchester United", Team { matches_won: 8 }),
-        ("Burnley", Team { matches_won: 1 }),
-        ("Newcastle United", Team { matches_won: 1 }),
-        ("Wolverhampton Wanderers", Team { matches_won: 7 }),
-        ("Leeds United", Team { matches_won: 3 }),
-        ("Manchester City", Team { matches_won: 14 }),
-        ("Southampton", Team { matches_won: 3 }),
-        ("Arsenal", Team { matches_won: 10 }),
-        ("Crystal Palace", Team { matches_won: 4 })
+        (
+          "Watford",
+          Team {
+            matches_won: WIN_FACTOR * 4 + DRAW_FACTOR * 1
+          }
+        ),
+        (
+          "Brentford",
+          Team {
+            matches_won: WIN_FACTOR * 5 + DRAW_FACTOR * 1
+          }
+        ),
+        (
+          "Chelsea",
+          Team {
+            matches_won: WIN_FACTOR * 11 + DRAW_FACTOR * 3
+          }
+        ),
+        (
+          "Norwich City",
+          Team {
+            matches_won: WIN_FACTOR * 2 + DRAW_FACTOR * 2
+          }
+        ),
+        (
+          "Tottenham Hotspur",
+          Team {
+            matches_won: WIN_FACTOR * 8 + DRAW_FACTOR * 1
+          }
+        ),
+        (
+          "Liverpool",
+          Team {
+            matches_won: WIN_FACTOR * 12 + DRAW_FACTOR * 3
+          }
+        ),
+        (
+          "Everton",
+          Team {
+            matches_won: WIN_FACTOR * 5 + DRAW_FACTOR * 1
+          }
+        ),
+        (
+          "Leicester City",
+          Team {
+            matches_won: WIN_FACTOR * 6 + DRAW_FACTOR * 1
+          }
+        ),
+        (
+          "Aston Villa",
+          Team {
+            matches_won: WIN_FACTOR * 7 + DRAW_FACTOR * 1
+          }
+        ),
+        (
+          "Brighton and Hove Albion",
+          Team {
+            matches_won: WIN_FACTOR * 4 + DRAW_FACTOR * 3
+          }
+        ),
+        (
+          "West Ham United",
+          Team {
+            matches_won: WIN_FACTOR * 8 + DRAW_FACTOR * 2
+          }
+        ),
+        (
+          "Manchester United",
+          Team {
+            matches_won: WIN_FACTOR * 8 + DRAW_FACTOR * 1
+          }
+        ),
+        (
+          "Burnley",
+          Team {
+            matches_won: WIN_FACTOR * 1 + DRAW_FACTOR * 4
+          }
+        ),
+        (
+          "Newcastle United",
+          Team {
+            matches_won: WIN_FACTOR * 1 + DRAW_FACTOR * 4
+          }
+        ),
+        (
+          "Wolverhampton Wanderers",
+          Team {
+            matches_won: WIN_FACTOR * 7 + DRAW_FACTOR * 2
+          }
+        ),
+        (
+          "Leeds United",
+          Team {
+            matches_won: WIN_FACTOR * 3 + DRAW_FACTOR * 4
+          }
+        ),
+        (
+          "Manchester City",
+          Team {
+            matches_won: WIN_FACTOR * 14 + DRAW_FACTOR * 1
+          }
+        ),
+        (
+          "Southampton",
+          Team {
+            matches_won: WIN_FACTOR * 3 + DRAW_FACTOR * 5
+          }
+        ),
+        (
+          "Arsenal",
+          Team {
+            matches_won: WIN_FACTOR * 10 + DRAW_FACTOR * 1
+          }
+        ),
+        (
+          "Crystal Palace",
+          Team {
+            matches_won: WIN_FACTOR * 4 + DRAW_FACTOR * 5
+          }
+        )
       ]
       .into_iter()
       .map(|(team_id, team)| (Arc::new(team_id.to_string()), Arc::new(team)))
       .collect(),
       matches_left: vec![
-        (("Arsenal", "Leeds United"), 1),
-        (("Brentford", "Burnley"), 1),
-        (("Arsenal", "Manchester United"), 1),
-        (("Liverpool", "Newcastle United"), 1),
-        (("Manchester City", "Tottenham Hotspur"), 1),
-        (("Manchester United", "Newcastle United"), 1),
-        (("Newcastle United", "Watford"), 1),
-        (("Brentford", "Everton"), 1),
-        (("Leicester City", "Southampton"), 1),
-        (("Arsenal", "Crystal Palace"), 1),
-        (("Leeds United", "Wolverhampton Wanderers"), 1),
-        (("Chelsea", "Tottenham Hotspur"), 1),
-        (("Newcastle United", "Norwich City"), 1),
-        (("Liverpool", "Wolverhampton Wanderers"), 1),
-        (("Brighton and Hove Albion", "Leicester City"), 1),
-        (("Tottenham Hotspur", "West Ham United"), 1),
-        (("Crystal Palace", "Liverpool"), 1),
-        (("Newcastle United", "Tottenham Hotspur"), 1),
-        (("Liverpool", "Manchester City"), 1),
-        (("Liverpool", "Watford"), 1),
-        (("Aston Villa", "Leicester City"), 1),
-        (("Brighton and Hove Albion", "Burnley"), 1),
-        (("Newcastle United", "Wolverhampton Wanderers"), 1),
-        (("Chelsea", "Liverpool"), 1),
-        (("Leicester City", "Manchester United"), 1),
-        (("Tottenham Hotspur", "Watford"), 1),
-        (("Manchester United", "Tottenham Hotspur"), 1),
-        (("Everton", "Norwich City"), 1),
-        (("Chelsea", "Wolverhampton Wanderers"), 1),
-        (("Chelsea", "West Ham United"), 1),
-        (("Brentford", "Leicester City"), 1),
-        (("Brentford", "Crystal Palace"), 1),
-        (("Aston Villa", "Brentford"), 1),
-        (("Brentford", "Leeds United"), 1),
-        (("Arsenal", "Southampton"), 1),
-        (("Aston Villa", "Watford"), 1),
-        (("Burnley", "Liverpool"), 1),
-        (("Brighton and Hove Albion", "Liverpool"), 1),
-        (("Brentford", "Tottenham Hotspur"), 1),
-        (("Aston Villa", "Wolverhampton Wanderers"), 1),
-        (("Brentford", "Watford"), 1),
-        (("Norwich City", "Watford"), 1),
-        (("Crystal Palace", "Manchester City"), 1),
-        (("Brighton and Hove Albion", "West Ham United"), 1),
-        (("Everton", "Leeds United"), 1),
-        (("Leeds United", "Watford"), 1),
-        (("Everton", "Manchester City"), 1),
-        (("Aston Villa", "Newcastle United"), 1),
-        (("Chelsea", "Manchester United"), 1),
-        (("Burnley", "Manchester City"), 1),
-        (("Leeds United", "West Ham United"), 1),
-        (("Crystal Palace", "Newcastle United"), 1),
-        (("Manchester United", "Southampton"), 1),
-        (("Crystal Palace", "Everton"), 1),
-        (("Brighton and Hove Albion", "Norwich City"), 1),
-        (("Manchester United", "Wolverhampton Wanderers"), 1),
-        (("Aston Villa", "Chelsea"), 1),
-        (("Manchester City", "Southampton"), 1),
-        (("Chelsea", "Leeds United"), 1),
-        (("Leicester City", "Wolverhampton Wanderers"), 1),
-        (("Brentford", "Chelsea"), 1),
-        (("Aston Villa", "Manchester United"), 1),
-        (("Southampton", "Watford"), 1),
-        (("Burnley", "Leeds United"), 1),
-        (("Leeds United", "Southampton"), 1),
-        (("Crystal Palace", "West Ham United"), 1),
-        (("Aston Villa", "Crystal Palace"), 1),
-        (("Aston Villa", "West Ham United"), 1),
-        (("Brighton and Hove Albion", "Everton"), 1),
-        (("Arsenal", "Norwich City"), 1),
-        (("Brentford", "Liverpool"), 1),
-        (("Everton", "Liverpool"), 1),
-        (("Arsenal", "Brentford"), 1),
-        (("Aston Villa", "Liverpool"), 1),
-        (("Aston Villa", "Brighton and Hove Albion"), 1),
-        (("Chelsea", "Norwich City"), 1),
-        (("Brighton and Hove Albion", "Southampton"), 1),
-        (("Aston Villa", "Norwich City"), 1),
-        (("Tottenham Hotspur", "Wolverhampton Wanderers"), 1),
-        (("Burnley", "Wolverhampton Wanderers"), 1),
-        (("Brentford", "Wolverhampton Wanderers"), 1),
-        (("Aston Villa", "Everton"), 1),
-        (("Everton", "Manchester United"), 1),
-        (("Brentford", "Newcastle United"), 1),
-        (("Liverpool", "Manchester United"), 1),
-        (("Brighton and Hove Albion", "Newcastle United"), 1),
-        (("Burnley", "Southampton"), 1),
-        (("Leeds United", "Tottenham Hotspur"), 1),
-        (("Everton", "Southampton"), 1),
-        (("Aston Villa", "Manchester City"), 1),
-        (("Chelsea", "Everton"), 1),
-        (("Arsenal", "Aston Villa"), 1),
-        (("Burnley", "Newcastle United"), 1),
-        (("Arsenal", "Liverpool"), 1),
-        (("Burnley", "West Ham United"), 1),
-        (("Leeds United", "Norwich City"), 1),
-        (("Leicester City", "West Ham United"), 1),
-        (("Aston Villa", "Tottenham Hotspur"), 1),
-        (("Chelsea", "Crystal Palace"), 1),
-        (("Chelsea", "Leicester City"), 1),
-        (("Burnley", "Norwich City"), 1),
-        (("Leeds United", "Liverpool"), 1),
-        (("Chelsea", "Newcastle United"), 1),
-        (("Leeds United", "Leicester City"), 1),
-        (("Arsenal", "Burnley"), 1),
-        (("Manchester United", "Norwich City"), 1),
-        (("Arsenal", "West Ham United"), 1),
-        (("Crystal Palace", "Tottenham Hotspur"), 1),
-        (("Burnley", "Chelsea"), 1),
-        (("Norwich City", "Wolverhampton Wanderers"), 1),
-        (("Brighton and Hove Albion", "Leeds United"), 1),
-        (("Arsenal", "Tottenham Hotspur"), 1),
-        (("Brentford", "West Ham United"), 1),
-        (("Manchester City", "Manchester United"), 1),
-        (("West Ham United", "Wolverhampton Wanderers"), 1),
-        (("Manchester City", "Norwich City"), 1),
-        (("Everton", "Watford"), 1),
-        (("Norwich City", "Tottenham Hotspur"), 1),
-        (("Everton", "Wolverhampton Wanderers"), 1),
-        (("Arsenal", "Newcastle United"), 1),
-        (("Arsenal", "Watford"), 1),
-        (("Leeds United", "Newcastle United"), 1),
-        (("Crystal Palace", "Southampton"), 1),
-        (("Crystal Palace", "Manchester United"), 1),
-        (("Brighton and Hove Albion", "Manchester City"), 1),
-        (("Crystal Palace", "Leeds United"), 1),
-        (("Liverpool", "Southampton"), 1),
-        (("Brighton and Hove Albion", "Wolverhampton Wanderers"), 1),
-        (("Manchester City", "West Ham United"), 1),
-        (("Brentford", "Norwich City"), 1),
-        (("Leeds United", "Manchester United"), 1),
-        (("Southampton", "Wolverhampton Wanderers"), 1),
-        (("Brighton and Hove Albion", "Crystal Palace"), 1),
-        (("Manchester City", "Watford"), 1),
-        (("Leicester City", "Newcastle United"), 1),
-        (("Newcastle United", "Southampton"), 1),
-        (("Manchester City", "Newcastle United"), 1),
-        (("Norwich City", "Southampton"), 1),
-        (("Burnley", "Everton"), 1),
-        (("Crystal Palace", "Wolverhampton Wanderers"), 1),
-        (("Chelsea", "Southampton"), 1),
-        (("Arsenal", "Brighton and Hove Albion"), 1),
-        (("Chelsea", "Manchester City"), 1),
-        (("Brentford", "Brighton and Hove Albion"), 1),
-        (("Watford", "Wolverhampton Wanderers"), 1),
-        (("Leeds United", "Manchester City"), 1),
-        (("Arsenal", "Leicester City"), 1),
-        (("Arsenal", "Everton"), 1),
-        (("Burnley", "Crystal Palace"), 1),
-        (("Southampton", "West Ham United"), 1),
-        (("Liverpool", "Tottenham Hotspur"), 1),
-        (("Newcastle United", "West Ham United"), 1),
-        (("Arsenal", "Manchester City"), 1),
-        (("Arsenal", "Chelsea"), 1),
-        (("Manchester United", "Watford"), 1),
-        (("Manchester United", "West Ham United"), 1),
-        (("Crystal Palace", "Leicester City"), 1),
-        (("Leicester City", "Watford"), 1),
-        (("Leicester City", "Norwich City"), 1),
-        (("Everton", "Tottenham Hotspur"), 1),
-        (("Manchester City", "Wolverhampton Wanderers"), 1),
-        (("Liverpool", "West Ham United"), 1),
-        (("Chelsea", "Watford"), 1),
-        (("Everton", "West Ham United"), 1),
-        (("Aston Villa", "Southampton"), 1),
-        (("Brighton and Hove Albion", "Watford"), 1),
-        (("Leicester City", "Manchester City"), 1),
-        (("Liverpool", "Norwich City"), 1),
-        (("Burnley", "Leicester City"), 1),
-        (("Brighton and Hove Albion", "Chelsea"), 2),
-        (("Aston Villa", "Burnley"), 2),
-        (("Crystal Palace", "Norwich City"), 2),
-        (("Brentford", "Manchester City"), 2),
-        (("Burnley", "Manchester United"), 2),
-        (("Burnley", "Watford"), 2),
-        (("Watford", "West Ham United"), 2),
-        (("Brentford", "Manchester United"), 2),
-        (("Leicester City", "Liverpool"), 2),
-        (("Burnley", "Tottenham Hotspur"), 2),
-        (("Leicester City", "Tottenham Hotspur"), 2),
-        (("Crystal Palace", "Watford"), 2),
-        (("Aston Villa", "Leeds United"), 2),
-        (("Brentford", "Southampton"), 2),
-        (("Brighton and Hove Albion", "Tottenham Hotspur"), 2),
-        (("Everton", "Newcastle United"), 2),
-        (("Brighton and Hove Albion", "Manchester United"), 2),
-        (("Arsenal", "Wolverhampton Wanderers"), 2),
-        (("Everton", "Leicester City"), 2),
-        (("Norwich City", "West Ham United"), 2),
-        (("Southampton", "Tottenham Hotspur"), 2),
+        (("Arsenal", "Leeds United"), WIN_FACTOR * 1),
+        (("Brentford", "Burnley"), WIN_FACTOR * 1),
+        (("Arsenal", "Manchester United"), WIN_FACTOR * 1),
+        (("Liverpool", "Newcastle United"), WIN_FACTOR * 1),
+        (("Manchester City", "Tottenham Hotspur"), WIN_FACTOR * 1),
+        (("Manchester United", "Newcastle United"), WIN_FACTOR * 1),
+        (("Newcastle United", "Watford"), WIN_FACTOR * 1),
+        (("Brentford", "Everton"), WIN_FACTOR * 1),
+        (("Leicester City", "Southampton"), WIN_FACTOR * 1),
+        (("Arsenal", "Crystal Palace"), WIN_FACTOR * 1),
+        (("Leeds United", "Wolverhampton Wanderers"), WIN_FACTOR * 1),
+        (("Chelsea", "Tottenham Hotspur"), WIN_FACTOR * 1),
+        (("Newcastle United", "Norwich City"), WIN_FACTOR * 1),
+        (("Liverpool", "Wolverhampton Wanderers"), WIN_FACTOR * 1),
+        (
+          ("Brighton and Hove Albion", "Leicester City"),
+          WIN_FACTOR * 1
+        ),
+        (("Tottenham Hotspur", "West Ham United"), WIN_FACTOR * 1),
+        (("Crystal Palace", "Liverpool"), WIN_FACTOR * 1),
+        (("Newcastle United", "Tottenham Hotspur"), WIN_FACTOR * 1),
+        (("Liverpool", "Manchester City"), WIN_FACTOR * 1),
+        (("Liverpool", "Watford"), WIN_FACTOR * 1),
+        (("Aston Villa", "Leicester City"), WIN_FACTOR * 1),
+        (("Brighton and Hove Albion", "Burnley"), WIN_FACTOR * 1),
+        (
+          ("Newcastle United", "Wolverhampton Wanderers"),
+          WIN_FACTOR * 1
+        ),
+        (("Chelsea", "Liverpool"), WIN_FACTOR * 1),
+        (("Leicester City", "Manchester United"), WIN_FACTOR * 1),
+        (("Tottenham Hotspur", "Watford"), WIN_FACTOR * 1),
+        (("Manchester United", "Tottenham Hotspur"), WIN_FACTOR * 1),
+        (("Everton", "Norwich City"), WIN_FACTOR * 1),
+        (("Chelsea", "Wolverhampton Wanderers"), WIN_FACTOR * 1),
+        (("Chelsea", "West Ham United"), WIN_FACTOR * 1),
+        (("Brentford", "Leicester City"), WIN_FACTOR * 1),
+        (("Brentford", "Crystal Palace"), WIN_FACTOR * 1),
+        (("Aston Villa", "Brentford"), WIN_FACTOR * 1),
+        (("Brentford", "Leeds United"), WIN_FACTOR * 1),
+        (("Arsenal", "Southampton"), WIN_FACTOR * 1),
+        (("Aston Villa", "Watford"), WIN_FACTOR * 1),
+        (("Burnley", "Liverpool"), WIN_FACTOR * 1),
+        (("Brighton and Hove Albion", "Liverpool"), WIN_FACTOR * 1),
+        (("Brentford", "Tottenham Hotspur"), WIN_FACTOR * 1),
+        (("Aston Villa", "Wolverhampton Wanderers"), WIN_FACTOR * 1),
+        (("Brentford", "Watford"), WIN_FACTOR * 1),
+        (("Norwich City", "Watford"), WIN_FACTOR * 1),
+        (("Crystal Palace", "Manchester City"), WIN_FACTOR * 1),
+        (
+          ("Brighton and Hove Albion", "West Ham United"),
+          WIN_FACTOR * 1
+        ),
+        (("Everton", "Leeds United"), WIN_FACTOR * 1),
+        (("Leeds United", "Watford"), WIN_FACTOR * 1),
+        (("Everton", "Manchester City"), WIN_FACTOR * 1),
+        (("Aston Villa", "Newcastle United"), WIN_FACTOR * 1),
+        (("Chelsea", "Manchester United"), WIN_FACTOR * 1),
+        (("Burnley", "Manchester City"), WIN_FACTOR * 1),
+        (("Leeds United", "West Ham United"), WIN_FACTOR * 1),
+        (("Crystal Palace", "Newcastle United"), WIN_FACTOR * 1),
+        (("Manchester United", "Southampton"), WIN_FACTOR * 1),
+        (("Crystal Palace", "Everton"), WIN_FACTOR * 1),
+        (("Brighton and Hove Albion", "Norwich City"), WIN_FACTOR * 1),
+        (
+          ("Manchester United", "Wolverhampton Wanderers"),
+          WIN_FACTOR * 1
+        ),
+        (("Aston Villa", "Chelsea"), WIN_FACTOR * 1),
+        (("Manchester City", "Southampton"), WIN_FACTOR * 1),
+        (("Chelsea", "Leeds United"), WIN_FACTOR * 1),
+        (
+          ("Leicester City", "Wolverhampton Wanderers"),
+          WIN_FACTOR * 1
+        ),
+        (("Brentford", "Chelsea"), WIN_FACTOR * 1),
+        (("Aston Villa", "Manchester United"), WIN_FACTOR * 1),
+        (("Southampton", "Watford"), WIN_FACTOR * 1),
+        (("Burnley", "Leeds United"), WIN_FACTOR * 1),
+        (("Leeds United", "Southampton"), WIN_FACTOR * 1),
+        (("Crystal Palace", "West Ham United"), WIN_FACTOR * 1),
+        (("Aston Villa", "Crystal Palace"), WIN_FACTOR * 1),
+        (("Aston Villa", "West Ham United"), WIN_FACTOR * 1),
+        (("Brighton and Hove Albion", "Everton"), WIN_FACTOR * 1),
+        (("Arsenal", "Norwich City"), WIN_FACTOR * 1),
+        (("Brentford", "Liverpool"), WIN_FACTOR * 1),
+        (("Everton", "Liverpool"), WIN_FACTOR * 1),
+        (("Arsenal", "Brentford"), WIN_FACTOR * 1),
+        (("Aston Villa", "Liverpool"), WIN_FACTOR * 1),
+        (("Aston Villa", "Brighton and Hove Albion"), WIN_FACTOR * 1),
+        (("Chelsea", "Norwich City"), WIN_FACTOR * 1),
+        (("Brighton and Hove Albion", "Southampton"), WIN_FACTOR * 1),
+        (("Aston Villa", "Norwich City"), WIN_FACTOR * 1),
+        (
+          ("Tottenham Hotspur", "Wolverhampton Wanderers"),
+          WIN_FACTOR * 1
+        ),
+        (("Burnley", "Wolverhampton Wanderers"), WIN_FACTOR * 1),
+        (("Brentford", "Wolverhampton Wanderers"), WIN_FACTOR * 1),
+        (("Aston Villa", "Everton"), WIN_FACTOR * 1),
+        (("Everton", "Manchester United"), WIN_FACTOR * 1),
+        (("Brentford", "Newcastle United"), WIN_FACTOR * 1),
+        (("Liverpool", "Manchester United"), WIN_FACTOR * 1),
+        (
+          ("Brighton and Hove Albion", "Newcastle United"),
+          WIN_FACTOR * 1
+        ),
+        (("Burnley", "Southampton"), WIN_FACTOR * 1),
+        (("Leeds United", "Tottenham Hotspur"), WIN_FACTOR * 1),
+        (("Everton", "Southampton"), WIN_FACTOR * 1),
+        (("Aston Villa", "Manchester City"), WIN_FACTOR * 1),
+        (("Chelsea", "Everton"), WIN_FACTOR * 1),
+        (("Arsenal", "Aston Villa"), WIN_FACTOR * 1),
+        (("Burnley", "Newcastle United"), WIN_FACTOR * 1),
+        (("Arsenal", "Liverpool"), WIN_FACTOR * 1),
+        (("Burnley", "West Ham United"), WIN_FACTOR * 1),
+        (("Leeds United", "Norwich City"), WIN_FACTOR * 1),
+        (("Leicester City", "West Ham United"), WIN_FACTOR * 1),
+        (("Aston Villa", "Tottenham Hotspur"), WIN_FACTOR * 1),
+        (("Chelsea", "Crystal Palace"), WIN_FACTOR * 1),
+        (("Chelsea", "Leicester City"), WIN_FACTOR * 1),
+        (("Burnley", "Norwich City"), WIN_FACTOR * 1),
+        (("Leeds United", "Liverpool"), WIN_FACTOR * 1),
+        (("Chelsea", "Newcastle United"), WIN_FACTOR * 1),
+        (("Leeds United", "Leicester City"), WIN_FACTOR * 1),
+        (("Arsenal", "Burnley"), WIN_FACTOR * 1),
+        (("Manchester United", "Norwich City"), WIN_FACTOR * 1),
+        (("Arsenal", "West Ham United"), WIN_FACTOR * 1),
+        (("Crystal Palace", "Tottenham Hotspur"), WIN_FACTOR * 1),
+        (("Burnley", "Chelsea"), WIN_FACTOR * 1),
+        (("Norwich City", "Wolverhampton Wanderers"), WIN_FACTOR * 1),
+        (("Brighton and Hove Albion", "Leeds United"), WIN_FACTOR * 1),
+        (("Arsenal", "Tottenham Hotspur"), WIN_FACTOR * 1),
+        (("Brentford", "West Ham United"), WIN_FACTOR * 1),
+        (("Manchester City", "Manchester United"), WIN_FACTOR * 1),
+        (
+          ("West Ham United", "Wolverhampton Wanderers"),
+          WIN_FACTOR * 1
+        ),
+        (("Manchester City", "Norwich City"), WIN_FACTOR * 1),
+        (("Everton", "Watford"), WIN_FACTOR * 1),
+        (("Norwich City", "Tottenham Hotspur"), WIN_FACTOR * 1),
+        (("Everton", "Wolverhampton Wanderers"), WIN_FACTOR * 1),
+        (("Arsenal", "Newcastle United"), WIN_FACTOR * 1),
+        (("Arsenal", "Watford"), WIN_FACTOR * 1),
+        (("Leeds United", "Newcastle United"), WIN_FACTOR * 1),
+        (("Crystal Palace", "Southampton"), WIN_FACTOR * 1),
+        (("Crystal Palace", "Manchester United"), WIN_FACTOR * 1),
+        (
+          ("Brighton and Hove Albion", "Manchester City"),
+          WIN_FACTOR * 1
+        ),
+        (("Crystal Palace", "Leeds United"), WIN_FACTOR * 1),
+        (("Liverpool", "Southampton"), WIN_FACTOR * 1),
+        (
+          ("Brighton and Hove Albion", "Wolverhampton Wanderers"),
+          WIN_FACTOR * 1
+        ),
+        (("Manchester City", "West Ham United"), WIN_FACTOR * 1),
+        (("Brentford", "Norwich City"), WIN_FACTOR * 1),
+        (("Leeds United", "Manchester United"), WIN_FACTOR * 1),
+        (("Southampton", "Wolverhampton Wanderers"), WIN_FACTOR * 1),
+        (
+          ("Brighton and Hove Albion", "Crystal Palace"),
+          WIN_FACTOR * 1
+        ),
+        (("Manchester City", "Watford"), WIN_FACTOR * 1),
+        (("Leicester City", "Newcastle United"), WIN_FACTOR * 1),
+        (("Newcastle United", "Southampton"), WIN_FACTOR * 1),
+        (("Manchester City", "Newcastle United"), WIN_FACTOR * 1),
+        (("Norwich City", "Southampton"), WIN_FACTOR * 1),
+        (("Burnley", "Everton"), WIN_FACTOR * 1),
+        (
+          ("Crystal Palace", "Wolverhampton Wanderers"),
+          WIN_FACTOR * 1
+        ),
+        (("Chelsea", "Southampton"), WIN_FACTOR * 1),
+        (("Arsenal", "Brighton and Hove Albion"), WIN_FACTOR * 1),
+        (("Chelsea", "Manchester City"), WIN_FACTOR * 1),
+        (("Brentford", "Brighton and Hove Albion"), WIN_FACTOR * 1),
+        (("Watford", "Wolverhampton Wanderers"), WIN_FACTOR * 1),
+        (("Leeds United", "Manchester City"), WIN_FACTOR * 1),
+        (("Arsenal", "Leicester City"), WIN_FACTOR * 1),
+        (("Arsenal", "Everton"), WIN_FACTOR * 1),
+        (("Burnley", "Crystal Palace"), WIN_FACTOR * 1),
+        (("Southampton", "West Ham United"), WIN_FACTOR * 1),
+        (("Liverpool", "Tottenham Hotspur"), WIN_FACTOR * 1),
+        (("Newcastle United", "West Ham United"), WIN_FACTOR * 1),
+        (("Arsenal", "Manchester City"), WIN_FACTOR * 1),
+        (("Arsenal", "Chelsea"), WIN_FACTOR * 1),
+        (("Manchester United", "Watford"), WIN_FACTOR * 1),
+        (("Manchester United", "West Ham United"), WIN_FACTOR * 1),
+        (("Crystal Palace", "Leicester City"), WIN_FACTOR * 1),
+        (("Leicester City", "Watford"), WIN_FACTOR * 1),
+        (("Leicester City", "Norwich City"), WIN_FACTOR * 1),
+        (("Everton", "Tottenham Hotspur"), WIN_FACTOR * 1),
+        (
+          ("Manchester City", "Wolverhampton Wanderers"),
+          WIN_FACTOR * 1
+        ),
+        (("Liverpool", "West Ham United"), WIN_FACTOR * 1),
+        (("Chelsea", "Watford"), WIN_FACTOR * 1),
+        (("Everton", "West Ham United"), WIN_FACTOR * 1),
+        (("Aston Villa", "Southampton"), WIN_FACTOR * 1),
+        (("Brighton and Hove Albion", "Watford"), WIN_FACTOR * 1),
+        (("Leicester City", "Manchester City"), WIN_FACTOR * 1),
+        (("Liverpool", "Norwich City"), WIN_FACTOR * 1),
+        (("Burnley", "Leicester City"), WIN_FACTOR * 1),
+        (("Brighton and Hove Albion", "Chelsea"), WIN_FACTOR * 2),
+        (("Aston Villa", "Burnley"), WIN_FACTOR * 2),
+        (("Crystal Palace", "Norwich City"), WIN_FACTOR * 2),
+        (("Brentford", "Manchester City"), WIN_FACTOR * 2),
+        (("Burnley", "Manchester United"), WIN_FACTOR * 2),
+        (("Burnley", "Watford"), WIN_FACTOR * 2),
+        (("Watford", "West Ham United"), WIN_FACTOR * 2),
+        (("Brentford", "Manchester United"), WIN_FACTOR * 2),
+        (("Leicester City", "Liverpool"), WIN_FACTOR * 2),
+        (("Burnley", "Tottenham Hotspur"), WIN_FACTOR * 2),
+        (("Leicester City", "Tottenham Hotspur"), WIN_FACTOR * 2),
+        (("Crystal Palace", "Watford"), WIN_FACTOR * 2),
+        (("Aston Villa", "Leeds United"), WIN_FACTOR * 2),
+        (("Brentford", "Southampton"), WIN_FACTOR * 2),
+        (
+          ("Brighton and Hove Albion", "Tottenham Hotspur"),
+          WIN_FACTOR * 2
+        ),
+        (("Everton", "Newcastle United"), WIN_FACTOR * 2),
+        (
+          ("Brighton and Hove Albion", "Manchester United"),
+          WIN_FACTOR * 2
+        ),
+        (("Arsenal", "Wolverhampton Wanderers"), WIN_FACTOR * 2),
+        (("Everton", "Leicester City"), WIN_FACTOR * 2),
+        (("Norwich City", "West Ham United"), WIN_FACTOR * 2),
+        (("Southampton", "Tottenham Hotspur"), WIN_FACTOR * 2),
       ]
       .into_iter()
       .map(|((first_team, second_team), matches_left)| (
