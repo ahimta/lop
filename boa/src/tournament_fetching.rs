@@ -268,11 +268,25 @@ fn download_tournament(integration_mode: &IntegrationMode) -> Vec<String> {
       PAGE_SIZE,
     );
 
+    // NOTE: First Team.
+    // NOTE: Primier League.
+    let tournament_url=format!("https://footballapi.pulselive.com/football/fixtures?comps=1&compSeasons=418&teams=1,2,130,131,43,4,6,7,9,26,10,11,12,23,14,20,21,33,25,38&page={:?}&pageSize={:?}&sort=desc&statuses=C&altIds=true", page, PAGE_SIZE,);
+    // NOTE: UEFA Champions League.
+    // let tournament_url=format!("https://footballapi.pulselive.com/football/fixtures?comps=2&compSeasons=424&teams=47,541,48,49,51,229,52,231,4,232,83,56,58,87,1408,241,62,243,10,201,11,12,64,67,635,68,108,71,110,204,252,253,74&page={:?}&pageSize={:?}&sort=desc&statuses=C&altIds=true", page, PAGE_SIZE,);
+    // NOTE: UEFA Europa League.
+    // let tournament_url=format!("https://footballapi.pulselive.com/football/fixtures?comps=3&compSeasons=457&teams=541,49,50,52,505,53,494,81,84,364,58,366,989,61,93,95,96,26,369,97,98,63,202,65,66,105,470,635,106,69,1420,108,110,752,111,249,506,373,25,74&page={:?}&pageSize={:?}&sort=desc&statuses=C&altIds=true", page, PAGE_SIZE,);
+
+    // NOTE: PL2.
+    // NOTE: Primier League 2 - Division 1.
+    // let tournament_url=format!("https://footballapi.pulselive.com/football/fixtures?comps=16&compSeasons=438&teams=385,332,334,336,275,337,339,279,343,344,381,387,383,358&page={:?}&pageSize={:?}&sort=desc&statuses=C&altIds=true", page, PAGE_SIZE,);
+    // NOTE: Primier League 2 - Division 2.
+    // let tournament_url=format!("https://footballapi.pulselive.com/football/fixtures?comps=17&compSeasons=447&teams=386,266,335,341,345,346,347,281,351,352,354,355,357,360&page={:?}&pageSize={:?}&sort=desc&statuses=C&altIds=true", page, PAGE_SIZE,);
+
     // SEE: https://docs.rs/reqwest/0.11.7/reqwest/struct.RequestBuilder.html#method.send
     let resp = client
-    // NOTE: Used to match exactly the URL used in the official page.
-    // SEE: https://www.premierleague.com/results
-    .get(format!("https://footballapi.pulselive.com/football/fixtures?comps=1&compSeasons=418&teams=1,2,130,131,43,4,6,7,9,26,10,11,12,23,14,20,21,33,25,38&page={:?}&pageSize={:?}&sort=desc&statuses=C&altIds=true", page, PAGE_SIZE))
+      // NOTE: Used to match exactly the URL used in the official page.
+      // SEE: https://www.premierleague.com/results
+      .get(tournament_url)
       .send()
       .unwrap()
       .text()
