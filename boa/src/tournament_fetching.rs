@@ -110,7 +110,9 @@ fn process_tournament(
       (
         Arc::clone(team_id),
         Arc::new(Team {
-          matches_won: matches_won[team_id],
+          // FIXME: Make sure there's a test to cover this (e.g: using all
+          // tournament states).
+          matches_won: *matches_won.get(team_id).unwrap_or(&0),
         }),
       )
     })
