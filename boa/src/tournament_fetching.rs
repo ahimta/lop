@@ -202,17 +202,35 @@ impl TournamentProvider for Koora {
   .build()
   .unwrap();
 
-    let months = vec![
-      "202108", "202109", "202110", "202111", "202112", "202201", "202202",
-      "202203",
-    ];
+    // NOTE: Saudi Professional League.
+    let competition = 22551;
+    // NOTE: Saudi U-13 Premier League.
+    // NOTE: Al-Ahli (rank 6) and Al-Nassr (rank 7) eliminated.
+    // let competition = 22279;
+    // NOTE: Saudi U-15 Premier League.
+    // NOTE: Al-Baten (rank 9) and Hajer (rank 10) eliminated.
+    // let competition = 22307;
+    // NOTE: Saudi Arabia U-19 League Division 1.
+    // let competition = 22277;
+    // NOTE: Saudi Arabia U-17 League Division 1.
+    // let competition = 22278;
+    // NOTE: Saudi Arabia Youth League - U19.
+    // let competition = 22274;
+    // NOTE: Saudi U-17 Premier League.
+    // let competition = 22276;
 
+    let months = vec![
+      "202101", "202102", "202103", "202104", "202105", "202106", "202107",
+      "202108", "202109", "202110", "202111", "202112", "202201", "202202",
+      "202203", "202204", "202205", "202206", "202207", "202208", "202209",
+      "202210", "202211", "202212",
+    ];
     months
       .into_iter()
       .map(|current_month| -> String {
         let tournament_url = format!(
-          "https://www.goalzz.com/main.aspx?c=22551&stage=1&smonth={}&ajax=true",
-          current_month,
+          "https://www.goalzz.com/main.aspx?c={}&stage=1&smonth={}&ajax=true",
+          competition, current_month,
         );
 
         // SEE: https://docs.rs/reqwest/0.11.7/reqwest/struct.RequestBuilder.html#method.send
@@ -301,8 +319,8 @@ impl TournamentProvider for Koora {
 /// # Panics
 #[must_use]
 pub(super) fn fetch_tournament() -> Tournament {
-  // Koora::fetch_tournament()
-  PremierLeague::fetch_tournament()
+  Koora::fetch_tournament()
+  // PremierLeague::fetch_tournament()
 }
 
 #[allow(clippy::too_many_lines)]
