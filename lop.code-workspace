@@ -34,6 +34,8 @@
     "editor.rulers": [80]
   },
   "tasks": {
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
     "version": "2.0.0",
     "tasks": [
       {
@@ -47,8 +49,86 @@
           "env": { "RUN_IN_CONTAINER": "0" },
           "cwd": "${workspaceFolder}"
         },
-        "problemMatcher": ["$rustc"],
+        "problemMatcher": [
+          {
+            "owner": "rust",
+            "base": "$rustc",
+            "fileLocation": ["autoDetect", "${workspaceFolder:Core}"]
+          }
+          // FIXME: Add support for flutter and other errors in root.
+        ],
         "command": "./scripts/continuous-integration.sh"
+      },
+      // NOTE: Rest of tasks are automatically generated and some debug/run
+      // configuration of our own may depend on them. And once this is resolved,
+      // we should remove them.
+      {
+        "type": "cargo",
+        "subcommand": "check",
+        "options": {
+          "cwd": "${workspaceFolder:Core}"
+        },
+        "problemMatcher": ["$rustc"],
+        "group": "build",
+        "label": "Rust: cargo check - boa"
+      },
+      {
+        "type": "cargo",
+        "subcommand": "build",
+        "options": {
+          "cwd": "${workspaceFolder:Core}"
+        },
+        "problemMatcher": ["$rustc"],
+        "group": "build",
+        "label": "Rust: cargo build - boa"
+      },
+      {
+        "type": "cargo",
+        "subcommand": "test",
+        "options": {
+          "cwd": "${workspaceFolder:Core}"
+        },
+        "problemMatcher": ["$rustc"],
+        "group": "test",
+        "label": "Rust: cargo test - boa"
+      },
+      {
+        "type": "cargo",
+        "subcommand": "run",
+        "options": {
+          "cwd": "${workspaceFolder:Core}"
+        },
+        "problemMatcher": ["$rustc"],
+        "label": "Rust: cargo run - boa"
+      }
+    ]
+  },
+  "launch": {
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "Debug Rust with LLDB",
+        "type": "lldb",
+        "request": "launch",
+        "preLaunchTask": "Rust: cargo build - boa",
+        "program": "${workspaceFolder:Core}/target/debug/boa",
+        "cwd": "${workspaceFolder:Core}"
+      },
+      {
+        "name": "clod",
+        "request": "launch",
+        "type": "dart",
+        "cwd": "${workspaceFolder:Frontend}"
+      },
+      {
+        "name": "clod (profile mode)",
+        "request": "launch",
+        "type": "dart",
+        "flutterMode": "profile",
+        "cwd": "${workspaceFolder:Frontend}"
       }
     ]
   }
