@@ -11,10 +11,11 @@ use super::tournament_prediction::Tournament;
 
 struct PremierLeague {}
 impl TournamentProvider for PremierLeague {
+  const TEST_TOURNAMENT_NAME: &'static str = "First Team - Premier League";
   const TEST_DATA_FILE_ID: &'static str = "2021-12-26T14:58:52";
   const TEST_DATA_PREFIX: &'static str = "premier-league";
 
-  fn download_tournament() -> Vec<String> {
+  fn download_tournaments() -> Vec<(String, Vec<String>)> {
     use reqwest::blocking::Client;
     use reqwest::header::HeaderMap;
     use reqwest::header::HeaderValue;
@@ -55,6 +56,13 @@ impl TournamentProvider for PremierLeague {
   .build()
   .unwrap();
 
+    vec![
+    ("First Team - Premier League", 1, 418, "1,2,130,131,43,4,6,7,9,26,10,11,12,23,14,20,21,33,25,38",),
+    ("First Team - UEFA Champions League",2 ,424 , "47,541,48,49,51,229,52,231,4,232,83,56,58,87,1408,241,62,243,10,201,11,12,64,67,635,68,108,71,110,204,252,253,74",),
+    ("First Team - UEFA Europa League", 3, 457, "541,49,50,52,505,53,494,81,84,364,58,366,989,61,93,95,96,26,369,97,98,63,202,65,66,105,470,635,106,69,1420,108,110,752,111,249,506,373,25,74",),
+    ("PL2 - Primier League 2 - Division 1", 16, 438, "385,332,334,336,275,337,339,279,343,344,381,387,383,358",),
+    ("PL2 - Primier League 2 - Division 2", 17, 447, "386,266,335,341,345,346,347,281,351,352,354,355,357,360",),
+  ].into_iter().map(|(tournament_name, competition_id, competition_season_id, competition_teams)| -> (String, Vec<String>){
     let mut page = 0;
     let mut tournament_results_pages_json_non_parsed: Vec<String> = vec![];
     loop {
@@ -65,21 +73,8 @@ impl TournamentProvider for PremierLeague {
         PAGE_SIZE,
       );
 
-      // FIXME: Primer typo.
-      // NOTE: First Team.
-      // NOTE: Primier League.
-      let tournament_url=format!("https://footballapi.pulselive.com/football/fixtures?comps=1&compSeasons=418&teams=1,2,130,131,43,4,6,7,9,26,10,11,12,23,14,20,21,33,25,38&page={:?}&pageSize={:?}&sort=desc&statuses=C&altIds=true", page, PAGE_SIZE,);
-      // NOTE: UEFA Champions League.
-      // let tournament_url=format!("https://footballapi.pulselive.com/football/fixtures?comps=2&compSeasons=424&teams=47,541,48,49,51,229,52,231,4,232,83,56,58,87,1408,241,62,243,10,201,11,12,64,67,635,68,108,71,110,204,252,253,74&page={:?}&pageSize={:?}&sort=desc&statuses=C&altIds=true", page, PAGE_SIZE,);
-      // NOTE: UEFA Europa League.
-      // let tournament_url=format!("https://footballapi.pulselive.com/football/fixtures?comps=3&compSeasons=457&teams=541,49,50,52,505,53,494,81,84,364,58,366,989,61,93,95,96,26,369,97,98,63,202,65,66,105,470,635,106,69,1420,108,110,752,111,249,506,373,25,74&page={:?}&pageSize={:?}&sort=desc&statuses=C&altIds=true", page, PAGE_SIZE,);
-
-      // NOTE: PL2.
-      // NOTE: Primier League 2 - Division 1.
-      // let tournament_url=format!("https://footballapi.pulselive.com/football/fixtures?comps=16&compSeasons=438&teams=385,332,334,336,275,337,339,279,343,344,381,387,383,358&page={:?}&pageSize={:?}&sort=desc&statuses=C&altIds=true", page, PAGE_SIZE,);
-      // NOTE: Primier League 2 - Division 2.
-      // let tournament_url=format!("https://footballapi.pulselive.com/football/fixtures?comps=17&compSeasons=447&teams=386,266,335,341,345,346,347,281,351,352,354,355,357,360&page={:?}&pageSize={:?}&sort=desc&statuses=C&altIds=true", page, PAGE_SIZE,);
-
+      let tournament_url=format!("https://footballapi.pulselive.com/football/fixtures?comps={}&compSeasons={}&teams={}&page={}&pageSize={}&sort=desc&statuses=C&altIds=true",
+      competition_id,competition_season_id,competition_teams, page, PAGE_SIZE,);
       // SEE: https://docs.rs/reqwest/0.11.7/reqwest/struct.RequestBuilder.html#method.send
       let resp = client
         // NOTE: Used to match exactly the URL used in the official page.
@@ -100,12 +95,13 @@ impl TournamentProvider for PremierLeague {
       }
     }
 
-    tournament_results_pages_json_non_parsed
+    (tournament_name.to_string(), tournament_results_pages_json_non_parsed)
+  }).collect()
   }
 
-  fn process_tournament(
-    tournament_results_pages_json_non_parsed: Vec<String>,
-  ) -> Vec<MatchResult> {
+  fn process_tournaments(
+    all_tournaments_results_pages_json_non_parsed: Vec<(String, Vec<String>)>,
+  ) -> Vec<(String, Vec<MatchResult>)> {
     use serde::Deserialize;
 
     #[derive(Deserialize)]
@@ -129,45 +125,61 @@ impl TournamentProvider for PremierLeague {
       name: String,
     }
 
-    let matches_results: Vec<MatchResult> =
-      tournament_results_pages_json_non_parsed
-        .into_iter()
-        .flat_map(|tournament_results_page_json_non_parsed| {
-          let tournament_results_single_page_json: Page =
-            serde_json::from_str(&tournament_results_page_json_non_parsed)
-              .unwrap();
-          tournament_results_single_page_json
-            .content
-            .into_iter()
-            .map(|ContentItem { teams, .. }| {
-              let (first_team, second_team) = &teams;
+    all_tournaments_results_pages_json_non_parsed
+      .into_iter()
+      .map(
+        |(tournament_name, tournament_results_pages_json_non_parsed)| -> (String, Vec<MatchResult>) {
+          let matches_results: Vec<MatchResult> =
+            tournament_results_pages_json_non_parsed
+              .into_iter()
+              .flat_map(|tournament_results_page_json_non_parsed| {
+                let tournament_results_single_page_json: Page =
+                  serde_json::from_str(
+                    &tournament_results_page_json_non_parsed,
+                  )
+                  .unwrap();
+                tournament_results_single_page_json
+                  .content
+                  .into_iter()
+                  .map(|ContentItem { teams, .. }| {
+                    let (first_team, second_team) = &teams;
 
-              // FIXME: Make sure scores aren't fractional and convert them to
-              // `usize` to avoid landmines (some already happened but not
-              // committed).
+                    // FIXME: Make sure scores aren't fractional and convert them to
+                    // `usize` to avoid landmines (some already happened but not
+                    // committed).
 
-              (
-                // FIXME: Make sure to handle cases where a team wins in
-                // penalties. Luckily, the primary tournament we use right now
-                // doesn't seem to have this case.
-                (Arc::new(first_team.team.name.clone()), first_team.score),
-                (Arc::new(second_team.team.name.clone()), second_team.score),
-              )
-            })
-            .collect::<Vec<_>>()
-        })
-        .collect();
+                    (
+                      // FIXME: Make sure to handle cases where a team wins in
+                      // penalties. Luckily, the primary tournament we use right now
+                      // doesn't seem to have this case.
+                      (
+                        Arc::new(first_team.team.name.clone()),
+                        first_team.score,
+                      ),
+                      (
+                        Arc::new(second_team.team.name.clone()),
+                        second_team.score,
+                      ),
+                    )
+                  })
+                  .collect::<Vec<_>>()
+              })
+              .collect();
 
-    matches_results
+          (tournament_name, matches_results)
+        },
+      )
+      .collect()
   }
 }
 
 struct Koora {}
 impl TournamentProvider for Koora {
+  const TEST_TOURNAMENT_NAME: &'static str = "Saudi Professional League";
   const TEST_DATA_FILE_ID: &'static str = "2022-02-14T22:50:10";
   const TEST_DATA_PREFIX: &'static str = "koora";
 
-  fn download_tournament() -> Vec<String> {
+  fn download_tournaments() -> Vec<(String, Vec<String>)> {
     use reqwest::blocking::Client;
     use reqwest::header::HeaderMap;
     use reqwest::header::HeaderValue;
@@ -188,7 +200,7 @@ impl TournamentProvider for Koora {
       HeaderValue::from_static("en-US,en;q=0.5"),
     );
     headers
-      .insert("Origin", HeaderValue::from_static("https://www.kooora.com"));
+      .insert("Origin", HeaderValue::from_static("https://www.goalzz.com"));
     // FIXME: Add helper for getting client (or even better, doing a request).
     // SEE: https://docs.rs/reqwest/0.11.7/reqwest/struct.ClientBuilder.html
     let client = Client::builder()
@@ -202,54 +214,60 @@ impl TournamentProvider for Koora {
   .build()
   .unwrap();
 
-    // NOTE: Saudi Professional League.
-    let competition = 22551;
-    // NOTE: Saudi U-13 Premier League.
-    // NOTE: Al-Ahli (rank 6) and Al-Nassr (rank 7) eliminated.
-    // let competition = 22279;
-    // NOTE: Saudi U-15 Premier League.
-    // NOTE: Al-Baten (rank 9) and Hajer (rank 10) eliminated.
-    // let competition = 22307;
-    // NOTE: Saudi Arabia U-19 League Division 1.
-    // let competition = 22277;
-    // NOTE: Saudi Arabia U-17 League Division 1.
-    // let competition = 22278;
-    // NOTE: Saudi Arabia Youth League - U19.
-    // let competition = 22274;
-    // NOTE: Saudi U-17 Premier League.
-    // let competition = 22276;
+    vec![
+      ("Saudi Professional League", 22551),
+      // NOTE: Al-Ahli (rank 6) and Al-Nassr (rank 7) eliminated.
+      ("Saudi U-13 Premier League", 22279),
+      // NOTE: Al-Baten (rank 9) and Hajer (rank 10) eliminated.
+      ("Saudi U-15 Premier League", 22307),
+      ("Saudi Arabia U-19 League Division 1", 22277),
+      ("Saudi Arabia U-17 League Division 1", 22278),
+      ("Saudi Arabia Youth League - U19", 22274),
+      ("Saudi U-17 Premier League", 22276),
+    ]
+    .into_iter()
+    .map(
+      |(tournament_name, competition_id)| -> (String, Vec<String>) {
+        let months = vec![
+          "202101", "202102", "202103", "202104", "202105", "202106", "202107",
+          "202108", "202109", "202110", "202111", "202112", "202201", "202202",
+          "202203", "202204", "202205", "202206", "202207", "202208", "202209",
+          "202210", "202211", "202212",
+        ];
 
-    let months = vec![
-      "202101", "202102", "202103", "202104", "202105", "202106", "202107",
-      "202108", "202109", "202110", "202111", "202112", "202201", "202202",
-      "202203", "202204", "202205", "202206", "202207", "202208", "202209",
-      "202210", "202211", "202212",
-    ];
-    months
-      .into_iter()
-      .map(|current_month| -> String {
-        let tournament_url = format!(
-          "https://www.goalzz.com/main.aspx?c={}&stage=1&smonth={}&ajax=true",
-          competition, current_month,
-        );
+        (
+          tournament_name.to_string(),
+          months
+            .into_iter()
+            .map(|current_month| -> String {
+              let tournament_url = format!(
+                "https://www.goalzz.com/main.aspx?c={}&stage=1&smonth={}&ajax=true",
+                competition_id, current_month,
+              );
 
-        // SEE: https://docs.rs/reqwest/0.11.7/reqwest/struct.RequestBuilder.html#method.send
-        let resp = client
-          // NOTE: Used to match exactly the URL used in the official page.
-          // SEE: https://www.goalzz.com/main.aspx?c=22551&stage=1&smonth=202108
-          // SEE: https://www.kooora.com/?c=22551&stage=1&smonth=202108
-          .get(tournament_url)
-          .send()
-          .unwrap()
-          .text()
-          .unwrap();
+              // SEE: https://docs.rs/reqwest/0.11.7/reqwest/struct.RequestBuilder.html#method.send
+              let resp = client
+                // NOTE: Used to match exactly the URL used in the official page.
+                // SEE: https://www.goalzz.com/main.aspx?c=22551&stage=1&smonth=202108
+                // SEE: https://www.kooora.com/?c=22551&stage=1&smonth=202108
+                .get(tournament_url)
+                .send()
+                .unwrap()
+                .text()
+                .unwrap();
 
-        resp.replace("\n", "")
-      })
-      .collect()
+              resp.replace("\n", "")
+            })
+            .collect(),
+        )
+      },
+    )
+    .collect()
   }
 
-  fn process_tournament(responses: Vec<String>) -> Vec<MatchResult> {
+  fn process_tournaments(
+    all_tournaments_responses: Vec<(String, Vec<String>)>,
+  ) -> Vec<(String, Vec<MatchResult>)> {
     use serde::Deserialize;
 
     #[derive(Deserialize)]
@@ -257,77 +275,91 @@ impl TournamentProvider for Koora {
       matches_list: Vec<serde_json::Value>,
     }
 
-    let matches_results: Vec<MatchResult> = responses
+    all_tournaments_responses
       .into_iter()
-      .flat_map(|current_response| {
-        let table: Table = serde_json::from_str(&current_response).unwrap();
-        let table_cells = table.matches_list;
+      .map(
+        |(tournament_name, responses)| -> (String, Vec<MatchResult>) {
+          let matches_results: Vec<MatchResult> = responses
+            .into_iter()
+            .flat_map(|current_response| {
+              let table: Table =
+                serde_json::from_str(&current_response).unwrap();
+              let table_cells = table.matches_list;
 
-        let results: Vec<MatchResult> = (0..table_cells.len())
-          .filter_map(|i| -> Option<MatchResult> {
-            let cell = &table_cells[i];
+              let results: Vec<MatchResult> = (0..table_cells.len())
+                .filter_map(|i| -> Option<MatchResult> {
+                  let cell = &table_cells[i];
 
-            match cell {
-              serde_json::Value::String(_) => (),
-              _ => return None,
-            }
+                  match cell {
+                    serde_json::Value::String(_) => (),
+                    _ => return None,
+                  }
 
-            let cell_value = cell.as_str().unwrap();
+                  let cell_value = cell.as_str().unwrap();
 
-            let possible_scores: Vec<&str> = cell_value.split('|').collect();
-            if possible_scores.len() != 2
-              || possible_scores[0]
-                .matches(char::is_numeric)
-                .next()
-                .is_none()
-              || possible_scores[1]
-                .matches(char::is_numeric)
-                .next()
-                .is_none()
-            {
-              return None;
-            }
+                  let possible_scores: Vec<&str> =
+                    cell_value.split('|').collect();
+                  if possible_scores.len() != 2
+                    || possible_scores[0]
+                      .matches(char::is_numeric)
+                      .next()
+                      .is_none()
+                    || possible_scores[1]
+                      .matches(char::is_numeric)
+                      .next()
+                      .is_none()
+                  {
+                    return None;
+                  }
 
-            let first_team_score: f64 = possible_scores[0].parse().unwrap();
-            let second_team_score: f64 = possible_scores[1].parse().unwrap();
+                  let first_team_score: f64 =
+                    possible_scores[0].parse().unwrap();
+                  let second_team_score: f64 =
+                    possible_scores[1].parse().unwrap();
 
-            let first_team_name = table_cells[i - 2].as_str().unwrap();
-            let second_team_name = table_cells[i + 3].as_str().unwrap();
+                  let first_team_name = table_cells[i - 2].as_str().unwrap();
+                  let second_team_name = table_cells[i + 3].as_str().unwrap();
 
-            // FIXME: Make sure scores aren't fractional and convert them to
-            // `usize` to avoid landmines (some already happened but not
-            // committed).
+                  // FIXME: Make sure scores aren't fractional and convert them to
+                  // `usize` to avoid landmines (some already happened but not
+                  // committed).
 
-            Some((
-              // FIXME: Make sure to handle cases where a team wins in
-              // penalties. Luckily, the primary tournament we use right now
-              // doesn't seem to have this case.
-              (Arc::new(first_team_name.to_string()), first_team_score),
-              (Arc::new(second_team_name.to_string()), second_team_score),
-            ))
-          })
-          .collect();
+                  Some((
+                    // FIXME: Make sure to handle cases where a team wins in
+                    // penalties. Luckily, the primary tournament we use right now
+                    // doesn't seem to have this case.
+                    (Arc::new(first_team_name.to_string()), first_team_score),
+                    (Arc::new(second_team_name.to_string()), second_team_score),
+                  ))
+                })
+                .collect();
 
-        results
-      })
-      .collect();
+              results
+            })
+            .collect();
 
-    matches_results
+          (tournament_name, matches_results)
+        },
+      )
+      .collect()
   }
 }
 
 /// # Panics
 #[must_use]
-pub(super) fn fetch_tournament() -> Tournament {
-  Koora::fetch_tournament()
-  // PremierLeague::fetch_tournament()
+pub(super) fn fetch_tournaments() -> Vec<Tournament> {
+  Koora::fetch_tournaments()
+    .into_iter()
+    .chain(PremierLeague::fetch_tournaments())
+    .collect()
 }
 
 #[allow(clippy::too_many_lines)]
 pub(super) fn test() {
   assert_eq!(
-    Koora::test_fetch_tournament(),
-    Tournament {
+    Koora::test_fetch_tournaments().first().unwrap(),
+    &Tournament {
+      name: "Saudi Professional League".to_string(),
       teams: vec![
         ("Al Hazem", Team { matches_won: 13 }),
         ("Al Taawoun", Team { matches_won: 17 }),
@@ -484,8 +516,9 @@ pub(super) fn test() {
   );
 
   assert_eq!(
-    PremierLeague::test_fetch_tournament(),
-    Tournament {
+    PremierLeague::test_fetch_tournaments().first().unwrap(),
+    &Tournament {
+      name: "First Team - Premier League".to_string(),
       teams: vec![
         ("Watford", Team { matches_won: 13 }),
         ("Brentford", Team { matches_won: 16 }),

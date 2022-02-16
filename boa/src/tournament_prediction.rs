@@ -20,6 +20,7 @@ pub struct Prediction {
 
 #[derive(Eq, PartialEq, Debug)]
 pub struct Tournament {
+  pub name: String,
   pub teams: HashMap<Arc<TeamId>, Arc<Team>>,
   pub matches_left: HashMap<(Arc<TeamId>, Arc<TeamId>), usize>,
 }
@@ -246,6 +247,7 @@ pub(super) fn test() {
   let examples = vec![
     TestExample {
       tournament: Tournament {
+        name: "dummy-tournament".to_string(),
         teams: vec![
           ("atlanta", Team { matches_won: 83 }),
           ("philadelphia", Team { matches_won: 80 }),
@@ -300,6 +302,7 @@ pub(super) fn test() {
     },
     TestExample {
       tournament: Tournament {
+        name: "dummy-tournament".to_string(),
         teams: vec![
           ("new-york", Team { matches_won: 75 }),
           ("baltimore", Team { matches_won: 71 }),

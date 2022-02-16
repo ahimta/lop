@@ -12,12 +12,13 @@ pub fn test() {
   tournament_prediction::test();
   tournament_fetching::test();
 
-  println!(
-    "prediction: {:?}",
-    tournament_prediction::predict_tournament_eliminated_teams(
-      &tournament_fetching::fetch_tournament()
-    )
-  );
+  for tournament in &tournament_fetching::fetch_tournaments() {
+    println!(
+      "prediction({}): {:?}",
+      tournament.name,
+      tournament_prediction::predict_tournament_eliminated_teams(tournament)
+    );
+  }
 }
 
 #[repr(C)]
@@ -41,9 +42,12 @@ pub extern "C" fn predict_tournament_eliminated_teams_native(
 ) -> i32 {
   eprintln!("hello world!");
 
-  let tournament = tournament_fetching::fetch_tournament();
-  let local_eliminated_teams =
-    tournament_prediction::predict_tournament_eliminated_teams(&tournament);
+  let tournaments = tournament_fetching::fetch_tournaments();
+  let local_eliminated_teams = tournaments
+    .iter()
+    .map(tournament_prediction::predict_tournament_eliminated_teams)
+    .next()
+    .unwrap();
 
   let ets = Box::into_raw(
     (&local_eliminated_teams)
