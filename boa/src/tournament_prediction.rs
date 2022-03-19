@@ -10,26 +10,38 @@ use super::mincut_maxflow::common::FlowEdge;
 use super::mincut_maxflow::common::FlowNode;
 
 pub type TeamId = String;
-pub type EliminatedTeams = HashMap<Arc<TeamId>, Prediction>;
-
-#[derive(Eq, PartialEq, Debug)]
-pub struct Prediction {
-  pub eliminated_trivially: bool,
-  pub eliminating_teams: HashSet<Arc<TeamId>>,
-}
 
 #[derive(Eq, PartialEq, Debug)]
 pub struct Tournament {
   pub name: String,
-  pub teams: HashMap<Arc<TeamId>, Arc<Team>>,
+  pub teams: Vec<Arc<Team>>,
+  // FIXME: Maybe replace `Arc<TeamId>` with `Arc<Team>`.
   pub matches_left: HashMap<(Arc<TeamId>, Arc<TeamId>), usize>,
 }
 
-// NOTE: Using a struct instead of a regular `usize` for future extensibility
-// when the model can take into account other factors.
-#[derive(Eq, PartialEq, Debug)]
+#[derive(Eq, PartialEq, Clone, Debug)]
 pub struct Team {
+  pub id: Arc<TeamId>,
+
+  // FIXME: Consider using `Option` with nullable fields.
+  // FIXME: Consider adding `Team` constructors for common instantiations.
+
+  // NOTE: `rank` and `matches_left` only used to propagate values to
+  // `Prediction`.
+  pub rank: usize,
+  // FIXME: Make sure always validated.
+  pub matches_left: usize,
+
+  // NOTE: `matches_won` used only for prediction and can be points and not
+  // necessarily actual matches won.
   pub matches_won: usize,
+
+  // FIXME: Possible add enum with: not-eliminated|trivially-eliminated|non-trivially-eliminated|.
+  pub eliminated: bool,
+  pub eliminated_trivially: bool,
+  // FIXME: Maybe replace `Arc<TeamId>` with `Arc<Team>`.
+  // FIXME: Maybe then sort eliminating teams by rank.
+  pub eliminating_teams: HashSet<Arc<TeamId>>,
 }
 
 /// # Panics
@@ -37,7 +49,7 @@ pub struct Team {
 #[must_use]
 pub fn predict_tournament_eliminated_teams(
   tournament: &Tournament,
-) -> EliminatedTeams {
+) -> Vec<Arc<Team>> {
   const TEAMS_COUNT_MIN: usize = 2;
   const TEAMS_COUNT_MAX: usize = 500;
   const MATCHES_LEFT_COUNT_MIN: usize = 1;
@@ -88,22 +100,22 @@ pub fn predict_tournament_eliminated_teams(
 
   let all_teams_nodes: HashSet<FlowNode> = (&tournament.teams)
     .iter()
-    .map(|(id, _)| FlowNode::new(Arc::clone(id)))
+    .map(|team| FlowNode::new(Arc::clone(&team.id)))
     .collect();
 
-  let eliminated_teams: EliminatedTeams = (&tournament.teams)
+  let eliminated_teams: Vec<Arc<Team>> = (&tournament.teams)
     .iter()
-    .filter_map(|(team_id, team)| -> Option<(Arc<TeamId>, Prediction)> {
+    .map(|team| -> Arc<Team> {
       let possible_eliminating_teams_nodes: HashSet<Arc<TeamId>> =
         (&tournament.teams)
           .iter()
-          .filter(|(candidate_team_id, _)| *candidate_team_id != team_id)
-          .filter(|(_, candidate_team)| {
+          .filter(|candidate_team| candidate_team.id != team.id)
+          .filter(|candidate_team| {
             let max_wins = team.matches_won
-              + matches_left_by_team.get(team_id).unwrap_or(&0);
+              + matches_left_by_team.get(&team.id).unwrap_or(&0);
             candidate_team.matches_won > max_wins
           })
-          .map(|(candidate_team_id, _)| Arc::clone(candidate_team_id))
+          .map(|candidate_team| Arc::clone(&candidate_team.id))
           .collect();
 
       // NOTE: Can't remember why this special-case exists. It's probably for
@@ -111,22 +123,19 @@ pub fn predict_tournament_eliminated_teams(
       // 1. The mincut-maxflow algorithm/implementation can't handle it.
       // 2. Even more special-handling has to be done otherwise.
       if !possible_eliminating_teams_nodes.is_empty() {
-        return Some((
-          Arc::clone(team_id),
-          Prediction {
-            eliminated_trivially: true,
-            eliminating_teams: possible_eliminating_teams_nodes,
-          },
-        ));
+        return Arc::new(Team {
+          eliminated: true,
+          eliminated_trivially: true,
+          eliminating_teams: possible_eliminating_teams_nodes,
+          ..Team::clone(team)
+        });
       }
 
       let other_teams: HashMap<FlowNode, &Arc<Team>> = (&tournament.teams)
         .iter()
-        .filter(|(possible_other_team_id, _)| {
-          *possible_other_team_id != team_id
-        })
-        .map(|(other_team_id, other_team)| {
-          (FlowNode::new(Arc::clone(other_team_id)), other_team)
+        .filter(|possible_other_team| possible_other_team.id != team.id)
+        .map(|other_team| {
+          (FlowNode::new(Arc::clone(&other_team.id)), other_team)
         })
         .collect();
       let other_teams_nodes: Vec<&FlowNode> = (&other_teams)
@@ -195,7 +204,7 @@ pub fn predict_tournament_eliminated_teams(
 
           let other_team_wins = *teams_wins.get(other_team_node).unwrap();
           let own_team_max_wins =
-            team.matches_won + matches_left_by_team.get(team_id).unwrap_or(&0);
+            team.matches_won + matches_left_by_team.get(&team.id).unwrap_or(&0);
           // NOTE: This case can't happen because otherwise the function would
           // have returned earlier.
           assert!(other_team_wins <= own_team_max_wins, "Impossible case.");
@@ -214,7 +223,12 @@ pub fn predict_tournament_eliminated_teams(
         calculate_mincut_maxflow(&edges, &source_node, &sink_node);
 
       if mincut_maxflow.source_full {
-        return None;
+        return Arc::new(Team {
+          eliminated: false,
+          eliminated_trivially: false,
+          eliminating_teams: vec![].into_iter().collect(),
+          ..Team::clone(team)
+        });
       }
 
       let eliminating_teams = mincut_maxflow
@@ -224,13 +238,12 @@ pub fn predict_tournament_eliminated_teams(
         .map(|node| node.id)
         .collect();
 
-      Some((
-        Arc::clone(team_id),
-        Prediction {
-          eliminated_trivially: false,
-          eliminating_teams,
-        },
-      ))
+      Arc::new(Team {
+        eliminated: true,
+        eliminated_trivially: false,
+        eliminating_teams,
+        ..Team::clone(team)
+      })
     })
     .collect();
 
@@ -239,7 +252,7 @@ pub fn predict_tournament_eliminated_teams(
 
 struct TestExample {
   tournament: Tournament,
-  expected_eliminated_teams: EliminatedTeams,
+  expected_prediction: Vec<Arc<Team>>,
 }
 
 #[allow(clippy::too_many_lines)]
@@ -249,13 +262,45 @@ pub(super) fn test() {
       tournament: Tournament {
         name: "dummy-tournament".to_string(),
         teams: vec![
-          ("atlanta", Team { matches_won: 83 }),
-          ("philadelphia", Team { matches_won: 80 }),
-          ("new-york", Team { matches_won: 78 }),
-          ("montreal", Team { matches_won: 77 }),
+          Team {
+            id: Arc::new("atlanta".to_string()),
+            rank: 1,
+            matches_left: 8,
+            matches_won: 83,
+            eliminated: false,
+            eliminated_trivially: false,
+            eliminating_teams: vec![].into_iter().collect(),
+          },
+          Team {
+            id: Arc::new("philadelphia".to_string()),
+            rank: 2,
+            matches_left: 3,
+            matches_won: 80,
+            eliminated: false,
+            eliminated_trivially: false,
+            eliminating_teams: vec![].into_iter().collect(),
+          },
+          Team {
+            id: Arc::new("new-york".to_string()),
+            rank: 3,
+            matches_left: 6,
+            matches_won: 78,
+            eliminated: false,
+            eliminated_trivially: false,
+            eliminating_teams: vec![].into_iter().collect(),
+          },
+          Team {
+            id: Arc::new("montreal".to_string()),
+            rank: 4,
+            matches_left: 3,
+            matches_won: 77,
+            eliminated: false,
+            eliminated_trivially: false,
+            eliminating_teams: vec![].into_iter().collect(),
+          },
         ]
         .into_iter()
-        .map(|(team_id, team)| (Arc::new(team_id.to_string()), Arc::new(team)))
+        .map(Arc::new)
         .collect(),
         matches_left: vec![
           (("atlanta", "philadelphia"), 1),
@@ -275,43 +320,107 @@ pub(super) fn test() {
         })
         .collect(),
       },
-      expected_eliminated_teams: vec![
-        (
-          Arc::new("montreal".to_string()),
-          Prediction {
-            eliminated_trivially: true,
-            eliminating_teams: vec!["atlanta"]
-              .into_iter()
-              .map(|team_id| Arc::new(team_id.to_string()))
-              .collect(),
-          },
-        ),
-        (
-          Arc::new("philadelphia".to_string()),
-          Prediction {
-            eliminated_trivially: false,
-            eliminating_teams: vec!["atlanta", "new-york"]
-              .into_iter()
-              .map(|team_id| Arc::new(team_id.to_string()))
-              .collect(),
-          },
-        ),
+      expected_prediction: vec![
+        Team {
+          id: Arc::new("atlanta".to_string()),
+          rank: 1,
+          matches_left: 8,
+          matches_won: 83,
+          eliminated: false,
+          eliminated_trivially: false,
+          eliminating_teams: vec![].into_iter().collect(),
+        },
+        Team {
+          id: Arc::new("philadelphia".to_string()),
+          rank: 2,
+          matches_left: 3,
+          matches_won: 80,
+          eliminated: true,
+          eliminated_trivially: false,
+          eliminating_teams: vec!["atlanta", "new-york"]
+            .into_iter()
+            .map(|team_id| Arc::new(team_id.to_string()))
+            .collect(),
+        },
+        Team {
+          id: Arc::new("new-york".to_string()),
+          rank: 3,
+          matches_left: 6,
+          matches_won: 78,
+          eliminated: false,
+          eliminated_trivially: false,
+          eliminating_teams: vec![].into_iter().collect(),
+        },
+        Team {
+          id: Arc::new("montreal".to_string()),
+          rank: 4,
+          matches_left: 3,
+          // FIXME: `matches_won` would break due to points hack.
+          matches_won: 77,
+          eliminated: true,
+          eliminated_trivially: true,
+          eliminating_teams: vec!["atlanta"]
+            .into_iter()
+            .map(|team_id| Arc::new(team_id.to_string()))
+            .collect(),
+        },
       ]
       .into_iter()
+      .map(Arc::new)
       .collect(),
     },
     TestExample {
       tournament: Tournament {
         name: "dummy-tournament".to_string(),
         teams: vec![
-          ("new-york", Team { matches_won: 75 }),
-          ("baltimore", Team { matches_won: 71 }),
-          ("boston", Team { matches_won: 69 }),
-          ("toronto", Team { matches_won: 63 }),
-          ("detroit", Team { matches_won: 49 }),
+          Team {
+            id: Arc::new("new-york".to_string()),
+            rank: 1,
+            matches_left: 4,
+            matches_won: 75,
+            eliminated: false,
+            eliminated_trivially: false,
+            eliminating_teams: vec![].into_iter().collect(),
+          },
+          Team {
+            id: Arc::new("baltimore".to_string()),
+            rank: 2,
+            matches_left: 21,
+            matches_won: 71,
+            eliminated: false,
+            eliminated_trivially: false,
+            eliminating_teams: vec![].into_iter().collect(),
+          },
+          Team {
+            id: Arc::new("boston".to_string()),
+            rank: 3,
+            matches_left: 13,
+            matches_won: 69,
+            eliminated: false,
+            eliminated_trivially: false,
+            eliminating_teams: vec![].into_iter().collect(),
+          },
+          Team {
+            id: Arc::new("toronto".to_string()),
+            rank: 4,
+            matches_left: 17,
+            matches_won: 63,
+            eliminated: false,
+            eliminated_trivially: false,
+            eliminating_teams: vec![].into_iter().collect(),
+          },
+          Team {
+            id: Arc::new("detroit".to_string()),
+            rank: 5,
+            matches_left: 16,
+            matches_won: 49,
+            eliminated: false,
+            eliminated_trivially: false,
+            eliminating_teams: vec![].into_iter().collect(),
+          },
         ]
         .into_iter()
-        .map(|(team_id, team)| (Arc::new(team_id.to_string()), Arc::new(team)))
+        .map(Arc::new)
         .collect(),
         matches_left: vec![
           (("new-york", "baltimore"), 3),
@@ -336,29 +445,70 @@ pub(super) fn test() {
         })
         .collect(),
       },
-      expected_eliminated_teams: vec![(
-        Arc::new("detroit".to_string()),
-        Prediction {
+      expected_prediction: vec![
+        Team {
+          id: Arc::new("new-york".to_string()),
+          rank: 1,
+          matches_left: 4,
+          matches_won: 75,
+          eliminated: false,
+          eliminated_trivially: false,
+          eliminating_teams: vec![].into_iter().collect(),
+        },
+        Team {
+          id: Arc::new("baltimore".to_string()),
+          rank: 2,
+          matches_left: 21,
+          matches_won: 71,
+          eliminated: false,
+          eliminated_trivially: false,
+          eliminating_teams: vec![].into_iter().collect(),
+        },
+        Team {
+          id: Arc::new("boston".to_string()),
+          rank: 3,
+          matches_left: 13,
+          matches_won: 69,
+          eliminated: false,
+          eliminated_trivially: false,
+          eliminating_teams: vec![].into_iter().collect(),
+        },
+        Team {
+          id: Arc::new("toronto".to_string()),
+          rank: 4,
+          matches_left: 17,
+          matches_won: 63,
+          eliminated: false,
+          eliminated_trivially: false,
+          eliminating_teams: vec![].into_iter().collect(),
+        },
+        Team {
+          id: Arc::new("detroit".to_string()),
+          rank: 5,
+          matches_left: 16,
+          matches_won: 49,
+          eliminated: true,
           eliminated_trivially: true,
           eliminating_teams: vec!["baltimore", "boston", "new-york"]
             .into_iter()
             .map(|team_id| Arc::new(team_id.to_string()))
             .collect(),
         },
-      )]
+      ]
       .into_iter()
+      .map(Arc::new)
       .collect(),
     },
   ];
 
   for TestExample {
     tournament,
-    expected_eliminated_teams,
+    expected_prediction,
   } in examples
   {
     assert_eq!(
       predict_tournament_eliminated_teams(&tournament),
-      expected_eliminated_teams
+      expected_prediction
     );
   }
 }

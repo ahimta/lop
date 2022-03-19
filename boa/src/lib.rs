@@ -13,11 +13,33 @@ pub fn test() {
   tournament_fetching::test();
 
   for tournament in &tournament_fetching::fetch_tournaments() {
-    println!(
-      "prediction({}): {:?}",
-      tournament.name,
-      tournament_prediction::predict_tournament_eliminated_teams(tournament)
+    // SEE: https://doc.rust-lang.org/std/fmt/#fillalignment
+    println!("|{:-^116}|", "");
+    println!("|{:^116}|", tournament.name);
+    println!("|{:-^116}|", "");
+    println!("| {rank:4} | {id:25} | {eliminated:11} | {matches_left:12} | {matches_won:11} | {eliminating_teams:36} |",
+  rank="Rank",
+  id="ID",
+  eliminated="Eliminated",
+  matches_left="Matches Left",
+  matches_won="Matches Won",
+  eliminating_teams="Eliminating Teams",
     );
+    println!("|{:-^116}|", "");
+
+    for team in
+      tournament_prediction::predict_tournament_eliminated_teams(tournament)
+    {
+      // FIXME: Always use named format placeholders.
+      println!("| {rank:4} | {id:25} | {eliminated:11} | {matches_left:12} | {matches_won:11} | {eliminating_teams:36} |",
+rank=team.rank,
+id=team.id,
+eliminated=format!("{}-{}", team.eliminated, team.eliminated_trivially),
+matches_left=team.matches_left,
+matches_won=team.matches_won,
+eliminating_teams=team.eliminating_teams.iter().map(|team_id|String::clone(team_id)).collect::<Vec<_>>().join(", "),
+    );
+    }
   }
 }
 
@@ -42,6 +64,8 @@ pub extern "C" fn predict_tournament_eliminated_teams_native(
 ) -> i32 {
   eprintln!("hello world!");
 
+  // FIXME: Change API to use new format.
+
   let tournaments = tournament_fetching::fetch_tournaments();
   let local_eliminated_teams = tournaments
     .iter()
@@ -52,13 +76,11 @@ pub extern "C" fn predict_tournament_eliminated_teams_native(
   let ets = Box::into_raw(
     (&local_eliminated_teams)
       .iter()
-      .map(|(id, eliminating_teams_ids)| EliminatedTeamNative {
-        id: CString::new(String::clone(id)).unwrap().into_raw(),
-        eliminating_teams_ids_count: eliminating_teams_ids
-          .eliminating_teams
-          .len() as u64,
+      .map(|team| EliminatedTeamNative {
+        id: CString::new(String::clone(&team.id)).unwrap().into_raw(),
+        eliminating_teams_ids_count: team.eliminating_teams.len() as u64,
         eliminating_teams_ids: Box::into_raw(
-          eliminating_teams_ids
+          team
             .eliminating_teams
             .iter()
             .map(|s| CString::new(String::clone(s)).unwrap().into_raw())

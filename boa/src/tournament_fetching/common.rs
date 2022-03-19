@@ -87,24 +87,10 @@ pub(super) trait TournamentProvider {
           })
           .collect();
 
-        let teams: HashMap<Arc<TeamId>, Arc<Team>> = matches_results
+        let teams_ids: HashSet<&Arc<TeamId>> = matches_results
           .iter()
           .flat_map(|((first_team_id, _), (second_team_id, _))| {
             vec![first_team_id, second_team_id]
-          })
-          .collect::<HashSet<&Arc<TeamId>>>()
-          .into_iter()
-          .map(|team_id| {
-            (
-              Arc::clone(team_id),
-              Arc::new(Team {
-                // FIXME: Make sure there's a test to cover this (e.g: using all
-                // tournament states).
-                matches_won: WIN_FACTOR
-                  * *matches_won.get(team_id).unwrap_or(&0)
-                  + DRAW_FACTOR * *matches_drawn.get(team_id).unwrap_or(&0),
-              }),
-            )
           })
           .collect();
 
@@ -127,35 +113,89 @@ pub(super) trait TournamentProvider {
             })
             .collect();
 
-        let matches_left: HashMap<(Arc<TeamId>, Arc<TeamId>), usize> = teams
-          .iter()
-          .map(|(team_id, _)| team_id)
-          .combinations(2)
-          .map(|team_pair| (team_pair[0], team_pair[1]))
-          .map(|(first_team_id, second_team_id)| {
-            (
+        let matches_left: HashMap<(Arc<TeamId>, Arc<TeamId>), usize> =
+          teams_ids
+            .iter()
+            .combinations(2)
+            .map(|team_pair| (team_pair[0], team_pair[1]))
+            .map(|(first_team_id, second_team_id)| {
               (
-                Arc::clone(first_team_id.min(second_team_id)),
-                Arc::clone(first_team_id.max(second_team_id)),
-              ),
-              WIN_FACTOR
-                * MATCHES_PER_TEAM_PAIR
-                  .checked_sub(
-                    *matches_played
-                      .get(&(
-                        first_team_id.min(second_team_id),
-                        first_team_id.max(second_team_id),
-                      ))
-                      .unwrap_or(&0),
-                  )
-                  .unwrap(),
-            )
+                (
+                  Arc::clone(first_team_id.min(second_team_id)),
+                  Arc::clone(first_team_id.max(second_team_id)),
+                ),
+                WIN_FACTOR
+                  * MATCHES_PER_TEAM_PAIR
+                    .checked_sub(
+                      *matches_played
+                        .get(&(
+                          first_team_id.min(second_team_id),
+                          first_team_id.max(second_team_id),
+                        ))
+                        .unwrap_or(&0),
+                    )
+                    .unwrap(),
+              )
+            })
+            .collect();
+
+        let matches_left_per_team: HashMap<&Arc<TeamId>, usize> = matches_left
+          .iter()
+          .flat_map(
+            |((first_team_id, second_team_id), matches_left_between_pair)| {
+              vec![
+                (first_team_id, matches_left_between_pair),
+                (second_team_id, matches_left_between_pair),
+              ]
+            },
+          )
+          .into_group_map_by(|(team_id, _)| *team_id)
+          .into_iter()
+          .map(|(team_id, values)| {
+            (team_id, values.into_iter().fold(0, |acc, (_, v)| acc + v))
+          })
+          .collect();
+
+        let mut teams: Vec<Arc<Team>> = teams_ids
+          .iter()
+          .map(|team_id| {
+            Arc::new(Team {
+              id: Arc::clone(team_id),
+
+              // FIXME
+              rank: 0,
+              matches_left: *matches_left_per_team.get(team_id).unwrap_or(&0),
+              // FIXME: Make sure there's a test to cover this (e.g: using all
+              // tournament states).
+              matches_won: WIN_FACTOR * *matches_won.get(team_id).unwrap_or(&0)
+                + DRAW_FACTOR * *matches_drawn.get(team_id).unwrap_or(&0),
+
+              eliminated: false,
+              eliminated_trivially: false,
+              eliminating_teams: vec![].into_iter().collect(),
+            })
+          })
+          .collect();
+
+        // FIXME: Better ranking to match actual tournaments.
+        teams.sort_unstable_by_key(|team| {
+          (team.matches_won, Arc::clone(&team.id))
+        });
+        teams.reverse();
+        let ranked_teams: Vec<Arc<Team>> = teams
+          .into_iter()
+          .enumerate()
+          .map(|(i, team)| {
+            Arc::new(Team {
+              rank: i + 1,
+              ..Team::clone(&team)
+            })
           })
           .collect();
 
         Tournament {
           name: tournament_name,
-          teams,
+          teams: ranked_teams,
           matches_left,
         }
       })
