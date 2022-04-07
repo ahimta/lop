@@ -68,16 +68,16 @@ pub(super) trait TournamentProvider {
 
         let matches_drawn: HashMap<&Arc<TeamId>, usize> = matches_results
           .iter()
-          .map(
+          .flat_map(
             |(
               (first_team_id, first_team_score),
               (second_team_id, second_team_score),
             )| {
-              if (first_team_score - second_team_score).abs() < 0.01 {
-                (first_team_id, 1)
-              } else {
-                (second_team_id, 0)
+              if (first_team_score - second_team_score).abs() >= 0.99 {
+                return vec![];
               }
+
+              vec![(first_team_id, 1), (second_team_id, 1)]
             },
           )
           .into_group_map_by(|(team_id, _)| *team_id)
