@@ -142,21 +142,20 @@ impl TournamentProvider for PremierLeague {
                   .map(|ContentItem { teams, .. }| {
                     let (first_team, second_team) = &teams;
 
-                    // FIXME: Make sure scores aren't fractional and convert them to
-                    // `usize` to avoid landmines (some already happened but not
-                    // committed).
-
                     (
                       // FIXME: Make sure to handle cases where a team wins in
                       // penalties. Luckily, the primary tournament we use right now
                       // doesn't seem to have this case.
                       (
                         Arc::new(first_team.team.name.clone()),
-                        first_team.score,
+                        // FIXME: Add proper float to int implementation and use
+                        // it everywhere or look for a dependency that does
+                        // this.
+                        unsafe { first_team.score.to_int_unchecked() },
                       ),
                       (
                         Arc::new(second_team.team.name.clone()),
-                        second_team.score,
+                        unsafe { second_team.score.to_int_unchecked() },
                       ),
                     )
                   })
@@ -310,9 +309,9 @@ impl TournamentProvider for Koora {
                     return None;
                   }
 
-                  let first_team_score: f64 =
+                  let first_team_score: usize =
                     possible_scores[0].parse().unwrap();
-                  let second_team_score: f64 =
+                  let second_team_score: usize =
                     possible_scores[1].parse().unwrap();
 
                   let first_team_name = table_cells[i - 2].as_str().unwrap();

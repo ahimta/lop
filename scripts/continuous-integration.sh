@@ -76,6 +76,8 @@ cargo fmt --quiet --all -- --check
 
 export RUST_BACKTRACE=1
 
+# FIXME: Tests too slow because they use the network. Which also makes them more
+# flaky.
 echo "Building & testing debug..." >&2
 # SEE: https://doc.rust-lang.org/cargo/commands/cargo-build.html#feature-selection
 cargo run --quiet --jobs "$(nproc)" --no-default-features

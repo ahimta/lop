@@ -1,3 +1,4 @@
+use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::string;
@@ -12,7 +13,7 @@ use crate::tournament_prediction::Tournament;
 const WIN_FACTOR: usize = 3;
 const DRAW_FACTOR: usize = 1;
 
-pub(super) type MatchResult = ((Arc<TeamId>, f64), (Arc<TeamId>, f64));
+pub(super) type MatchResult = ((Arc<TeamId>, usize), (Arc<TeamId>, usize));
 
 pub(super) trait TournamentProvider {
   const TEST_TOURNAMENT_NAME: &'static str;
@@ -50,12 +51,10 @@ pub(super) trait TournamentProvider {
               (first_team_id, first_team_score),
               (second_team_id, second_team_score),
             )| {
-              if first_team_score > second_team_score {
-                (first_team_id, 1)
-              } else if second_team_score > first_team_score {
-                (second_team_id, 1)
-              } else {
-                (second_team_id, 0)
+              match first_team_score.cmp(second_team_score) {
+                Ordering::Greater => (first_team_id, 1),
+                Ordering::Less => (second_team_id, 1),
+                Ordering::Equal => (second_team_id, 0),
               }
             },
           )
@@ -73,7 +72,7 @@ pub(super) trait TournamentProvider {
               (first_team_id, first_team_score),
               (second_team_id, second_team_score),
             )| {
-              if (first_team_score - second_team_score).abs() >= 0.99 {
+              if first_team_score != second_team_score {
                 return vec![];
               }
 
