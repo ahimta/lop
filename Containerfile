@@ -20,6 +20,7 @@ LABEL author "Abdullah Alansari <ahimta@gmail.com>"
 # complains that they are not part of the OCI image format.
 # SEE: https://docs.docker.com/engine/reference/builder/#shell
 
+# NOTE(SAFER-BASH-AGAINST-LAX-BEHAVIOR)
 # NOTE: Most lightweight shells don't support `pipefail` so we must keep in mind
 # that commands that use a pipe only fail if the last command fail.
 # NOTE: We use short options because long options don't with base-image.
@@ -31,8 +32,13 @@ LABEL author "Abdullah Alansari <ahimta@gmail.com>"
 # NOTE: We add a space after the first `set` as otherwise it'd fail.
 ARG SET_SHELL_SAFE_OPTIONS="set -e ; set -Cfu"
 
-# NOTE: This is important as otherwise this would depend on the base-image.
-ENV LANG C.UTF-8
+# NOTE(SIMPLE-LOCALE-FOR-CONSISTENT-BEHAVIOR)
+# SEE: https://unix.stackexchange.com/a/87763.
+ENV LANG C
+ENV LANGUAGE C
+ENV LC_ALL C
+
+# NOTE: This is important to avoid build hanging waiting for user-input.
 ENV DEBIAN_FRONTEND noninteractive
 
 RUN ${SET_SHELL_SAFE_OPTIONS}; \

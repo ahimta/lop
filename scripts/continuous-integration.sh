@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# NOTE(ERREXIT-FIRST-THING-FOR-AVOIDING-SILENT-INITIALIZATION-ERRORS)
+set -o errexit
 source ./scripts/_base.sh
 
 # NOTE: The `ANDROID_SDK_ROOT` must be defined and it's typically
