@@ -42,7 +42,10 @@
         "label": "Continuous Integration",
         "type": "process",
         "group": {
-          "kind": "test",
+          // NOTE: We use `build` here instead of `test` because it's much
+          // faster and runs instantly (thanks to `isDefault`)
+          // with just `Ctrl+Shift+B`.
+          "kind": "build",
           "isDefault": true
         },
         "options": {
