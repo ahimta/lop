@@ -4,9 +4,9 @@ use std::collections::HashSet;
 use std::marker::PhantomData;
 use std::sync::Arc;
 
-use super::residual_edge::ResidualEdge;
-use super::FlowEdge;
-use super::FlowNode;
+use crate::mincut_maxflow::residual_edge::ResidualEdge;
+use crate::mincut_maxflow::FlowEdge;
+use crate::mincut_maxflow::FlowNode;
 
 pub(super) struct ResidualGraph {
   adjacency_matrix: BTreeMap<FlowNode, Vec<Arc<RefCell<ResidualEdge>>>>,

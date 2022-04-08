@@ -9,11 +9,11 @@ use std::collections::VecDeque;
 use std::marker::PhantomData;
 use std::sync::Arc;
 
-use self::common::Flow;
-use self::common::FlowEdge;
-use self::common::FlowNode;
-use self::residual_edge::ResidualEdge;
-use self::residual_graph::ResidualGraph;
+use crate::mincut_maxflow::common::Flow;
+use crate::mincut_maxflow::common::FlowEdge;
+use crate::mincut_maxflow::common::FlowNode;
+use crate::mincut_maxflow::residual_edge::ResidualEdge;
+use crate::mincut_maxflow::residual_graph::ResidualGraph;
 
 type EdgeTo = Arc<RefCell<BTreeMap<FlowNode, Arc<RefCell<ResidualEdge>>>>>;
 

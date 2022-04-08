@@ -4,10 +4,8 @@ use std::sync::Arc;
 
 use crate::tournament_fetching::common::MatchResult;
 use crate::tournament_fetching::common::TournamentProvider;
-
-// FIXME: Always use `crate` imports.
-use super::tournament_prediction::Team;
-use super::tournament_prediction::Tournament;
+use crate::tournament_prediction::Team;
+use crate::tournament_prediction::Tournament;
 
 struct PremierLeague {}
 impl TournamentProvider for PremierLeague {

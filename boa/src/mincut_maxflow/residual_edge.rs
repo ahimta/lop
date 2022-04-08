@@ -1,8 +1,8 @@
 use std::marker::PhantomData;
 
-use super::common::ensure_valid_edge_nodes;
-use super::common::Flow;
-use super::common::FlowNode;
+use crate::mincut_maxflow::common::ensure_valid_edge_nodes;
+use crate::mincut_maxflow::common::Flow;
+use crate::mincut_maxflow::common::FlowNode;
 
 #[derive(Debug)]
 pub(super) struct ResidualEdge {

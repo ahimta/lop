@@ -4,10 +4,10 @@ use std::sync::Arc;
 
 use itertools::Itertools;
 
-use super::mincut_maxflow::calculate_mincut_maxflow;
-use super::mincut_maxflow::common::Flow;
-use super::mincut_maxflow::common::FlowEdge;
-use super::mincut_maxflow::common::FlowNode;
+use crate::mincut_maxflow::calculate_mincut_maxflow;
+use crate::mincut_maxflow::common::Flow;
+use crate::mincut_maxflow::common::FlowEdge;
+use crate::mincut_maxflow::common::FlowNode;
 
 pub type TeamId = String;
 
