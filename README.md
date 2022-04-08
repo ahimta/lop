@@ -51,10 +51,6 @@ dart --disable-analytics
 flutter sdk-path
 flutter upgrade
 flutter doctor
-
-# FIXME: Uncomment once Flutter desktop is final (it's beta at the moment).
-# flutter config --enable-linux-desktop
-# sudo apt-get install clang cmake ninja-build pkg-config libgtk-3-dev
 ```
 
 ### Resources

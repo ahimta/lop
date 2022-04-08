@@ -355,7 +355,6 @@ pub(super) fn test() {
           id: Arc::new("montreal".to_string()),
           rank: 4,
           matches_left: 3,
-          // FIXME: `matches_won` would break due to points hack.
           matches_won: 77,
           eliminated: true,
           eliminated_trivially: true,

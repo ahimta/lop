@@ -143,9 +143,9 @@ impl TournamentProvider for PremierLeague {
                     let (first_team, second_team) = &teams;
 
                     (
-                      // FIXME: Make sure to handle cases where a team wins in
-                      // penalties. Luckily, the primary tournament we use right now
-                      // doesn't seem to have this case.
+                      // NOTE: We don't handle the case where a team wins in
+                      // penalties. And we don't have because the tournaments we
+                      // support, at the moment, don't need this.
                       (
                         Arc::new(first_team.team.name.clone()),
                         // FIXME: Add proper float to int implementation and use
@@ -317,14 +317,7 @@ impl TournamentProvider for Koora {
                   let first_team_name = table_cells[i - 2].as_str().unwrap();
                   let second_team_name = table_cells[i + 3].as_str().unwrap();
 
-                  // FIXME: Make sure scores aren't fractional and convert them to
-                  // `usize` to avoid landmines (some already happened but not
-                  // committed).
-
                   Some((
-                    // FIXME: Make sure to handle cases where a team wins in
-                    // penalties. Luckily, the primary tournament we use right now
-                    // doesn't seem to have this case.
                     (Arc::new(first_team_name.to_string()), first_team_score),
                     (Arc::new(second_team_name.to_string()), second_team_score),
                   ))
