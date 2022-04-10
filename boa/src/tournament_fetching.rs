@@ -60,7 +60,7 @@ impl TournamentProvider for PremierLeague {
     ("First Team - UEFA Europa League", 3, 457, "541,49,50,52,505,53,494,81,84,364,58,366,989,61,93,95,96,26,369,97,98,63,202,65,66,105,470,635,106,69,1420,108,110,752,111,249,506,373,25,74",),
     ("PL2 - Primier League 2 - Division 1", 16, 438, "385,332,334,336,275,337,339,279,343,344,381,387,383,358",),
     ("PL2 - Primier League 2 - Division 2", 17, 447, "386,266,335,341,345,346,347,281,351,352,354,355,357,360",),
-  ].into_iter().map(|(tournament_name, competition_id, competition_season_id, competition_teams)| -> (String, Vec<String>){
+  ].into_iter().map(|(tournament_name, competition_id, competition_season_id, competition_teams_ids)| -> (String, Vec<String>){
     let mut page = 0;
     let mut tournament_results_pages_json_non_parsed: Vec<String> = vec![];
     loop {
@@ -71,8 +71,8 @@ impl TournamentProvider for PremierLeague {
         PAGE_SIZE,
       );
 
-      let tournament_url=format!("https://footballapi.pulselive.com/football/fixtures?comps={}&compSeasons={}&teams={}&page={}&pageSize={}&sort=desc&statuses=C&altIds=true",
-      competition_id,competition_season_id,competition_teams, page, PAGE_SIZE,);
+      let tournament_url=format!("https://footballapi.pulselive.com/football/fixtures?comps={competition_id}&compSeasons={competition_season_id}&teams={competition_teams_ids}&page={page}&pageSize={page_size}&sort=desc&statuses=C&altIds=true",
+      competition_id=competition_id,competition_season_id=competition_season_id,competition_teams_ids=competition_teams_ids, page=page, page_size=PAGE_SIZE,);
       // SEE: https://docs.rs/reqwest/0.11.7/reqwest/struct.RequestBuilder.html#method.send
       let resp = client
         // NOTE: Used to match exactly the URL used in the official page.
@@ -238,8 +238,8 @@ impl TournamentProvider for Koora {
             .into_iter()
             .map(|current_month| -> String {
               let tournament_url = format!(
-                "https://www.goalzz.com/main.aspx?c={}&stage=1&smonth={}&ajax=true",
-                competition_id, current_month,
+                "https://www.goalzz.com/main.aspx?c={competition_id}&stage=1&smonth={current_month}&ajax=true",
+                competition_id=competition_id, current_month=current_month,
               );
 
               // SEE: https://docs.rs/reqwest/0.11.7/reqwest/struct.RequestBuilder.html#method.send

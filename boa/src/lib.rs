@@ -30,7 +30,6 @@ pub fn test() {
     for team in
       tournament_prediction::predict_tournament_eliminated_teams(tournament)
     {
-      // FIXME: Always use named format placeholders.
       println!("| {rank:4} | {id:25} | {eliminated:11} | {matches_left:12} | {matches_won:11} | {eliminating_teams:36} |",
 rank=team.rank,
 id=team.id,
