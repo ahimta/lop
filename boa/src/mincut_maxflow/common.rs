@@ -14,7 +14,7 @@ pub(crate) struct FlowNode {
   constructor_guard: PhantomData<()>,
 }
 
-const JOINED_WITH_TAG: &str = "-joined-with-";
+const JOINED_WITH_TAG: &str = "joined-with";
 
 impl FlowNode {
   pub(crate) fn new(id: Arc<String>) -> Self {
