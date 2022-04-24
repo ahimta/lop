@@ -148,14 +148,11 @@ impl TournamentProvider for PremierLeague {
                       // support, at the moment, don't need this.
                       (
                         Arc::new(first_team.team.name.clone()),
-                        // FIXME: Add proper float to int implementation and use
-                        // it everywhere or look for a dependency that does
-                        // this.
-                        unsafe { first_team.score.to_int_unchecked() },
+                        f64_score_to_usize(first_team.score),
                       ),
                       (
                         Arc::new(second_team.team.name.clone()),
-                        unsafe { second_team.score.to_int_unchecked() },
+                        f64_score_to_usize(second_team.score),
                       ),
                     )
                   })
@@ -168,6 +165,20 @@ impl TournamentProvider for PremierLeague {
       )
       .collect()
   }
+}
+
+#[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+fn f64_score_to_usize(score: f64) -> usize {
+  const EPSILON: f64 = 0.00001;
+  const MAX: f64 = 1000.0;
+
+  assert!(
+    score >= 0f64 && (score.round() - score).abs() < EPSILON && score <= MAX,
+    "Invalid input {}",
+    score,
+  );
+
+  score as usize
 }
 
 struct Koora {}
