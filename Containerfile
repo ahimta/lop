@@ -137,6 +137,7 @@ RUN ${SET_SHELL_SAFE_OPTIONS}; \
 
 COPY --chown=lop:lop . /lop
 WORKDIR /lop
+# FIXME: Only discard untracked files behind an option.
 RUN ${SET_SHELL_SAFE_OPTIONS}; \
   # NOTE: We don't do `git restore --staged .` here because it discards changes
   # about to be committed. This is important for pre-commit checks and maybe

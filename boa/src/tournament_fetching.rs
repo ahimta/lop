@@ -338,7 +338,7 @@ impl TournamentProvider for Koora {
 // FIXME: Always use `#[must_use]`
 /// # Panics
 #[must_use]
-pub(super) fn fetch_tournaments() -> Vec<Tournament> {
+pub fn fetch_tournaments() -> Vec<Tournament> {
   Koora::fetch_tournaments()
     .into_iter()
     .chain(PremierLeague::fetch_tournaments())
