@@ -280,6 +280,9 @@ struct TestExample {
 
 #[allow(clippy::too_many_lines)]
 pub(super) fn test() {
+  #[cfg(test)]
+  use pretty_assertions::assert_eq;
+
   let source_node = "s";
   let sink_node = "t";
 

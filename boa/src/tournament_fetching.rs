@@ -347,8 +347,7 @@ pub fn fetch_tournaments() -> Vec<Tournament> {
 
 #[allow(clippy::too_many_lines)]
 pub(super) fn test() {
-  // FIXME: Use globally and only activate for test/debug.
-  // #[cfg(test)]
+  #[cfg(test)]
   use pretty_assertions::assert_eq;
 
   assert_eq!(

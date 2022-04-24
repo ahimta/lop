@@ -79,9 +79,7 @@ chrono = { version = "^0.4.19", default-features = false, features = [
 ] }
 
 # SEE: https://doc.rust-lang.org/cargo/reference/specifying-dependencies.html#development-dependencies
-# FIXME: Activate dev. dependencies.
-# [dev-dependencies]
-
+[dev-dependencies]
 # SEE: https://docs.rs/pretty_assertions/1.2.0
 pretty_assertions = { version = "^1.2.0", default-features = false, features = [
   "alloc",

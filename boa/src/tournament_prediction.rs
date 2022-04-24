@@ -257,6 +257,9 @@ struct TestExample {
 
 #[allow(clippy::too_many_lines)]
 pub(super) fn test() {
+  #[cfg(test)]
+  use pretty_assertions::assert_eq;
+
   let examples = vec![
     TestExample {
       tournament: Tournament {
