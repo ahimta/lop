@@ -9,12 +9,14 @@ use crate::tournament_fetching::common::TournamentProvider;
 use crate::tournament_prediction::Team;
 use crate::tournament_prediction::Tournament;
 
+#[must_use]
 struct PremierLeague {}
 impl TournamentProvider for PremierLeague {
   const TEST_TOURNAMENT_NAME: &'static str = "First Team - Premier League";
   const TEST_DATA_FILE_ID: &'static str = "2021-12-26T14:58:52";
   const TEST_DATA_PREFIX: &'static str = "premier-league";
 
+  #[must_use]
   fn download_tournaments() -> Vec<(String, Vec<String>)> {
     // NOTE: Used to match exactly the value used in official page.
     const PAGE_SIZE: usize = 40;
@@ -66,28 +68,33 @@ impl TournamentProvider for PremierLeague {
   }).collect()
   }
 
+  #[must_use]
   fn process_tournaments(
     all_tournaments_results_pages_json_non_parsed: Vec<(String, Vec<String>)>,
   ) -> Vec<(String, Vec<MatchResult>)> {
     use serde::Deserialize;
 
     #[derive(Deserialize)]
+    #[must_use]
     struct Page {
       content: Vec<ContentItem>,
     }
 
     #[derive(Deserialize)]
+    #[must_use]
     struct ContentItem {
       teams: (ContentItemTeam, ContentItemTeam),
     }
 
     #[derive(Deserialize)]
+    #[must_use]
     struct ContentItemTeam {
       score: f64,
       team: ContentItemTeamTeam,
     }
 
     #[derive(Deserialize)]
+    #[must_use]
     struct ContentItemTeamTeam {
       name: String,
     }
@@ -137,6 +144,7 @@ impl TournamentProvider for PremierLeague {
 }
 
 #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+#[must_use]
 fn f64_score_to_usize(score: f64) -> usize {
   const EPSILON: f64 = 0.00001;
   const MAX: f64 = 1000.0;
@@ -150,12 +158,14 @@ fn f64_score_to_usize(score: f64) -> usize {
   score as usize
 }
 
+#[must_use]
 struct Koora {}
 impl TournamentProvider for Koora {
   const TEST_TOURNAMENT_NAME: &'static str = "Saudi Professional League";
   const TEST_DATA_FILE_ID: &'static str = "2022-02-14T22:50:10";
   const TEST_DATA_PREFIX: &'static str = "koora";
 
+  #[must_use]
   fn download_tournaments() -> Vec<(String, Vec<String>)> {
     let client = get_client("https://www.goalzz.com");
 
@@ -210,12 +220,14 @@ impl TournamentProvider for Koora {
     .collect()
   }
 
+  #[must_use]
   fn process_tournaments(
     all_tournaments_responses: Vec<(String, Vec<String>)>,
   ) -> Vec<(String, Vec<MatchResult>)> {
     use serde::Deserialize;
 
     #[derive(Deserialize)]
+    #[must_use]
     struct Table {
       matches_list: Vec<serde_json::Value>,
     }
@@ -283,6 +295,7 @@ impl TournamentProvider for Koora {
   }
 }
 
+#[must_use]
 fn get_client(origin: &'static str) -> Client {
   use reqwest::header::HeaderMap;
   use reqwest::header::HeaderValue;
@@ -316,7 +329,6 @@ fn get_client(origin: &'static str) -> Client {
   client.default_headers(headers).build().unwrap()
 }
 
-// FIXME: Always use `#[must_use]`
 /// # Panics
 #[must_use]
 pub fn fetch_tournaments() -> Vec<Tournament> {

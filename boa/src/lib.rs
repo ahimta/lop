@@ -14,6 +14,7 @@ pub fn test() {
 }
 
 #[repr(C)]
+#[must_use]
 pub struct EliminatedTeamNative {
   id: *const c_char,
   eliminating_teams_ids_count: u64,
@@ -27,6 +28,7 @@ pub extern "C" fn test_native() {
 
 /// # Panics
 #[allow(clippy::not_unsafe_ptr_arg_deref)]
+#[must_use]
 #[no_mangle]
 pub extern "C" fn predict_tournament_eliminated_teams_native(
   eliminated_teams_count: *mut u64,
@@ -77,7 +79,7 @@ pub extern "C" fn predict_tournament_eliminated_teams_native(
 }
 
 /// # Panics
-#[allow(clippy::not_unsafe_ptr_arg_deref)]
+#[allow(clippy::not_unsafe_ptr_arg_deref, unused_must_use)]
 #[no_mangle]
 pub extern "C" fn predict_tournament_eliminated_teams_native_free(
   eliminated_teams: *mut *const EliminatedTeamNative,

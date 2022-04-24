@@ -15,6 +15,7 @@ const DRAW_FACTOR: usize = 1;
 
 pub(super) type MatchResult = ((Arc<TeamId>, usize), (Arc<TeamId>, usize));
 
+#[must_use]
 pub(super) trait TournamentProvider {
   const TEST_TOURNAMENT_NAME: &'static str;
   const TEST_DATA_FILE_ID: &'static str;
@@ -24,11 +25,14 @@ pub(super) trait TournamentProvider {
   // for easier testing.
   // FIXME: Tournament-name passed around everywhere. Probably replace with full
   // team details/stats.
+  #[must_use]
   fn download_tournaments() -> Vec<(String, Vec<String>)>;
+  #[must_use]
   fn process_tournaments(
     downloaded_tournament: Vec<(String, Vec<String>)>,
   ) -> Vec<(String, Vec<MatchResult>)>;
 
+  #[must_use]
   fn fetch_tournaments() -> Vec<Tournament> {
     let all_tournaments_matches_results =
       Self::process_tournaments(Self::download_tournaments());
@@ -36,6 +40,7 @@ pub(super) trait TournamentProvider {
   }
 
   #[allow(clippy::too_many_lines)]
+  #[must_use]
   fn postprocess_tournament(
     all_tournaments_matches_results: Vec<(String, Vec<MatchResult>)>,
   ) -> Vec<Tournament> {
@@ -201,6 +206,7 @@ pub(super) trait TournamentProvider {
       .collect()
   }
 
+  #[must_use]
   fn test_fetch_tournaments() -> Vec<Tournament> {
     let matches_results =
       Self::process_tournaments(Self::test_helper_download_tournaments());
@@ -227,6 +233,7 @@ pub(super) trait TournamentProvider {
     }
   }
 
+  #[must_use]
   fn test_helper_download_tournaments() -> Vec<(String, Vec<String>)> {
     use std::fs;
 

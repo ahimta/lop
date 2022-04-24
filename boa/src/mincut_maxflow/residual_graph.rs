@@ -8,6 +8,7 @@ use crate::mincut_maxflow::residual_edge::ResidualEdge;
 use crate::mincut_maxflow::FlowEdge;
 use crate::mincut_maxflow::FlowNode;
 
+#[must_use]
 pub(super) struct ResidualGraph {
   adjacency_matrix: BTreeMap<FlowNode, Vec<Arc<RefCell<ResidualEdge>>>>,
   nodes: HashSet<FlowNode>,
@@ -15,6 +16,7 @@ pub(super) struct ResidualGraph {
 }
 
 impl ResidualGraph {
+  #[must_use]
   pub(super) fn new(
     edges: &[FlowEdge],
     source_node: &FlowNode,
@@ -94,10 +96,12 @@ impl ResidualGraph {
     }
   }
 
+  #[must_use]
   pub(super) fn edges(&self, node: &FlowNode) -> &[Arc<RefCell<ResidualEdge>>] {
     self.adjacency_matrix.get(node).unwrap()
   }
 
+  #[must_use]
   pub(super) const fn nodes(&self) -> &HashSet<FlowNode> {
     &self.nodes
   }

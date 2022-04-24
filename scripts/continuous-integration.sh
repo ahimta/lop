@@ -101,6 +101,8 @@ echo "Linting..." >&2
 # useful lints and only its broken `redundant_pub_crate` is disabled.
 # NOTE: We also disable `clippy::multiple-crate-versions` since this is caused
 # by upstream dependencies and we have little control over it.
+# NOTE: We disable `` because it requires global knowledge and ensuring that
+# only a single must-use is used. Which is just an invitation for errors.
 cargo clippy --quiet -- \
   -D warnings \
   \
@@ -115,7 +117,8 @@ cargo clippy --quiet -- \
   -W clippy::nursery \
   \
   -A clippy::redundant_pub_crate \
-  -A clippy::multiple-crate-versions
+  -A clippy::multiple-crate-versions \
+  -A clippy::double-must-use \
 
 ANDROID_NDK_PATH="${ANDROID_SDK_ROOT}/ndk/${ANDROID_NDK_VERSION}"
 ANDROID_AR="${ANDROID_NDK_PATH}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android-ar"

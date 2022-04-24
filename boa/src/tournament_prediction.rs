@@ -12,6 +12,7 @@ use crate::mincut_maxflow::common::FlowNode;
 pub type TeamId = String;
 
 #[derive(Eq, PartialEq, Debug)]
+#[must_use]
 pub struct Tournament {
   pub name: String,
   pub teams: Vec<Arc<Team>>,
@@ -20,6 +21,7 @@ pub struct Tournament {
 }
 
 #[derive(Eq, PartialEq, Clone, Debug)]
+#[must_use]
 pub struct Team {
   pub id: Arc<TeamId>,
 
@@ -250,6 +252,7 @@ pub fn predict_tournament_eliminated_teams(
   eliminated_teams
 }
 
+#[must_use]
 struct TestExample {
   tournament: Tournament,
   expected_prediction: Vec<Arc<Team>>,

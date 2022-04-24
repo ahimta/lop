@@ -18,6 +18,7 @@ use crate::mincut_maxflow::residual_graph::ResidualGraph;
 type EdgeTo = Arc<RefCell<BTreeMap<FlowNode, Arc<RefCell<ResidualEdge>>>>>;
 
 #[derive(Debug, Eq, PartialEq)]
+#[must_use]
 pub(super) struct MincutMaxflow {
   pub(super) mincut: HashSet<FlowNode>,
   pub(super) maxflow: Flow,
@@ -25,6 +26,7 @@ pub(super) struct MincutMaxflow {
   constructor_guard: PhantomData<()>,
 }
 
+#[must_use]
 pub(super) fn calculate_mincut_maxflow(
   edges: &[FlowEdge],
   source_node: &FlowNode,
@@ -107,6 +109,7 @@ fn ensure_feasibility(
   }
 }
 
+#[must_use]
 fn get_excess(graph: &ResidualGraph, node: &FlowNode) -> Flow {
   let mut excess = Flow::Regular(0);
 
@@ -121,6 +124,7 @@ fn get_excess(graph: &ResidualGraph, node: &FlowNode) -> Flow {
   excess
 }
 
+#[must_use]
 fn has_augmenting_path(
   graph: &ResidualGraph,
   source_node: &FlowNode,
@@ -157,6 +161,7 @@ fn has_augmenting_path(
   marked.contains(sink_node)
 }
 
+#[must_use]
 struct SinkToSourceIterator {
   edge_to: EdgeTo,
   source_node: FlowNode,
@@ -164,6 +169,7 @@ struct SinkToSourceIterator {
 }
 
 impl SinkToSourceIterator {
+  #[must_use]
   fn new(source_node: &FlowNode, sink: &FlowNode, edge_to: EdgeTo) -> Self {
     Self {
       edge_to,
@@ -176,6 +182,7 @@ impl SinkToSourceIterator {
 impl Iterator for SinkToSourceIterator {
   type Item = (FlowNode, Arc<RefCell<ResidualEdge>>);
 
+  #[must_use]
   fn next(&mut self) -> Option<Self::Item> {
     if self.current_node == self.source_node {
       return None;
@@ -191,6 +198,7 @@ impl Iterator for SinkToSourceIterator {
   }
 }
 
+#[must_use]
 fn get_bottlenick(
   source_node: &FlowNode,
   sink_node: &FlowNode,
@@ -207,6 +215,7 @@ fn get_bottlenick(
   bottlenick
 }
 
+#[must_use]
 fn augment_flow(
   source_node: &FlowNode,
   sink_node: &FlowNode,
@@ -252,6 +261,7 @@ fn ensure_optimality(
   );
 }
 
+#[must_use]
 fn get_mincut_flow(
   graph: &ResidualGraph,
   mincut_maxflow: &MincutMaxflow,
@@ -273,6 +283,7 @@ fn get_mincut_flow(
   max_flow_of_mincut
 }
 
+#[must_use]
 struct TestExample {
   edges: Vec<FlowEdge>,
   expected_mincut_maxflow: MincutMaxflow,

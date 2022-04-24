@@ -9,6 +9,7 @@ pub(super) fn ensure_valid_edge_nodes(from: &FlowNode, to: &FlowNode) {
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Ord, PartialOrd)]
+#[must_use]
 pub(crate) struct FlowNode {
   pub(crate) id: Arc<String>,
   constructor_guard: PhantomData<()>,
@@ -17,6 +18,7 @@ pub(crate) struct FlowNode {
 const JOINED_WITH_TAG: &str = "joined-with";
 
 impl FlowNode {
+  #[must_use]
   pub(crate) fn new(id: Arc<String>) -> Self {
     assert!(
       !id.contains(JOINED_WITH_TAG),
@@ -28,6 +30,7 @@ impl FlowNode {
     Self::internal_new(id)
   }
 
+  #[must_use]
   pub(crate) fn join(&self, other: &Self) -> Self {
     let (Self { id: node1, .. }, Self { id: node2, .. }) = (self, other);
     Self::internal_new(Arc::new(format!(
@@ -38,6 +41,7 @@ impl FlowNode {
     )))
   }
 
+  #[must_use]
   fn internal_new(id: Arc<String>) -> Self {
     const NODE_ID_LENGTH_MIN: usize = 1;
     const NODE_ID_LENGTH_MAX: usize = 10 * 1000;
@@ -59,6 +63,7 @@ impl FlowNode {
 // degenerate cases and it's very hard to beat the current model without adding
 // undue complexity.
 #[derive(Debug, Clone, Copy)]
+#[must_use]
 pub(crate) enum Flow {
   Infinite,
   Regular(usize),
@@ -68,6 +73,7 @@ pub(crate) enum Flow {
 impl Flow {
   const INFINITE_FLOW_VALUE: isize = isize::MAX;
 
+  #[must_use]
   fn from(v: isize) -> Self {
     if v == Self::INFINITE_FLOW_VALUE {
       Self::Infinite
@@ -78,6 +84,7 @@ impl Flow {
     }
   }
 
+  #[must_use]
   fn value(&self) -> isize {
     match self {
       Self::Infinite => Self::INFINITE_FLOW_VALUE,
@@ -88,18 +95,21 @@ impl Flow {
 }
 
 impl PartialOrd for Flow {
+  #[must_use]
   fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
     Some(self.cmp(other))
   }
 }
 
 impl Ord for Flow {
+  #[must_use]
   fn cmp(&self, other: &Self) -> Ordering {
     self.value().cmp(&other.value())
   }
 }
 
 impl PartialEq for Flow {
+  #[must_use]
   fn eq(&self, other: &Self) -> bool {
     self.cmp(other) == Ordering::Equal
   }
@@ -109,6 +119,7 @@ impl Eq for Flow {}
 impl ops::Add for Flow {
   type Output = Self;
 
+  #[must_use]
   fn add(self, other: Self) -> Self {
     match (self, other) {
       (
@@ -127,6 +138,7 @@ impl ops::Add for Flow {
 impl ops::Sub for Flow {
   type Output = Self;
 
+  #[must_use]
   fn sub(self, other: Self) -> Self {
     match (self, other) {
       // NOTE(ACCIDENTAL-FLOW-BLACKHOLE): This behavior is important to prevent
@@ -155,6 +167,7 @@ impl ops::SubAssign for Flow {
 }
 
 #[derive(Debug)]
+#[must_use]
 pub(crate) struct FlowEdge {
   pub(crate) from: FlowNode,
   pub(crate) to: FlowNode,
@@ -163,6 +176,7 @@ pub(crate) struct FlowEdge {
 }
 
 impl FlowEdge {
+  #[must_use]
   pub(crate) fn new(from: FlowNode, to: FlowNode, capacity: Flow) -> Self {
     ensure_valid_edge_nodes(&from, &to);
     Self {

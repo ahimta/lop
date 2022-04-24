@@ -5,6 +5,7 @@ use crate::mincut_maxflow::common::Flow;
 use crate::mincut_maxflow::common::FlowNode;
 
 #[derive(Debug)]
+#[must_use]
 pub(super) struct ResidualEdge {
   pub(super) from: FlowNode,
   pub(super) to: FlowNode,
@@ -14,6 +15,7 @@ pub(super) struct ResidualEdge {
 }
 
 impl ResidualEdge {
+  #[must_use]
   pub(super) fn new(from: FlowNode, to: FlowNode, capacity: Flow) -> Self {
     ensure_valid_edge_nodes(&from, &to);
     Self {
@@ -42,6 +44,7 @@ impl ResidualEdge {
     self.flow = new_flow;
   }
 
+  #[must_use]
   pub(super) fn other(&self, node: &FlowNode) -> &FlowNode {
     self.ensure_valid_node(node);
 
@@ -52,6 +55,7 @@ impl ResidualEdge {
     }
   }
 
+  #[must_use]
   pub(super) fn residual_capacity_to(&self, node: &FlowNode) -> Flow {
     self.ensure_valid_node(node);
 
