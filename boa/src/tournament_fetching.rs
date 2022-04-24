@@ -253,7 +253,7 @@ impl TournamentProvider for Koora {
                 .text()
                 .unwrap();
 
-              resp.replace("\n", "")
+              resp.replace('\n', "")
             })
             .collect(),
         )
@@ -335,6 +335,7 @@ impl TournamentProvider for Koora {
   }
 }
 
+// FIXME: Always use `#[must_use]`
 /// # Panics
 #[must_use]
 pub(super) fn fetch_tournaments() -> Vec<Tournament> {

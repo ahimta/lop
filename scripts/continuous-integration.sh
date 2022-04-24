@@ -52,6 +52,9 @@ function on-exit-trap {
 trap on-exit-trap EXIT
 
 echo "Linting scripts..."
+# NOTE: We ignore `SC2312` because it protects against discarding the exit
+# status but we don't need this since we use `errexit` and fail script with any
+# exit status other than success/zero.
 # NOTE: `wiki-link-count` lists pages for error explanations and only works if
 # we remove `--format=gcc` which we use because it allows us to directly go to
 # the offending line.
@@ -60,9 +63,9 @@ find ./scripts -type f -print0 | xargs --null shellcheck \
   --external-sources \
   --check-sourced \
   --enable=all \
+  --exclude=SC2312 \
   --severity=style \
-  --wiki-link-count=1 \
-  --format=gcc
+  --wiki-link-count=1
 
 cd "${ROOT_DIR}/boa"
 

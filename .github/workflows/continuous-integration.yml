@@ -11,6 +11,8 @@ env:
 
 jobs:
   continuous-integration:
+    # FIXME: Update to latest Ubuntu LTS avalaible.
+    # SEE: https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#choosing-github-hosted-runners
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2

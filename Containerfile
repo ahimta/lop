@@ -1,6 +1,8 @@
 # syntax=docker/dockerfile:1
+# SEE: https://github.com/rust-lang/rust/blob/master/RELEASES.md
+ARG RUST_VERSION="1.60.0"
 # SEE: https://hub.docker.com/_/rust
-FROM rust:1.57.0-slim-bullseye
+FROM "docker.io/library/rust:${RUST_VERSION}-slim-bullseye"
 LABEL author "Abdullah Alansari <ahimta@gmail.com>"
 
 # SEE: https://docs.docker.com/develop/develop-images/dockerfile_best-practices
@@ -106,8 +108,10 @@ RUN ${SET_SHELL_SAFE_OPTIONS}; \
   echo y | sdkmanager "ndk;${ANDROID_NDK_VERSION}" >/dev/null; \
   echo y | sdkmanager --licenses >/dev/null;
 
-ARG FLUTTER=2.5.3
-ARG FLUTTER_CHECKSUM_SHA256=b32d04a9fa5709326b4e724e0de64ff1b2b70268f89dd3c748e6360ac937fe01
+# SEE: https://docs.flutter.dev/release/breaking-changes
+# SEE: https://docs.flutter.dev/development/tools/sdk/release-notes
+ARG FLUTTER=2.10.5
+ARG FLUTTER_CHECKSUM_SHA256=0d3670c65314624f0d4b549a5942689578c3f899d15bbdcfb3909d4470c69edd
 ARG FLUTTER_SDK_ROOT=$HOME/flutter
 
 # SEE: https://flutter.dev/docs/get-started/install/linux
@@ -143,7 +147,7 @@ RUN ${SET_SHELL_SAFE_OPTIONS}; \
   # dependencies once and avoiding repeating this for each run/container.
   (cd boa && cargo --quiet check --no-default-features --jobs "$(nproc)");
 
-# NOTE: Only `ANDROID_SDK_ROOT` is an official Android environment-variables.
+# NOTE: Only `ANDROID_SDK_ROOT` is an official Android environment-variable.
 # SEE: https://developer.android.com/studio/command-line/variables
 ENV ANDROID_SDK_ROOT ${ANDROID_SDK_ROOT}
 ENV ANDROID_NDK_VERSION ${ANDROID_NDK_VERSION}

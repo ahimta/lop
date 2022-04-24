@@ -6,56 +6,91 @@ Milking the mincut-maxflow cow.
 
 ## Recommended Environment
 
-- Ubuntu 20.04 LTS x86-64
+- Ubuntu 22.04 LTS x86-64
 - VS Code (easier debugging and full-support)
 
 ## Getting Started
 
 ```bash
-curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf | sh
+sudo apt install -qq --yes \
+  curl \
+  git \
+  shellcheck \
+  \
+  >/dev/null
 
+sudo snap install --classic code
+
+# SEE: https://www.rust-lang.org/learn/get-started
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+source ~/.cargo/env
+
+# NOTE: We use it with script-finished sound notification.
 sudo apt install -qq --yes mpv >/dev/null
 
-snap install --classic lefthook
-lefthook install
-lefthook run pre-commit
+# FIXME: Replace Lefthook with simple pre-commit script.
+# NOTE: We don't use Lefthook right now because it's an unconfined Snap.
+# SEE: https://github.com/evilmartians/lefthook/blob/master/docs/full_guide.md#snap-for-linux
+# snap install --classic lefthook
+# SEE: https://github.com/evilmartians/lefthook/blob/master/docs/full_guide.md#first-time-user
+# lefthook install
 
-echo 'deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_20.04/ /' | sudo tee /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list
-curl -fsSL https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable/xUbuntu_20.04/Release.key | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/devel_kubic_libcontainers_stable.gpg > /dev/null
-sudo apt update
-sudo apt install podman
+# SEE: https://podman.io/getting-started/installation
+sudo apt install -qq --yes podman >/dev/null
 
+# NOTE: Verify installation page is more of a verified installation: it includes
+# both verification and installation. And in the right order too (verify then
+# install).
 # SEE: https://nixos.org/download.html#nix-verify-installation
-curl -o install-nix-2.3.16 https://releases.nixos.org/nix/nix-2.3.16/install
-curl -o install-nix-2.3.16.asc https://releases.nixos.org/nix/nix-2.3.16/install.asc
-# NOTE: Receiving keys fails on Ubuntu 20.04 LTS and thus verification. Probably
-# due to NixOS assuming every developer in the world uses macOS.
-gpg2 --recv-keys B541D55301270E0BCF15CA5D8170B4726D7198DE
-gpg2 --verify ./install-nix-2.3.16.asc
-sh ./install-nix-2.3.16
-rm install-nix-2.3.16
+LOP_NIX_WORKING_PATH="/tmp"
+LOP_NIX_VERSION="2.8.0"
+curl \
+  --silent \
+  --tlsv1.2 \
+  --proto '=https' \
+  --output "${LOP_NIX_WORKING_PATH}/install-nix-${LOP_NIX_VERSION}" \
+  "https://releases.nixos.org/nix/nix-${LOP_NIX_VERSION}/install"
+curl \
+  --silent \
+  --tlsv1.2 \
+  --proto '=https' \
+  --output "${LOP_NIX_WORKING_PATH}/install-nix-${LOP_NIX_VERSION}.asc" \
+  "https://releases.nixos.org/nix/nix-${LOP_NIX_VERSION}/install.asc"
+(
+  gpg \
+    --keyserver hkps://keyserver.ubuntu.com \
+    --recv-keys B541D55301270E0BCF15CA5D8170B4726D7198DE &&
+  cd "${LOP_NIX_WORKING_PATH}" &&
+  gpg --verify "./install-nix-${LOP_NIX_VERSION}.asc" &&
+  sh "./install-nix-${LOP_NIX_VERSION}" --daemon
+)
+# NOTE: `nix` will only be available in new terminal sessions.
+# NOTE: To verify `nix` installation is successfull.
+nix-env --version
 ```
-
-### Resources
-
-- [Installing Podman for Ubuntu 20.04 LTS](https://software.opensuse.org//download.html?project=devel%3Akubic%3Alibcontainers%3Astable&package=podman)
-- [Fully Rootless Podman Setup](https://github.com/containers/podman/blob/main/docs/tutorials/rootless_tutorial.md)
 
 ## Getting Started (Flutter)
 
 ```bash
+# SEE: https://docs.flutter.dev/get-started/install/linux#install-flutter-using-snapd
 sudo snap install flutter --classic
-flutter bash-completion >> ~/.local/share/bash-completion/completions/flutter
+flutter sdk-path
+mkdir --parents ~/.local/share/bash-completion/completions
+# FIXME: Command fails due to a mysterious permission error.
+flutter bash-completion > ~/.local/share/bash-completion/completions/flutter
 flutter config --no-analytics
 dart --disable-analytics
-flutter sdk-path
 flutter upgrade
+# NOTE: Install Google Chrome.
+# SEE: https://www.google.com/chrome
+sudo snap install --classic code
+sudo snap install --classic android-studio
+flutter doctor --android-licenses
+# FIXME: Android setup done manually using Android Studio. Make it so that at
+# least only command-line tools are installed manually. And extract common
+# variables to `public.env`.
 flutter doctor
 ```
-
-### Resources
-
-- [Official Flutter Install Guide](https://flutter.dev/docs/get-started/install/linux)
 
 ## Continuous Integration
 
@@ -71,8 +106,8 @@ RUN_IN_CONTAINER=0 ./scripts/continuous-integration.sh
 # tools, for which BASH completions will be generated, have already been
 # installed.
 mkdir --parents ~/.local/share/bash-completion/completions
-rustup completions bash >> ~/.local/share/bash-completion/completions/rustup
-rustup completions bash cargo >> ~/.local/share/bash-completion/completions/cargo
+rustup completions bash > ~/.local/share/bash-completion/completions/rustup
+rustup completions bash cargo > ~/.local/share/bash-completion/completions/cargo
 ```
 
 ## Using Podman/Docker
