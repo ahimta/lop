@@ -2,6 +2,8 @@ mod common;
 
 use std::sync::Arc;
 
+use reqwest::blocking::Client;
+
 use crate::tournament_fetching::common::MatchResult;
 use crate::tournament_fetching::common::TournamentProvider;
 use crate::tournament_prediction::Team;
@@ -14,45 +16,12 @@ impl TournamentProvider for PremierLeague {
   const TEST_DATA_PREFIX: &'static str = "premier-league";
 
   fn download_tournaments() -> Vec<(String, Vec<String>)> {
-    use reqwest::blocking::Client;
-    use reqwest::header::HeaderMap;
-    use reqwest::header::HeaderValue;
-
     // NOTE: Used to match exactly the value used in official page.
     const PAGE_SIZE: usize = 40;
     // NOTE: Used to prevent an infinite loop in case the API response changes.
     const ITEMS_MAX: usize = 2 * 1000;
 
-    // SEE: https://docs.rs/reqwest/0.11.7/reqwest/struct.ClientBuilder.html#method.default_headers
-    let mut headers = HeaderMap::new();
-    headers.insert(
-      "Content-Type",
-      HeaderValue::from_static(
-        "application/x-www-form-urlencoded; charset=UTF-8",
-      ),
-    );
-    headers.insert("Sec-Fetch-Dest", HeaderValue::from_static("empty"));
-    headers.insert("Sec-Fetch-Mode", HeaderValue::from_static("cors"));
-    headers.insert("Sec-Fetch-Site", HeaderValue::from_static("cross-site"));
-    headers.insert(
-      "Accept-Language",
-      HeaderValue::from_static("en-US,en;q=0.5"),
-    );
-    headers.insert(
-      "Origin",
-      HeaderValue::from_static("https://www.premierleague.com"),
-    );
-    // SEE: https://docs.rs/reqwest/0.11.7/reqwest/struct.ClientBuilder.html
-    let client = Client::builder()
-  .user_agent("Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:95.0) Gecko/20100101 Firefox/95.0")
-  .referer(true)
-  .https_only(true)
-  .gzip(true)
-  .deflate(true)
-  .brotli(true)
-  .default_headers(headers)
-  .build()
-  .unwrap();
+    let client = get_client("https://www.premierleague.com");
 
     vec![
     ("First Team - Premier League", 1, 418, "1,2,130,131,43,4,6,7,9,26,10,11,12,23,14,20,21,33,25,38",),
@@ -188,39 +157,7 @@ impl TournamentProvider for Koora {
   const TEST_DATA_PREFIX: &'static str = "koora";
 
   fn download_tournaments() -> Vec<(String, Vec<String>)> {
-    use reqwest::blocking::Client;
-    use reqwest::header::HeaderMap;
-    use reqwest::header::HeaderValue;
-
-    // SEE: https://docs.rs/reqwest/0.11.7/reqwest/struct.ClientBuilder.html#method.default_headers
-    let mut headers = HeaderMap::new();
-    headers.insert(
-      "Content-Type",
-      HeaderValue::from_static(
-        "application/x-www-form-urlencoded; charset=UTF-8",
-      ),
-    );
-    headers.insert("Sec-Fetch-Dest", HeaderValue::from_static("empty"));
-    headers.insert("Sec-Fetch-Mode", HeaderValue::from_static("cors"));
-    headers.insert("Sec-Fetch-Site", HeaderValue::from_static("cross-site"));
-    headers.insert(
-      "Accept-Language",
-      HeaderValue::from_static("en-US,en;q=0.5"),
-    );
-    headers
-      .insert("Origin", HeaderValue::from_static("https://www.goalzz.com"));
-    // FIXME: Add helper for getting client (or even better, doing a request).
-    // SEE: https://docs.rs/reqwest/0.11.7/reqwest/struct.ClientBuilder.html
-    let client = Client::builder()
-  .user_agent("Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:95.0) Gecko/20100101 Firefox/95.0")
-  .referer(true)
-  .https_only(true)
-  .gzip(true)
-  .deflate(true)
-  .brotli(true)
-  .default_headers(headers)
-  .build()
-  .unwrap();
+    let client = get_client("https://www.goalzz.com");
 
     vec![
       ("Saudi Professional League", 22551),
@@ -344,6 +281,39 @@ impl TournamentProvider for Koora {
       )
       .collect()
   }
+}
+
+fn get_client(origin: &'static str) -> Client {
+  use reqwest::header::HeaderMap;
+  use reqwest::header::HeaderValue;
+
+  // SEE: https://docs.rs/reqwest/0.11.7/reqwest/struct.ClientBuilder.html
+  let client = Client::builder()
+  .user_agent("Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:95.0) Gecko/20100101 Firefox/95.0")
+  .referer(true)
+  .https_only(true)
+  .gzip(true)
+  .deflate(true)
+  .brotli(true);
+
+  // SEE: https://docs.rs/reqwest/0.11.7/reqwest/struct.ClientBuilder.html#method.default_headers
+  let mut headers = HeaderMap::new();
+  headers.insert(
+    "Content-Type",
+    HeaderValue::from_static(
+      "application/x-www-form-urlencoded; charset=UTF-8",
+    ),
+  );
+  headers.insert("Sec-Fetch-Dest", HeaderValue::from_static("empty"));
+  headers.insert("Sec-Fetch-Mode", HeaderValue::from_static("cors"));
+  headers.insert("Sec-Fetch-Site", HeaderValue::from_static("cross-site"));
+  headers.insert(
+    "Accept-Language",
+    HeaderValue::from_static("en-US,en;q=0.5"),
+  );
+  headers.insert("Origin", HeaderValue::from_static(origin));
+
+  client.default_headers(headers).build().unwrap()
 }
 
 // FIXME: Always use `#[must_use]`
