@@ -28,12 +28,7 @@ source ~/.cargo/env
 # NOTE: We use it with script-finished sound notification.
 sudo apt install -qq --yes mpv >/dev/null
 
-# FIXME: Replace Lefthook with simple pre-commit script.
-# NOTE: We don't use Lefthook right now because it's an unconfined Snap.
-# SEE: https://github.com/evilmartians/lefthook/blob/master/docs/full_guide.md#snap-for-linux
-# snap install --classic lefthook
-# SEE: https://github.com/evilmartians/lefthook/blob/master/docs/full_guide.md#first-time-user
-# lefthook install
+ln --force --symbolic ../../scripts/pre-commit.sh ./.git/hooks/pre-commit
 
 # SEE: https://podman.io/getting-started/installation
 sudo apt install -qq --yes podman >/dev/null
@@ -200,7 +195,6 @@ flutter create \
 - [Premier League - Results Page (can easily be used to convert to our format)](https://www.premierleague.com/results)
 - [Programming Rust: Fast, Safe Systems Development](https://read.amazon.com/?asin=B0979PWD4Z&language=en-US)
 - [Rust Official Formatter](https://github.com/rust-lang/rustfmt)
-- [Lefthook](https://github.com/evilmartians/lefthook)
 
 ## Academic Resources
 

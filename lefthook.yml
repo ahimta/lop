@@ -1,7 +1,0 @@
-pre-commit:
-  parallel: false
-  commands:
-    continuous-integration:
-      run: |
-        trap ./scripts/notify-user.sh EXIT
-        RUN_IN_CONTAINER=1 ./scripts/continuous-integration.sh podman
