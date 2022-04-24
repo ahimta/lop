@@ -11,6 +11,15 @@ use crate::mincut_maxflow::common::FlowNode;
 
 pub type TeamId = String;
 
+#[derive(Eq, PartialEq, Clone, Debug)]
+#[must_use]
+pub enum EliminationStatus {
+  Not,
+  // FIXME: Maybe replace `Arc<TeamId>` with `Arc<Team>`.
+  Trivially(HashSet<Arc<TeamId>>),
+  NonTrivially(HashSet<Arc<TeamId>>),
+}
+
 #[derive(Eq, PartialEq, Debug)]
 #[must_use]
 pub struct Tournament {
@@ -38,12 +47,7 @@ pub struct Team {
   // necessarily actual matches won.
   pub matches_won: usize,
 
-  // FIXME: Possible add enum with: not-eliminated|trivially-eliminated|non-trivially-eliminated|.
-  pub eliminated: bool,
-  pub eliminated_trivially: bool,
-  // FIXME: Maybe replace `Arc<TeamId>` with `Arc<Team>`.
-  // FIXME: Maybe then sort eliminating teams by rank.
-  pub eliminating_teams: HashSet<Arc<TeamId>>,
+  pub elimination_status: EliminationStatus,
 }
 
 /// # Panics
@@ -126,9 +130,9 @@ pub fn predict_tournament_eliminated_teams(
       // 2. Even more special-handling has to be done otherwise.
       if !possible_eliminating_teams_nodes.is_empty() {
         return Arc::new(Team {
-          eliminated: true,
-          eliminated_trivially: true,
-          eliminating_teams: possible_eliminating_teams_nodes,
+          elimination_status: EliminationStatus::Trivially(
+            possible_eliminating_teams_nodes,
+          ),
           ..Team::clone(team)
         });
       }
@@ -226,9 +230,7 @@ pub fn predict_tournament_eliminated_teams(
 
       if mincut_maxflow.source_full {
         return Arc::new(Team {
-          eliminated: false,
-          eliminated_trivially: false,
-          eliminating_teams: vec![].into_iter().collect(),
+          elimination_status: EliminationStatus::Not,
           ..Team::clone(team)
         });
       }
@@ -241,9 +243,7 @@ pub fn predict_tournament_eliminated_teams(
         .collect();
 
       Arc::new(Team {
-        eliminated: true,
-        eliminated_trivially: false,
-        eliminating_teams,
+        elimination_status: EliminationStatus::NonTrivially(eliminating_teams),
         ..Team::clone(team)
       })
     })
@@ -273,36 +273,28 @@ pub(super) fn test() {
             rank: 1,
             matches_left: 8,
             matches_won: 83,
-            eliminated: false,
-            eliminated_trivially: false,
-            eliminating_teams: vec![].into_iter().collect(),
+            elimination_status: EliminationStatus::Not,
           },
           Team {
             id: Arc::new("philadelphia".to_string()),
             rank: 2,
             matches_left: 3,
             matches_won: 80,
-            eliminated: false,
-            eliminated_trivially: false,
-            eliminating_teams: vec![].into_iter().collect(),
+            elimination_status: EliminationStatus::Not,
           },
           Team {
             id: Arc::new("new-york".to_string()),
             rank: 3,
             matches_left: 6,
             matches_won: 78,
-            eliminated: false,
-            eliminated_trivially: false,
-            eliminating_teams: vec![].into_iter().collect(),
+            elimination_status: EliminationStatus::Not,
           },
           Team {
             id: Arc::new("montreal".to_string()),
             rank: 4,
             matches_left: 3,
             matches_won: 77,
-            eliminated: false,
-            eliminated_trivially: false,
-            eliminating_teams: vec![].into_iter().collect(),
+            elimination_status: EliminationStatus::Not,
           },
         ]
         .into_iter()
@@ -332,42 +324,38 @@ pub(super) fn test() {
           rank: 1,
           matches_left: 8,
           matches_won: 83,
-          eliminated: false,
-          eliminated_trivially: false,
-          eliminating_teams: vec![].into_iter().collect(),
+          elimination_status: EliminationStatus::Not,
         },
         Team {
           id: Arc::new("philadelphia".to_string()),
           rank: 2,
           matches_left: 3,
           matches_won: 80,
-          eliminated: true,
-          eliminated_trivially: false,
-          eliminating_teams: vec!["atlanta", "new-york"]
-            .into_iter()
-            .map(|team_id| Arc::new(team_id.to_string()))
-            .collect(),
+          elimination_status: EliminationStatus::NonTrivially(
+            vec!["atlanta", "new-york"]
+              .into_iter()
+              .map(|team_id| Arc::new(team_id.to_string()))
+              .collect(),
+          ),
         },
         Team {
           id: Arc::new("new-york".to_string()),
           rank: 3,
           matches_left: 6,
           matches_won: 78,
-          eliminated: false,
-          eliminated_trivially: false,
-          eliminating_teams: vec![].into_iter().collect(),
+          elimination_status: EliminationStatus::Not,
         },
         Team {
           id: Arc::new("montreal".to_string()),
           rank: 4,
           matches_left: 3,
           matches_won: 77,
-          eliminated: true,
-          eliminated_trivially: true,
-          eliminating_teams: vec!["atlanta"]
-            .into_iter()
-            .map(|team_id| Arc::new(team_id.to_string()))
-            .collect(),
+          elimination_status: EliminationStatus::Trivially(
+            vec!["atlanta"]
+              .into_iter()
+              .map(|team_id| Arc::new(team_id.to_string()))
+              .collect(),
+          ),
         },
       ]
       .into_iter()
@@ -383,45 +371,35 @@ pub(super) fn test() {
             rank: 1,
             matches_left: 4,
             matches_won: 75,
-            eliminated: false,
-            eliminated_trivially: false,
-            eliminating_teams: vec![].into_iter().collect(),
+            elimination_status: EliminationStatus::Not,
           },
           Team {
             id: Arc::new("baltimore".to_string()),
             rank: 2,
             matches_left: 21,
             matches_won: 71,
-            eliminated: false,
-            eliminated_trivially: false,
-            eliminating_teams: vec![].into_iter().collect(),
+            elimination_status: EliminationStatus::Not,
           },
           Team {
             id: Arc::new("boston".to_string()),
             rank: 3,
             matches_left: 13,
             matches_won: 69,
-            eliminated: false,
-            eliminated_trivially: false,
-            eliminating_teams: vec![].into_iter().collect(),
+            elimination_status: EliminationStatus::Not,
           },
           Team {
             id: Arc::new("toronto".to_string()),
             rank: 4,
             matches_left: 17,
             matches_won: 63,
-            eliminated: false,
-            eliminated_trivially: false,
-            eliminating_teams: vec![].into_iter().collect(),
+            elimination_status: EliminationStatus::Not,
           },
           Team {
             id: Arc::new("detroit".to_string()),
             rank: 5,
             matches_left: 16,
             matches_won: 49,
-            eliminated: false,
-            eliminated_trivially: false,
-            eliminating_teams: vec![].into_iter().collect(),
+            elimination_status: EliminationStatus::Not,
           },
         ]
         .into_iter()
@@ -456,48 +434,40 @@ pub(super) fn test() {
           rank: 1,
           matches_left: 4,
           matches_won: 75,
-          eliminated: false,
-          eliminated_trivially: false,
-          eliminating_teams: vec![].into_iter().collect(),
+          elimination_status: EliminationStatus::Not,
         },
         Team {
           id: Arc::new("baltimore".to_string()),
           rank: 2,
           matches_left: 21,
           matches_won: 71,
-          eliminated: false,
-          eliminated_trivially: false,
-          eliminating_teams: vec![].into_iter().collect(),
+          elimination_status: EliminationStatus::Not,
         },
         Team {
           id: Arc::new("boston".to_string()),
           rank: 3,
           matches_left: 13,
           matches_won: 69,
-          eliminated: false,
-          eliminated_trivially: false,
-          eliminating_teams: vec![].into_iter().collect(),
+          elimination_status: EliminationStatus::Not,
         },
         Team {
           id: Arc::new("toronto".to_string()),
           rank: 4,
           matches_left: 17,
           matches_won: 63,
-          eliminated: false,
-          eliminated_trivially: false,
-          eliminating_teams: vec![].into_iter().collect(),
+          elimination_status: EliminationStatus::Not,
         },
         Team {
           id: Arc::new("detroit".to_string()),
           rank: 5,
           matches_left: 16,
           matches_won: 49,
-          eliminated: true,
-          eliminated_trivially: true,
-          eliminating_teams: vec!["baltimore", "boston", "new-york"]
-            .into_iter()
-            .map(|team_id| Arc::new(team_id.to_string()))
-            .collect(),
+          elimination_status: EliminationStatus::Trivially(
+            vec!["baltimore", "boston", "new-york"]
+              .into_iter()
+              .map(|team_id| Arc::new(team_id.to_string()))
+              .collect(),
+          ),
         },
       ]
       .into_iter()

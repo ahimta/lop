@@ -7,6 +7,8 @@ use std::ffi::CString;
 use std::os::raw::c_char;
 use std::ptr;
 
+use crate::tournament_prediction::EliminationStatus;
+
 pub fn test() {
   mincut_maxflow::test();
   tournament_prediction::test();
@@ -46,17 +48,27 @@ pub extern "C" fn predict_tournament_eliminated_teams_native(
   let ets = Box::into_raw(
     (&local_eliminated_teams)
       .iter()
-      .map(|team| EliminatedTeamNative {
-        id: CString::new(String::clone(&team.id)).unwrap().into_raw(),
-        eliminating_teams_ids_count: team.eliminating_teams.len() as u64,
-        eliminating_teams_ids: Box::into_raw(
-          team
-            .eliminating_teams
-            .iter()
-            .map(|s| CString::new(String::clone(s)).unwrap().into_raw())
-            .collect::<Vec<_>>()
-            .into_boxed_slice(),
-        ) as *const *const c_char,
+      .map(|team| {
+        let eliminating_teams =
+          match EliminationStatus::clone(&team.elimination_status) {
+            EliminationStatus::Not => vec![].into_iter().collect(),
+            EliminationStatus::Trivially(eliminating_teams)
+            | EliminationStatus::NonTrivially(eliminating_teams) => {
+              eliminating_teams
+            }
+          };
+
+        EliminatedTeamNative {
+          id: CString::new(String::clone(&team.id)).unwrap().into_raw(),
+          eliminating_teams_ids_count: eliminating_teams.len() as u64,
+          eliminating_teams_ids: Box::into_raw(
+            eliminating_teams
+              .iter()
+              .map(|s| CString::new(String::clone(s)).unwrap().into_raw())
+              .collect::<Vec<_>>()
+              .into_boxed_slice(),
+          ) as *const *const c_char,
+        }
       })
       .collect::<Vec<_>>()
       .into_boxed_slice(),

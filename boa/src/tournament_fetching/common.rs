@@ -6,6 +6,7 @@ use std::sync::Arc;
 
 use itertools::Itertools;
 
+use crate::tournament_prediction::EliminationStatus;
 use crate::tournament_prediction::Team;
 use crate::tournament_prediction::TeamId;
 use crate::tournament_prediction::Tournament;
@@ -174,9 +175,7 @@ pub(super) trait TournamentProvider {
               matches_won: WIN_FACTOR * *matches_won.get(team_id).unwrap_or(&0)
                 + DRAW_FACTOR * *matches_drawn.get(team_id).unwrap_or(&0),
 
-              eliminated: false,
-              eliminated_trivially: false,
-              eliminating_teams: vec![].into_iter().collect(),
+              elimination_status: EliminationStatus::Not,
             })
           })
           .collect();
