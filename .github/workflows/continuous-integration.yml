@@ -19,6 +19,6 @@ jobs:
       - uses: docker/setup-buildx-action@v1
       - name: Continuous Integration
         # NOTE: We use Docker instead of Podman here because there doesn't seem
-        # to be a supported way to use Podman in GitHub Actions
+        # to be a supported way to use Podman in GitHub Actions.
         run: |
           RUN_IN_CONTAINER=1 ./scripts/continuous-integration.sh docker

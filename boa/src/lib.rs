@@ -63,8 +63,6 @@ pub extern "C" fn predict_tournament_eliminated_teams_native(
   eliminated_teams_count: *mut u64,
   eliminated_teams: *mut *const EliminatedTeamNative,
 ) -> i32 {
-  eprintln!("hello world!");
-
   // FIXME: Change API to use new format.
 
   let tournaments = tournament_fetching::fetch_tournaments();
