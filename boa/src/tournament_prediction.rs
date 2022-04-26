@@ -26,7 +26,7 @@ pub struct Tournament {
   pub name: String,
   pub teams: Vec<Arc<Team>>,
   // FIXME: Maybe replace `Arc<TeamId>` with `Arc<Team>`.
-  pub matches_left: HashMap<(Arc<TeamId>, Arc<TeamId>), usize>,
+  pub remaining_points: HashMap<(Arc<TeamId>, Arc<TeamId>), usize>,
 }
 
 #[derive(Eq, PartialEq, Clone, Debug)]
@@ -34,18 +34,16 @@ pub struct Tournament {
 pub struct Team {
   pub id: Arc<TeamId>,
 
-  // FIXME: Consider using `Option` with nullable fields.
-  // FIXME: Consider adding `Team` constructors for common instantiations.
-
   // NOTE: `rank` and `matches_left` only used to propagate values to
   // `Prediction`.
+  // FIXME: Make sure always validated.
   pub rank: usize,
   // FIXME: Make sure always validated.
   pub matches_left: usize,
-
-  // NOTE: `matches_won` used only for prediction and can be points and not
-  // necessarily actual matches won.
+  // FIXME: Add matches drawn since they're part of the calculation.
   pub matches_won: usize,
+  pub earned_points: usize,
+  pub remaining_points: usize,
 
   pub elimination_status: EliminationStatus,
 }
@@ -58,8 +56,8 @@ pub fn predict_tournament_eliminated_teams(
 ) -> Vec<Arc<Team>> {
   const TEAMS_COUNT_MIN: usize = 2;
   const TEAMS_COUNT_MAX: usize = 500;
-  const MATCHES_LEFT_COUNT_MIN: usize = 1;
-  const MATCHES_LEFT_COUNT_MAX: usize = 1000;
+  const REMAINING_POINTS_COUNT_MIN: usize = 1;
+  const REMAINING_POINTS_COUNT_MAX: usize = 1000;
 
   assert!(
     tournament.teams.len() >= TEAMS_COUNT_MIN
@@ -69,37 +67,24 @@ pub fn predict_tournament_eliminated_teams(
   );
 
   assert!(
-    tournament.matches_left.len() >= MATCHES_LEFT_COUNT_MIN
-      && tournament.matches_left.len() <= MATCHES_LEFT_COUNT_MAX,
-    "Invalid no. of matches-left ({:?}).",
-    tournament.matches_left.len(),
+    tournament.remaining_points.len() >= REMAINING_POINTS_COUNT_MIN
+      && tournament.remaining_points.len() <= REMAINING_POINTS_COUNT_MAX,
+    "Invalid no. of remaining-points ({:?}).",
+    tournament.remaining_points.len(),
   );
 
   assert!(
-    tournament.matches_left.len()
+    tournament.remaining_points.len()
       == tournament
-        .matches_left
+        .remaining_points
         .keys()
         .into_iter()
         .map(|(id1, id2)| (id1.min(id2), id1.max(id2)))
         .collect::<HashSet<_>>()
         .len(),
-    "Duplicate matches-left entries ({:?}).",
-    tournament.matches_left,
+    "Duplicate remaining-points entries ({:?}).",
+    tournament.remaining_points,
   );
-
-  let matches_left_by_team: HashMap<&Arc<TeamId>, usize> = (&tournament
-    .matches_left)
-    .iter()
-    .flat_map(|((team_id1, team_id2), matches_left)| {
-      vec![(team_id1, matches_left), (team_id2, matches_left)]
-    })
-    .into_group_map_by(|(team_id, _)| *team_id)
-    .into_iter()
-    .map(|(team_id, values)| {
-      (team_id, values.into_iter().fold(0, |acc, (_, v)| acc + v))
-    })
-    .collect();
 
   let source_node = FlowNode::new(Arc::new("s".to_string()));
   let sink_node = FlowNode::new(Arc::new("t".to_string()));
@@ -117,9 +102,8 @@ pub fn predict_tournament_eliminated_teams(
           .iter()
           .filter(|candidate_team| candidate_team.id != team.id)
           .filter(|candidate_team| {
-            let max_wins = team.matches_won
-              + matches_left_by_team.get(&team.id).unwrap_or(&0);
-            candidate_team.matches_won > max_wins
+            let max_points = team.earned_points + team.remaining_points;
+            candidate_team.earned_points > max_points
           })
           .map(|candidate_team| Arc::clone(&candidate_team.id))
           .collect();
@@ -156,26 +140,27 @@ pub fn predict_tournament_eliminated_teams(
           .map(|nodes| (*nodes[0], *nodes[1]))
           .collect();
 
-      let games_left_edges: Vec<FlowEdge> = (&other_teams_nodes_combinations)
-        .iter()
-        .map(|(node1, node2)| {
-          let (id1, id2) = (&node1.id, &node2.id);
+      let remaining_points_edges: Vec<FlowEdge> =
+        (&other_teams_nodes_combinations)
+          .iter()
+          .map(|(node1, node2)| {
+            let (id1, id2) = (&node1.id, &node2.id);
 
-          FlowEdge::new(
-            FlowNode::clone(&source_node),
-            node1.join(node2),
-            Flow::Regular(
-              *(&tournament.matches_left)
-                .get(&(Arc::clone(id1), Arc::clone(id2)))
-                .unwrap_or_else(|| {
-                  (&tournament.matches_left)
-                    .get(&(Arc::clone(id2), Arc::clone(id1)))
-                    .unwrap_or(&0)
-                }),
-            ),
-          )
-        })
-        .collect();
+            FlowEdge::new(
+              FlowNode::clone(&source_node),
+              node1.join(node2),
+              Flow::Regular(
+                *(&tournament.remaining_points)
+                  .get(&(Arc::clone(id1), Arc::clone(id2)))
+                  .unwrap_or_else(|| {
+                    (&tournament.remaining_points)
+                      .get(&(Arc::clone(id2), Arc::clone(id1)))
+                      .unwrap_or(&0)
+                  }),
+              ),
+            )
+          })
+          .collect();
 
       let intermediate_edges = (&other_teams_nodes_combinations)
         .iter()
@@ -197,33 +182,37 @@ pub fn predict_tournament_eliminated_teams(
           ]
         });
 
-      let teams_wins: HashMap<&FlowNode, usize> = (&other_teams)
+      let teams_earned_points: HashMap<&FlowNode, usize> = (&other_teams)
         .iter()
-        .map(|(node, t)| (node, t.matches_won))
+        .map(|(node, t)| (node, t.earned_points))
         .collect();
 
-      let game_to_win_edges: Vec<FlowEdge> = (&other_teams_nodes)
+      let points_to_earn_edges: Vec<FlowEdge> = (&other_teams_nodes)
         .iter()
         .map(|other_team_node| {
           let from = other_team_node;
           let to = FlowNode::clone(&sink_node);
 
-          let other_team_wins = *teams_wins.get(other_team_node).unwrap();
-          let own_team_max_wins =
-            team.matches_won + matches_left_by_team.get(&team.id).unwrap_or(&0);
+          let other_team_earned_points =
+            *teams_earned_points.get(other_team_node).unwrap();
+          let own_team_max_points = team.earned_points + team.remaining_points;
           // NOTE: This case can't happen because otherwise the function would
           // have returned earlier.
-          assert!(other_team_wins <= own_team_max_wins, "Impossible case.");
-          let capacity = Flow::Regular(own_team_max_wins - other_team_wins);
+          assert!(
+            other_team_earned_points <= own_team_max_points,
+            "Impossible case."
+          );
+          let capacity =
+            Flow::Regular(own_team_max_points - other_team_earned_points);
 
           FlowEdge::new(FlowNode::clone(from), to, capacity)
         })
         .collect();
 
       let mut edges: Vec<FlowEdge> = Vec::new();
-      edges.extend(games_left_edges);
+      edges.extend(remaining_points_edges);
       edges.extend(intermediate_edges);
-      edges.extend(game_to_win_edges);
+      edges.extend(points_to_earn_edges);
 
       let mincut_maxflow =
         calculate_mincut_maxflow(&edges, &source_node, &sink_node);
@@ -273,6 +262,8 @@ pub(super) fn test() {
             rank: 1,
             matches_left: 8,
             matches_won: 83,
+            earned_points: 83,
+            remaining_points: 8,
             elimination_status: EliminationStatus::Not,
           },
           Team {
@@ -280,6 +271,8 @@ pub(super) fn test() {
             rank: 2,
             matches_left: 3,
             matches_won: 80,
+            earned_points: 80,
+            remaining_points: 3,
             elimination_status: EliminationStatus::Not,
           },
           Team {
@@ -287,6 +280,8 @@ pub(super) fn test() {
             rank: 3,
             matches_left: 6,
             matches_won: 78,
+            earned_points: 78,
+            remaining_points: 6,
             elimination_status: EliminationStatus::Not,
           },
           Team {
@@ -294,26 +289,28 @@ pub(super) fn test() {
             rank: 4,
             matches_left: 3,
             matches_won: 77,
+            earned_points: 77,
+            remaining_points: 3,
             elimination_status: EliminationStatus::Not,
           },
         ]
         .into_iter()
         .map(Arc::new)
         .collect(),
-        matches_left: vec![
+        remaining_points: vec![
           (("atlanta", "philadelphia"), 1),
           (("atlanta", "new-york"), 6),
           (("atlanta", "montreal"), 1),
           (("philadelphia", "montreal"), 2),
         ]
         .into_iter()
-        .map(|((team_id1, team_id2), matches_left)| {
+        .map(|((team_id1, team_id2), remaining_points)| {
           (
             (
               Arc::new(team_id1.to_string()),
               Arc::new(team_id2.to_string()),
             ),
-            matches_left,
+            remaining_points,
           )
         })
         .collect(),
@@ -324,6 +321,8 @@ pub(super) fn test() {
           rank: 1,
           matches_left: 8,
           matches_won: 83,
+          earned_points: 83,
+          remaining_points: 8,
           elimination_status: EliminationStatus::Not,
         },
         Team {
@@ -331,6 +330,8 @@ pub(super) fn test() {
           rank: 2,
           matches_left: 3,
           matches_won: 80,
+          earned_points: 80,
+          remaining_points: 3,
           elimination_status: EliminationStatus::NonTrivially(
             vec!["atlanta", "new-york"]
               .into_iter()
@@ -343,6 +344,8 @@ pub(super) fn test() {
           rank: 3,
           matches_left: 6,
           matches_won: 78,
+          earned_points: 78,
+          remaining_points: 6,
           elimination_status: EliminationStatus::Not,
         },
         Team {
@@ -350,6 +353,8 @@ pub(super) fn test() {
           rank: 4,
           matches_left: 3,
           matches_won: 77,
+          earned_points: 77,
+          remaining_points: 3,
           elimination_status: EliminationStatus::Trivially(
             vec!["atlanta"]
               .into_iter()
@@ -371,6 +376,8 @@ pub(super) fn test() {
             rank: 1,
             matches_left: 4,
             matches_won: 75,
+            earned_points: 75,
+            remaining_points: 4,
             elimination_status: EliminationStatus::Not,
           },
           Team {
@@ -378,6 +385,8 @@ pub(super) fn test() {
             rank: 2,
             matches_left: 21,
             matches_won: 71,
+            earned_points: 71,
+            remaining_points: 21,
             elimination_status: EliminationStatus::Not,
           },
           Team {
@@ -385,6 +394,8 @@ pub(super) fn test() {
             rank: 3,
             matches_left: 13,
             matches_won: 69,
+            earned_points: 69,
+            remaining_points: 13,
             elimination_status: EliminationStatus::Not,
           },
           Team {
@@ -392,6 +403,8 @@ pub(super) fn test() {
             rank: 4,
             matches_left: 17,
             matches_won: 63,
+            earned_points: 63,
+            remaining_points: 17,
             elimination_status: EliminationStatus::Not,
           },
           Team {
@@ -399,13 +412,15 @@ pub(super) fn test() {
             rank: 5,
             matches_left: 16,
             matches_won: 49,
+            earned_points: 49,
+            remaining_points: 16,
             elimination_status: EliminationStatus::Not,
           },
         ]
         .into_iter()
         .map(Arc::new)
         .collect(),
-        matches_left: vec![
+        remaining_points: vec![
           (("new-york", "baltimore"), 3),
           (("new-york", "boston"), 8),
           (("new-york", "toronto"), 7),
@@ -417,13 +432,13 @@ pub(super) fn test() {
           (("toronto", "detroit"), 3),
         ]
         .into_iter()
-        .map(|((team_id1, team_id2), matches_left)| {
+        .map(|((team_id1, team_id2), remaining_points)| {
           (
             (
               Arc::new(team_id1.to_string()),
               Arc::new(team_id2.to_string()),
             ),
-            matches_left,
+            remaining_points,
           )
         })
         .collect(),
@@ -434,6 +449,8 @@ pub(super) fn test() {
           rank: 1,
           matches_left: 4,
           matches_won: 75,
+          earned_points: 75,
+          remaining_points: 4,
           elimination_status: EliminationStatus::Not,
         },
         Team {
@@ -441,6 +458,8 @@ pub(super) fn test() {
           rank: 2,
           matches_left: 21,
           matches_won: 71,
+          earned_points: 71,
+          remaining_points: 21,
           elimination_status: EliminationStatus::Not,
         },
         Team {
@@ -448,6 +467,8 @@ pub(super) fn test() {
           rank: 3,
           matches_left: 13,
           matches_won: 69,
+          earned_points: 69,
+          remaining_points: 13,
           elimination_status: EliminationStatus::Not,
         },
         Team {
@@ -455,6 +476,8 @@ pub(super) fn test() {
           rank: 4,
           matches_left: 17,
           matches_won: 63,
+          earned_points: 63,
+          remaining_points: 17,
           elimination_status: EliminationStatus::Not,
         },
         Team {
@@ -462,6 +485,8 @@ pub(super) fn test() {
           rank: 5,
           matches_left: 16,
           matches_won: 49,
+          earned_points: 49,
+          remaining_points: 16,
           elimination_status: EliminationStatus::Trivially(
             vec!["baltimore", "boston", "new-york"]
               .into_iter()

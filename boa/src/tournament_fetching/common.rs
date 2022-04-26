@@ -129,21 +129,31 @@ pub(super) trait TournamentProvider {
                   Arc::clone(first_team_id.min(second_team_id)),
                   Arc::clone(first_team_id.max(second_team_id)),
                 ),
-                WIN_FACTOR
-                  * MATCHES_PER_TEAM_PAIR
-                    .checked_sub(
-                      *matches_played
-                        .get(&(
-                          first_team_id.min(second_team_id),
-                          first_team_id.max(second_team_id),
-                        ))
-                        .unwrap_or(&0),
-                    )
-                    .unwrap(),
+                MATCHES_PER_TEAM_PAIR
+                  .checked_sub(
+                    *matches_played
+                      .get(&(
+                        first_team_id.min(second_team_id),
+                        first_team_id.max(second_team_id),
+                      ))
+                      .unwrap_or(&0),
+                  )
+                  .unwrap(),
               )
             })
             .collect();
-
+        let tournament_remaining_points: HashMap<
+          (Arc<TeamId>, Arc<TeamId>),
+          usize,
+        > = matches_left
+          .iter()
+          .map(|((first_team_id, second_team_id), matches_left)| {
+            (
+              (Arc::clone(first_team_id), Arc::clone(second_team_id)),
+              matches_left.checked_mul(WIN_FACTOR).unwrap(),
+            )
+          })
+          .collect();
         let matches_left_per_team: HashMap<&Arc<TeamId>, usize> = matches_left
           .iter()
           .flat_map(
@@ -160,6 +170,13 @@ pub(super) trait TournamentProvider {
             (team_id, values.into_iter().fold(0, |acc, (_, v)| acc + v))
           })
           .collect();
+        let remaining_points_per_team: HashMap<&Arc<TeamId>, usize> =
+          matches_left_per_team
+            .iter()
+            .map(|(team_id, matches_left)| {
+              (*team_id, matches_left.checked_mul(WIN_FACTOR).unwrap())
+            })
+            .collect();
 
         let mut teams: Vec<Arc<Team>> = teams_ids
           .iter()
@@ -167,13 +184,18 @@ pub(super) trait TournamentProvider {
             Arc::new(Team {
               id: Arc::clone(team_id),
 
-              // FIXME
               rank: 0,
               matches_left: *matches_left_per_team.get(team_id).unwrap_or(&0),
               // FIXME: Make sure there's a test to cover this (e.g: using all
               // tournament states).
-              matches_won: WIN_FACTOR * *matches_won.get(team_id).unwrap_or(&0)
+              matches_won: *matches_won.get(team_id).unwrap_or(&0),
+
+              earned_points: WIN_FACTOR
+                * *matches_won.get(team_id).unwrap_or(&0)
                 + DRAW_FACTOR * *matches_drawn.get(team_id).unwrap_or(&0),
+              remaining_points: *remaining_points_per_team
+                .get(team_id)
+                .unwrap_or(&0),
 
               elimination_status: EliminationStatus::Not,
             })
@@ -182,7 +204,7 @@ pub(super) trait TournamentProvider {
 
         // FIXME: Better ranking to match actual tournaments.
         teams.sort_unstable_by_key(|team| {
-          (team.matches_won, Arc::clone(&team.id))
+          (team.earned_points, Arc::clone(&team.id))
         });
         teams.reverse();
         let ranked_teams: Vec<Arc<Team>> = teams
@@ -199,7 +221,7 @@ pub(super) trait TournamentProvider {
         Tournament {
           name: tournament_name,
           teams: ranked_teams,
-          matches_left,
+          remaining_points: tournament_remaining_points,
         }
       })
       .collect()
