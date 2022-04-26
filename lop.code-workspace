@@ -31,7 +31,8 @@
     "debug.allowBreakpointsEverywhere": true,
     "editor.formatOnPaste": true,
     "editor.formatOnSave": true,
-    "editor.rulers": [80]
+    "editor.rulers": [80],
+    "terminal.integrated.scrollback": 10000
   },
   "tasks": {
     // See https://go.microsoft.com/fwlink/?LinkId=733558
