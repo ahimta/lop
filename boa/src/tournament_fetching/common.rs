@@ -181,6 +181,8 @@ pub(super) trait TournamentProvider {
         let mut teams: Vec<Arc<Team>> = teams_ids
           .iter()
           .map(|team_id| {
+            let team_matches_drawn = *matches_drawn.get(team_id).unwrap_or(&0);
+
             Arc::new(Team {
               id: Arc::clone(team_id),
 
@@ -189,10 +191,11 @@ pub(super) trait TournamentProvider {
               // FIXME: Make sure there's a test to cover this (e.g: using all
               // tournament states).
               matches_won: *matches_won.get(team_id).unwrap_or(&0),
+              matches_drawn: team_matches_drawn,
 
               earned_points: WIN_FACTOR
                 * *matches_won.get(team_id).unwrap_or(&0)
-                + DRAW_FACTOR * *matches_drawn.get(team_id).unwrap_or(&0),
+                + DRAW_FACTOR * team_matches_drawn,
               remaining_points: *remaining_points_per_team
                 .get(team_id)
                 .unwrap_or(&0),
