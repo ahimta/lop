@@ -6,4 +6,12 @@ source ./scripts/_base.sh
 
 # FIXME: Remove this file once Flutter frontend has feature-parity.
 trap ./scripts/notify-user.sh EXIT
-(cd ./boa && RUST_BACKTRACE=1 ./target/release/boa)
+
+(
+  cd ./boa
+  RUST_BACKTRACE=1 cargo run \
+    --quiet \
+    --jobs "$(nproc)" \
+    --no-default-features \
+    --release
+)
