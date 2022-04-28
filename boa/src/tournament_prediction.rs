@@ -34,8 +34,6 @@ pub struct Tournament {
 pub struct Team {
   pub id: Arc<TeamId>,
 
-  // NOTE: `rank` and `matches_left` only used to propagate values to
-  // `Prediction`.
   // FIXME: Make sure always validated.
   pub rank: usize,
   // FIXME: Make sure always validated.

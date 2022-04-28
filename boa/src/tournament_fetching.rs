@@ -172,9 +172,7 @@ impl TournamentProvider for Koora {
 
     vec![
       ("Saudi Professional League", 22551),
-      // NOTE: Al-Ahli (rank 6) and Al-Nassr (rank 7) eliminated.
       ("Saudi U-13 Premier League", 22279),
-      // NOTE: Al-Baten (rank 9) and Hajer (rank 10) eliminated.
       ("Saudi U-15 Premier League", 22307),
       ("Saudi Arabia U-19 League Division 1", 22277),
       ("Saudi Arabia U-17 League Division 1", 22278),
