@@ -15,6 +15,5 @@ trap ./scripts/notify-user.sh EXIT
   RUST_BACKTRACE=full cargo run \
     --quiet \
     --jobs "$(nproc)" \
-    --no-default-features \
-    --release
+    --no-default-features
 )
