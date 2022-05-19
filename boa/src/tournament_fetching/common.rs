@@ -129,16 +129,24 @@ pub(super) trait TournamentProvider {
                   Arc::clone(first_team_id.min(second_team_id)),
                   Arc::clone(first_team_id.max(second_team_id)),
                 ),
-                MATCHES_PER_TEAM_PAIR
-                  .checked_sub(
-                    *matches_played
-                      .get(&(
-                        first_team_id.min(second_team_id),
-                        first_team_id.max(second_team_id),
-                      ))
-                      .unwrap_or(&0),
-                  )
-                  .unwrap(),
+                // NOTE: From a logical perspective, we should fail here as this
+                // indicates incorrect data.
+                // But, in reality, it was observed that some providers can
+                // respond with this invalid data.
+                // Falling back to zero fixes (using saturating-sub) this and
+                // produces correct results, I think. For example, assuming
+                // finals (quarter/half/actual) are counted separately.
+                // And investingating this behavior would be useful and we can
+                // easily do it (and test the system better) by replaying
+                // history and testing that no failures occur.
+                MATCHES_PER_TEAM_PAIR.saturating_sub(
+                  *matches_played
+                    .get(&(
+                      first_team_id.min(second_team_id),
+                      first_team_id.max(second_team_id),
+                    ))
+                    .unwrap_or(&0),
+                ),
               )
             })
             .collect();
