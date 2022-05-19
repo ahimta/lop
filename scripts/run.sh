@@ -9,7 +9,10 @@ trap ./scripts/notify-user.sh EXIT
 
 (
   cd ./boa
-  RUST_BACKTRACE=1 cargo run \
+  # NOTE(RUST-BACKTRACE-FULL): This value is suggested by a release run
+  # backtrace but not documented.
+  # SEE: https://doc.rust-lang.org/std/backtrace/index.html#environment-variables
+  RUST_BACKTRACE=full cargo run \
     --quiet \
     --jobs "$(nproc)" \
     --no-default-features \
