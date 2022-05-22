@@ -67,15 +67,35 @@ nix-env --version
 ## Getting Started (Flutter)
 
 ```bash
+sudo apt install -qq --yes \
+  clang \
+  cmake \
+  libgtk-3-dev \
+  liblzma-dev \
+  ninja-build \
+  pkg-config \
+  \
+  >/dev/null
+
 # SEE: https://docs.flutter.dev/get-started/install/linux#install-flutter-using-snapd
 sudo snap install flutter --classic
 flutter sdk-path
+flutter upgrade
 mkdir --parents ~/.local/share/bash-completion/completions
 # FIXME: Command fails due to a mysterious permission error.
 flutter bash-completion > ~/.local/share/bash-completion/completions/flutter
-flutter config --no-analytics
+
+flutter config \
+  --no-analytics \
+  --enable-android \
+  --enable-ios \
+  --enable-linux-desktop \
+  --enable-macos-desktop \
+  --enable-web \
+  --enable-windows-desktop \
+  --enable-windows-uwp-desktop
+
 dart --disable-analytics
-flutter upgrade
 # NOTE: Install Google Chrome.
 # SEE: https://www.google.com/chrome
 sudo snap install --classic code
@@ -175,9 +195,10 @@ flutter create \
   --project-name clod \
   --description "lop frontend." \
   --org com.lop \
-  --platforms android,ios,web \
+  --platforms android,ios,linux,macos,windows,web \
   --android-language kotlin \
   --ios-language swift \
+  \
   clod
 ```
 

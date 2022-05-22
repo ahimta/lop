@@ -110,8 +110,8 @@ RUN ${SET_SHELL_SAFE_OPTIONS}; \
 
 # SEE: https://docs.flutter.dev/release/breaking-changes
 # SEE: https://docs.flutter.dev/development/tools/sdk/release-notes
-ARG FLUTTER=2.10.5
-ARG FLUTTER_CHECKSUM_SHA256=0d3670c65314624f0d4b549a5942689578c3f899d15bbdcfb3909d4470c69edd
+ARG FLUTTER=3.0.1
+ARG FLUTTER_CHECKSUM_SHA256=fe088c6c399d3bf6958171cec1dfdb387bacb1b643413fa07e6c353fad80adc1
 ARG FLUTTER_SDK_ROOT=$HOME/flutter
 
 # SEE: https://flutter.dev/docs/get-started/install/linux

@@ -47,9 +47,12 @@ linter:
     # NOTE: We remove all conflicting rules and very few that we don't agree
     # with or they produce many false positives for Flutter.
     # And some of them are the following:
-    # 1. always_use_package_imports: https://dart-lang.github.io/linter/lints/always_use_package_imports.html
-    # 2. library_private_types_in_public_api: https://dart-lang.github.io/linter/lints/library_private_types_in_public_api.html
-    # 3. public_member_api_docs: https://dart-lang.github.io/linter/lints/public_member_api_docs.html
+    # - always_specify_types: https://dart-lang.github.io/linter/lints/always_specify_types.html
+    # - always_use_package_imports: https://dart-lang.github.io/linter/lints/always_use_package_imports.html
+    # - avoid_final_parameters: https://dart-lang.github.io/linter/lints/avoid_final_parameters.html
+    # - prefer_double_quotes: https://dart-lang.github.io/linter/lints/prefer_double_quotes.html
+    # - public_member_api_docs: https://dart-lang.github.io/linter/lints/public_member_api_docs.html
+    # - unnecessary_final: https://dart-lang.github.io/linter/lints/unnecessary_final.html
     - always_declare_return_types
     - always_put_control_body_on_new_line
     - always_put_required_named_parameters_first
@@ -102,6 +105,7 @@ linter:
     - cast_nullable_to_non_nullable
     - close_sinks
     - comment_references
+    - conditional_uri_does_not_exist
     - constant_identifier_names
     - control_flow_in_finally
     - curly_braces_in_flow_control_structures
@@ -125,6 +129,7 @@ linter:
     - leading_newlines_in_multiline_strings
     - library_names
     - library_prefixes
+    - library_private_types_in_public_api
     - lines_longer_than_80_chars
     - list_remove_unrelated_type
     - literal_only_boolean_expressions
@@ -132,6 +137,8 @@ linter:
     - no_adjacent_strings_in_list
     - no_default_cases
     - no_duplicate_case_values
+    - no_leading_underscores_for_library_prefixes
+    - no_leading_underscores_for_local_identifiers
     - no_logic_in_create_state
     - no_runtimeType_toString
     - non_constant_identifier_names
@@ -188,7 +195,9 @@ linter:
     - provide_deprecation_message
     - recursive_getters
     - require_trailing_commas
+    - secure_pubspec_urls
     - sized_box_for_whitespace
+    - sized_box_shrink_expand
     - slash_for_doc_comments
     - sort_child_properties_last
     - sort_constructors_first
@@ -203,8 +212,10 @@ linter:
     - unnecessary_await_in_return
     - unnecessary_brace_in_string_interps
     - unnecessary_const
+    - unnecessary_constructor_name
     - unnecessary_getters_setters
     - unnecessary_lambdas
+    - unnecessary_late
     - unnecessary_new
     - unnecessary_null_aware_assignments
     - unnecessary_null_checks
@@ -220,6 +231,9 @@ linter:
     - unrelated_type_equality_checks
     - unsafe_html
     - use_build_context_synchronously
+    - use_colored_box
+    - use_decorated_box
+    - use_enums
     - use_full_hex_values_for_flutter_colors
     - use_function_type_syntax_for_parameters
     - use_if_null_to_convert_nulls_to_bools
@@ -231,6 +245,7 @@ linter:
     - use_rethrow_when_possible
     - use_setters_to_change_properties
     - use_string_buffers
+    - use_super_parameters
     - use_test_throws_matchers
     - use_to_and_as_if_applicable
     - valid_regexps

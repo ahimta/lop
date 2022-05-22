@@ -5,23 +5,25 @@ import 'boa.dart';
 void main() => runApp(const MyApp());
 
 class MyApp extends StatelessWidget {
-  const MyApp({final Key? key}) : super(key: key);
+  // ignore: prefer_final_parameters
+  const MyApp({super.key});
 
   @override
   Widget build(final BuildContext context) => const MaterialApp(
         title: 'Tournament Elimination',
-        home: EliminatedTeamsWidget(),
+        home: _EliminatedTeamsWidget(),
       );
 }
 
-class EliminatedTeamsWidget extends StatefulWidget {
-  const EliminatedTeamsWidget({final Key? key}) : super(key: key);
+class _EliminatedTeamsWidget extends StatefulWidget {
+  // ignore: prefer_final_parameters, unused_element
+  const _EliminatedTeamsWidget({super.key});
 
   @override
   _EliminatedTeamsWidgetState createState() => _EliminatedTeamsWidgetState();
 }
 
-class _EliminatedTeamsWidgetState extends State<EliminatedTeamsWidget> {
+class _EliminatedTeamsWidgetState extends State<_EliminatedTeamsWidget> {
   final _eliminatedTeams = predictTournamentEliminatedTeams();
 
   @override
