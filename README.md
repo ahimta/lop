@@ -174,6 +174,8 @@ cargo fix --edition
 ```bash
 flutter pub add english_words
 flutter pub remove english_words
+
+LD_LIBRARY_PATH=../boa/target/release flutter run --device-id linux
 ```
 
 ## Record of Setup of Already Generated Configuration

@@ -48,10 +48,16 @@ RUN ${SET_SHELL_SAFE_OPTIONS}; \
   apt-get update -qq --yes; \
   apt-get upgrade -qq --yes >/dev/null; \
   apt-get install -qq --yes --no-install-recommends \
+  clang \
+  cmake \
   git \
   lib32stdc++6 \
   lib32z1 \
+  libgtk-3-dev \
+  liblzma-dev \
+  ninja-build \
   openjdk-11-jdk \
+  pkg-config \
   shellcheck \
   tar \
   unzip \

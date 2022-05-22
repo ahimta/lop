@@ -123,6 +123,9 @@ cargo clippy --quiet -- \
   -A clippy::multiple-crate-versions \
   -A clippy::double-must-use \
 
+echo "Building Linux x86_64..." >&2
+cargo build --quiet --target x86_64-unknown-linux-gnu --release
+
 ANDROID_NDK_PATH="${ANDROID_SDK_ROOT}/ndk/${ANDROID_NDK_VERSION}"
 ANDROID_AR="${ANDROID_NDK_PATH}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android-ar"
 
@@ -160,6 +163,9 @@ echo >&2
 
 echo "Linting Flutter..."
 flutter analyze --fatal-infos --fatal-warnings >/dev/null
+
+echo "Bulding Linux..."
+flutter build linux >/dev/null
 
 echo "Bulding APK..."
 flutter build apk --debug >/dev/null

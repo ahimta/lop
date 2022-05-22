@@ -7,9 +7,9 @@ import 'package:ffi/ffi.dart';
 // SEE: https://docs.flutter.dev/development/platform-integration/c-interop
 // SEE: https://github.com/dart-lang/samples/tree/master/ffi
 // SEE: https://api.flutter.dev/flutter/dart-ffi/dart-ffi-library.html
-final DynamicLibrary _lop = Platform.isAndroid
-    ? DynamicLibrary.open('libboa.so')
-    : DynamicLibrary.process();
+final DynamicLibrary _lop = Platform.isIOS
+    ? DynamicLibrary.process()
+    : DynamicLibrary.open('libboa.so');
 
 class _EliminatedTeamNative extends Struct {
   external Pointer<Utf8> id;
