@@ -44,6 +44,9 @@ class _TeamNative extends Struct {
   external int matches_won;
   @Uint64()
   // ignore: non_constant_identifier_names
+  external int matches_lost;
+  @Uint64()
+  // ignore: non_constant_identifier_names
   external int earned_points;
   @Uint64()
   // ignore: non_constant_identifier_names
@@ -66,6 +69,7 @@ class Team {
     this.matchesLeft,
     this.matchesDrawn,
     this.matchesWon,
+    this.matchesLost,
     this.earnedPoints,
     this.remainingPoints,
     this.eliminationStatus,
@@ -78,6 +82,7 @@ class Team {
   int matchesLeft;
   int matchesDrawn;
   int matchesWon;
+  int matchesLost;
   int earnedPoints;
   int remainingPoints;
 
@@ -154,6 +159,7 @@ List<Tournament> getTournaments() {
           teamNative.matches_left,
           teamNative.matches_drawn,
           teamNative.matches_won,
+          teamNative.matches_lost,
           teamNative.earned_points,
           teamNative.remaining_points,
           teamNative.elimination_status,

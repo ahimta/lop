@@ -92,6 +92,25 @@ pub(super) trait TournamentProvider {
           })
           .collect();
 
+        let matches_lost: HashMap<&Arc<TeamId>, usize> = matches_results
+          .iter()
+          .filter_map(
+            |(
+              (first_team_id, first_team_score),
+              (second_team_id, second_team_score),
+            )| match first_team_score.cmp(second_team_score) {
+              Ordering::Less => Some((first_team_id, 1)),
+              Ordering::Greater => Some((second_team_id, 1)),
+              Ordering::Equal => None,
+            },
+          )
+          .into_group_map_by(|(team_id, _)| *team_id)
+          .into_iter()
+          .map(|(team_id, values)| {
+            (team_id, values.into_iter().fold(0, |acc, (_, v)| acc + v))
+          })
+          .collect();
+
         let teams_ids: HashSet<&Arc<TeamId>> = matches_results
           .iter()
           .flat_map(|((first_team_id, _), (second_team_id, _))| {
@@ -200,6 +219,7 @@ pub(super) trait TournamentProvider {
               // tournament states).
               matches_won: *matches_won.get(team_id).unwrap_or(&0),
               matches_drawn: team_matches_drawn,
+              matches_lost: *matches_lost.get(team_id).unwrap_or(&0),
 
               earned_points: WIN_FACTOR
                 * *matches_won.get(team_id).unwrap_or(&0)

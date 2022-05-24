@@ -107,6 +107,9 @@ class _TeamsWidget extends StatelessWidget {
                         label: Text('Matches Won'),
                       ),
                       DataColumn(
+                        label: Text('Matches Lost'),
+                      ),
+                      DataColumn(
                         label: Text('Earned Points'),
                       ),
                       DataColumn(
@@ -128,6 +131,7 @@ class _TeamsWidget extends StatelessWidget {
                               DataCell(Text(team.matchesLeft.toString())),
                               DataCell(Text(team.matchesDrawn.toString())),
                               DataCell(Text(team.matchesWon.toString())),
+                              DataCell(Text(team.matchesLost.toString())),
                               DataCell(Text(team.earnedPoints.toString())),
                               DataCell(Text(team.remainingPoints.toString())),
                               DataCell(Text(team.eliminationStatus.toString())),

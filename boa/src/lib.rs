@@ -39,6 +39,7 @@ pub struct TeamNative {
   matches_left: u64,
   matches_drawn: u64,
   matches_won: u64,
+  matches_lost: u64,
   earned_points: u64,
   remaining_points: u64,
 
@@ -92,6 +93,7 @@ pub extern "C" fn boa_get_tournaments(
                 matches_left: team.matches_left as u64,
                 matches_drawn: team.matches_drawn as u64,
                 matches_won: team.matches_won as u64,
+                matches_lost: team.matches_lost as u64,
                 earned_points: team.earned_points as u64,
                 remaining_points: team.remaining_points as u64,
 
