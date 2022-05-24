@@ -125,7 +125,10 @@
         "name": "clod",
         "request": "launch",
         "type": "dart",
-        "cwd": "${workspaceFolder:Frontend}"
+        "cwd": "${workspaceFolder:Frontend}",
+        "env": {
+          "LD_LIBRARY_PATH": "../boa/target/release"
+        }
       },
       {
         "name": "clod (profile mode)",

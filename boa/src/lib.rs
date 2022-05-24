@@ -1,12 +1,15 @@
+mod tournament_ambassador;
+
 mod mincut_maxflow;
-pub mod tournament_fetching;
-pub mod tournament_prediction;
+mod tournament_fetching;
+mod tournament_prediction;
 
 use std::boxed::Box;
 use std::ffi::CString;
 use std::os::raw::c_char;
 use std::ptr;
 
+use crate::tournament_ambassador::DisplayableTournament;
 use crate::tournament_prediction::EliminationStatus;
 
 pub fn test() {
@@ -15,75 +18,118 @@ pub fn test() {
   tournament_fetching::test();
 }
 
-#[repr(C)]
-#[must_use]
-pub struct EliminatedTeamNative {
-  id: *const c_char,
-  eliminating_teams_ids_count: u64,
-  eliminating_teams_ids: *const *const c_char,
-}
-
 #[no_mangle]
 pub extern "C" fn test_native() {
   test();
+}
+
+#[repr(C)]
+#[must_use]
+pub struct TournamentNative {
+  name: *const c_char,
+  teams_count: u64,
+  teams: *const TeamNative,
+}
+
+#[repr(C)]
+#[must_use]
+pub struct TeamNative {
+  name: *const c_char,
+  rank: u64,
+  matches_left: u64,
+  matches_drawn: u64,
+  matches_won: u64,
+  earned_points: u64,
+  remaining_points: u64,
+
+  elimination_status: u64,
+  eliminating_teams_count: u64,
+  eliminating_teams: *const *const c_char,
+}
+
+#[must_use]
+pub fn get_tournaments() -> Vec<DisplayableTournament> {
+  tournament_ambassador::get_tournaments()
 }
 
 /// # Panics
 #[allow(clippy::not_unsafe_ptr_arg_deref)]
 #[must_use]
 #[no_mangle]
-pub extern "C" fn predict_tournament_eliminated_teams_native(
-  eliminated_teams_count: *mut u64,
-  eliminated_teams: *mut *const EliminatedTeamNative,
+pub extern "C" fn boa_get_tournaments(
+  tournaments_count: *mut u64,
+  tournaments: *mut *const TournamentNative,
 ) -> i32 {
-  // FIXME: Change API to use new format.
+  let local_tournaments = tournament_ambassador::get_tournaments();
 
-  let tournaments = tournament_fetching::fetch_tournaments();
-  let local_eliminated_teams = tournaments
-    .iter()
-    .map(tournament_prediction::predict_tournament_eliminated_teams)
-    .next()
-    .unwrap();
+  unsafe {
+    *tournaments_count = local_tournaments.len() as u64;
+  }
 
-  let ets = Box::into_raw(
-    (&local_eliminated_teams)
-      .iter()
-      .map(|team| {
-        let eliminating_teams =
-          match EliminationStatus::clone(&team.elimination_status) {
-            EliminationStatus::Not => vec![].into_iter().collect(),
-            EliminationStatus::Trivially(eliminating_teams)
-            | EliminationStatus::NonTrivially(eliminating_teams) => {
-              eliminating_teams
-            }
-          };
+  let tournaments_native: *const TournamentNative = Box::into_raw(
+    local_tournaments
+      .into_iter()
+      .map(|tournament| TournamentNative {
+        name: CString::new(tournament.name).unwrap().into_raw(),
+        teams_count: tournament.teams.len() as u64,
+        teams: Box::into_raw(
+          tournament
+            .teams
+            .into_iter()
+            .map(|team| {
+              let eliminating_teams =
+                match EliminationStatus::clone(&team.elimination_status) {
+                  EliminationStatus::Not => vec![].into_iter().collect(),
+                  EliminationStatus::Trivially(eliminating_teams)
+                  | EliminationStatus::NonTrivially(eliminating_teams) => {
+                    eliminating_teams
+                  }
+                };
 
-        EliminatedTeamNative {
-          id: CString::new(String::clone(&team.id)).unwrap().into_raw(),
-          eliminating_teams_ids_count: eliminating_teams.len() as u64,
-          eliminating_teams_ids: Box::into_raw(
-            eliminating_teams
-              .iter()
-              .map(|s| CString::new(String::clone(s)).unwrap().into_raw())
-              .collect::<Vec<_>>()
-              .into_boxed_slice(),
-          ) as *const *const c_char,
-        }
+              TeamNative {
+                name: CString::new(String::clone(&team.id)).unwrap().into_raw(),
+                rank: team.rank as u64,
+                matches_left: team.matches_left as u64,
+                matches_drawn: team.matches_drawn as u64,
+                matches_won: team.matches_won as u64,
+                earned_points: team.earned_points as u64,
+                remaining_points: team.remaining_points as u64,
+
+                elimination_status: match team.elimination_status {
+                  EliminationStatus::Not => 1u64,
+                  EliminationStatus::Trivially(_) => 2u64,
+                  EliminationStatus::NonTrivially(_) => 3u64,
+                },
+                eliminating_teams_count: eliminating_teams.len() as u64,
+                eliminating_teams: Box::into_raw(
+                  eliminating_teams
+                    .into_iter()
+                    .map(|s| {
+                      CString::new(String::clone(&s)).unwrap().into_raw()
+                    })
+                    .collect::<Vec<_>>()
+                    .into_boxed_slice(),
+                ) as *const *const c_char,
+              }
+            })
+            .collect::<Vec<_>>()
+            .into_boxed_slice(),
+        ) as *const TeamNative,
       })
       .collect::<Vec<_>>()
       .into_boxed_slice(),
-  ) as *const EliminatedTeamNative;
+  )
+    as *const TournamentNative;
 
   unsafe {
-    *eliminated_teams_count = local_eliminated_teams.len() as u64;
     // NOTE: We have to use `NULL` when an array is empty as otherwise
     // deallocation would fail with a misaligned pointer on Android x86_64 (and
     // probably any Linux system). This is to be expected as it might be
     // considered an empty allocation (which has some subtleties).
-    *eliminated_teams = if *eliminated_teams_count == 0 {
+    *tournaments = if *tournaments_count == 0 {
       ptr::null()
     } else {
-      ets
+      tournaments_native
     };
   }
 
@@ -93,15 +139,15 @@ pub extern "C" fn predict_tournament_eliminated_teams_native(
 /// # Panics
 #[allow(clippy::not_unsafe_ptr_arg_deref, unused_must_use)]
 #[no_mangle]
-pub extern "C" fn predict_tournament_eliminated_teams_native_free(
-  eliminated_teams: *mut *const EliminatedTeamNative,
+pub extern "C" fn boa_free_tournaments(
+  tournaments: *mut *const TournamentNative,
 ) {
   unsafe {
-    if (*eliminated_teams).is_null() {
+    if (*tournaments).is_null() {
       return;
     }
 
-    Box::from_raw(*eliminated_teams as *mut EliminatedTeamNative);
-    *eliminated_teams = ptr::null();
+    Box::from_raw(*tournaments as *mut TournamentNative);
+    *tournaments = ptr::null();
   }
 }

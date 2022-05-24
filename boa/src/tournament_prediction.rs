@@ -32,6 +32,7 @@ pub struct Tournament {
 #[derive(Eq, PartialEq, Clone, Debug)]
 #[must_use]
 pub struct Team {
+  // FIXME: Rename to `name`.
   pub id: Arc<TeamId>,
 
   // FIXME: Make sure always validated.
