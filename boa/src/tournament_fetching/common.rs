@@ -111,6 +111,10 @@ pub(super) trait TournamentProvider {
           })
           .collect();
 
+        // NOTE: Only teams that have played so far are included and we're OK
+        // with this tradeoff as it doesn't affect the tournament-elimination
+        // functionality and gives an almost optimal approach that only needs
+        // the matches' results.
         let teams_ids: HashSet<&TeamId> = matches_results
           .iter()
           .flat_map(|((first_team_id, _), (second_team_id, _))| {
