@@ -59,7 +59,7 @@ class _TeamNative extends Struct {
   // ignore: non_constant_identifier_names
   external int eliminating_teams_count;
   // ignore: non_constant_identifier_names
-  external Pointer<Pointer<Utf8>> eliminating_teams;
+  external Pointer<_TeamNative> eliminating_teams;
 }
 
 class Team {
@@ -87,7 +87,7 @@ class Team {
   int remainingPoints;
 
   int eliminationStatus;
-  List<String> eliminatingTeams;
+  List<Team> eliminatingTeams;
 }
 
 // ignore: avoid_private_typedef_functions
@@ -143,29 +143,7 @@ List<Tournament> getTournaments() {
 
     final teams = <Team>[];
     for (var j = 0; j < tournamentNative.teams_count; j++) {
-      final teamNative = tournamentNative.teams[j];
-
-      final eliminatingTeams = <String>[];
-      for (var k = 0; k < teamNative.eliminating_teams_count; k++) {
-        eliminatingTeams.add(
-          teamNative.eliminating_teams[k].toDartString(),
-        );
-      }
-
-      teams.add(
-        Team(
-          teamNative.name.toDartString(),
-          teamNative.rank,
-          teamNative.matches_left,
-          teamNative.matches_drawn,
-          teamNative.matches_won,
-          teamNative.matches_lost,
-          teamNative.earned_points,
-          teamNative.remaining_points,
-          teamNative.elimination_status,
-          eliminatingTeams,
-        ),
-      );
+      teams.add(_doTeam(tournamentNative.teams[j]));
     }
 
     tournaments.add(Tournament(tournamentNative.name.toDartString(), teams));
@@ -178,4 +156,24 @@ List<Tournament> getTournaments() {
     ..free(tournamentsNative);
 
   return tournaments;
+}
+
+Team _doTeam(final _TeamNative teamNative) {
+  final eliminatingTeams = <Team>[];
+  for (var i = 0; i < teamNative.eliminating_teams_count; i++) {
+    eliminatingTeams.add(_doTeam(teamNative.eliminating_teams[i]));
+  }
+
+  return Team(
+    teamNative.name.toDartString(),
+    teamNative.rank,
+    teamNative.matches_left,
+    teamNative.matches_drawn,
+    teamNative.matches_won,
+    teamNative.matches_lost,
+    teamNative.earned_points,
+    teamNative.remaining_points,
+    teamNative.elimination_status,
+    eliminatingTeams,
+  );
 }

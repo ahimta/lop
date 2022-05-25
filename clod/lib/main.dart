@@ -135,7 +135,13 @@ class _TeamsWidget extends StatelessWidget {
                               DataCell(Text(team.earnedPoints.toString())),
                               DataCell(Text(team.remainingPoints.toString())),
                               DataCell(Text(team.eliminationStatus.toString())),
-                              DataCell(Text(team.eliminatingTeams.join(', '))),
+                              DataCell(
+                                Text(
+                                  team.eliminatingTeams
+                                      .map((final t) => t.name)
+                                      .join(', '),
+                                ),
+                              ),
                             ],
                           ),
                         )

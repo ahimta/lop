@@ -11,6 +11,7 @@ use std::ptr;
 
 use crate::tournament_ambassador::DisplayableTournament;
 use crate::tournament_prediction::EliminationStatus;
+use crate::tournament_prediction::Team;
 
 pub fn test() {
   mincut_maxflow::test();
@@ -23,6 +24,7 @@ pub extern "C" fn test_native() {
   test();
 }
 
+// FIXME: Always start with no-argument annotations/attributes.
 #[repr(C)]
 #[must_use]
 pub struct TournamentNative {
@@ -45,7 +47,7 @@ pub struct TeamNative {
 
   elimination_status: u64,
   eliminating_teams_count: u64,
-  eliminating_teams: *const *const c_char,
+  eliminating_teams: *const TeamNative,
 }
 
 #[must_use]
@@ -77,43 +79,7 @@ pub extern "C" fn boa_get_tournaments(
           tournament
             .teams
             .into_iter()
-            .map(|team| {
-              let eliminating_teams =
-                match EliminationStatus::clone(&team.elimination_status) {
-                  EliminationStatus::Not => vec![].into_iter().collect(),
-                  EliminationStatus::Trivially(eliminating_teams)
-                  | EliminationStatus::NonTrivially(eliminating_teams) => {
-                    eliminating_teams
-                  }
-                };
-
-              TeamNative {
-                name: CString::new(String::clone(&team.id)).unwrap().into_raw(),
-                rank: team.rank as u64,
-                matches_left: team.matches_left as u64,
-                matches_drawn: team.matches_drawn as u64,
-                matches_won: team.matches_won as u64,
-                matches_lost: team.matches_lost as u64,
-                earned_points: team.earned_points as u64,
-                remaining_points: team.remaining_points as u64,
-
-                elimination_status: match team.elimination_status {
-                  EliminationStatus::Not => 1u64,
-                  EliminationStatus::Trivially(_) => 2u64,
-                  EliminationStatus::NonTrivially(_) => 3u64,
-                },
-                eliminating_teams_count: eliminating_teams.len() as u64,
-                eliminating_teams: Box::into_raw(
-                  eliminating_teams
-                    .into_iter()
-                    .map(|s| {
-                      CString::new(String::clone(&s)).unwrap().into_raw()
-                    })
-                    .collect::<Vec<_>>()
-                    .into_boxed_slice(),
-                ) as *const *const c_char,
-              }
-            })
+            .map(|team| do_team(&team))
             .collect::<Vec<_>>()
             .into_boxed_slice(),
         ) as *const TeamNative,
@@ -136,6 +102,41 @@ pub extern "C" fn boa_get_tournaments(
   }
 
   0
+}
+
+#[must_use]
+fn do_team(team: &Team) -> TeamNative {
+  let eliminating_teams =
+    match EliminationStatus::clone(&team.elimination_status) {
+      EliminationStatus::Not => vec![].into_iter().collect(),
+      EliminationStatus::Trivially(eliminating_teams)
+      | EliminationStatus::NonTrivially(eliminating_teams) => eliminating_teams,
+    };
+
+  TeamNative {
+    name: CString::new(String::clone(&team.id)).unwrap().into_raw(),
+    rank: team.rank as u64,
+    matches_left: team.matches_left as u64,
+    matches_drawn: team.matches_drawn as u64,
+    matches_won: team.matches_won as u64,
+    matches_lost: team.matches_lost as u64,
+    earned_points: team.earned_points as u64,
+    remaining_points: team.remaining_points as u64,
+
+    elimination_status: match team.elimination_status {
+      EliminationStatus::Not => 1u64,
+      EliminationStatus::Trivially(_) => 2u64,
+      EliminationStatus::NonTrivially(_) => 3u64,
+    },
+    eliminating_teams_count: eliminating_teams.len() as u64,
+    eliminating_teams: Box::into_raw(
+      eliminating_teams
+        .into_iter()
+        .map(|eliminating_team| do_team(&eliminating_team))
+        .collect::<Vec<_>>()
+        .into_boxed_slice(),
+    ) as *const TeamNative,
+  }
 }
 
 /// # Panics
