@@ -27,7 +27,7 @@ pub enum EliminationStatus {
 #[must_use]
 #[derive(Debug)]
 pub struct Tournament {
-  pub name: String,
+  pub name: Arc<String>,
   // FIXME: Change to `HashSet<Arc<Team>>`.
   pub teams: Vec<Arc<Team>>,
   // FIXME: Make sure always validated.
@@ -132,22 +132,23 @@ pub fn predict_tournament_eliminated_teams(
     tournament.remaining_points,
   );
 
-  let source_node = FlowNode::new(Arc::new("s".to_string()));
-  let sink_node = FlowNode::new(Arc::new("t".to_string()));
+  // FIXME: Better source/sink logic. Probably centeralized in `ResidualGraph`
+  // or part of new sum-type `FlowNode`.
+  let source_node = Arc::new(FlowNode::new(&Arc::new("s".to_string())));
+  let sink_node = Arc::new(FlowNode::new(&Arc::new("t".to_string())));
 
   let eliminated_teams: Vec<Arc<Team>> = tournament
     .teams
     .iter()
     .map(|team| -> Arc<Team> {
-      let possible_eliminating_teams: Vec<Arc<Team>> = tournament
+      let possible_eliminating_teams: Vec<&Arc<Team>> = tournament
         .teams
         .iter()
-        .filter(|candidate_team| candidate_team.name != team.name)
-        .filter(|candidate_team| {
+        .filter(|&candidate_team| candidate_team.name != team.name)
+        .filter(|&candidate_team| {
           let max_points = team.earned_points + team.remaining_points;
           candidate_team.earned_points > max_points
         })
-        .map(Arc::clone)
         .collect();
 
       // NOTE: Can't remember why this special-case exists. It's probably for
@@ -157,31 +158,40 @@ pub fn predict_tournament_eliminated_teams(
       if !possible_eliminating_teams.is_empty() {
         return Arc::new(Team {
           elimination_status: EliminationStatus::Trivially(
-            possible_eliminating_teams,
+            possible_eliminating_teams
+              .into_iter()
+              .map(Arc::clone)
+              .collect(),
           ),
           ..Team::clone(team)
         });
       }
 
-      let other_teams: HashMap<FlowNode, &Arc<Team>> = tournament
+      let other_teams: HashMap<Arc<FlowNode>, &Arc<Team>> = tournament
         .teams
         .iter()
-        .filter(|possible_other_team| possible_other_team.name != team.name)
+        .filter(|&possible_other_team| possible_other_team.name != team.name)
         .map(|other_team| {
-          (FlowNode::new(Arc::clone(&other_team.name)), other_team)
+          (Arc::new(FlowNode::new(&other_team.name)), other_team)
         })
         .collect();
-      let other_teams_nodes: Vec<&FlowNode> = other_teams
+      let other_teams_nodes: Vec<&Arc<FlowNode>> = other_teams
         .iter()
         .map(|(other_team_node, _)| other_team_node)
         .collect();
+      let teams_earned_points: HashMap<&Arc<FlowNode>, usize> = other_teams
+        .iter()
+        .map(|(node, t)| (node, t.earned_points))
+        .collect();
 
-      let other_teams_nodes_combinations: Vec<(&FlowNode, &FlowNode)> =
-        other_teams_nodes
-          .iter()
-          .combinations(2)
-          .map(|nodes| (*nodes[0], *nodes[1]))
-          .collect();
+      let other_teams_nodes_combinations: Vec<(
+        &Arc<FlowNode>,
+        &Arc<FlowNode>,
+      )> = other_teams_nodes
+        .iter()
+        .combinations(2)
+        .map(|nodes| (*nodes[0], *nodes[1]))
+        .collect();
 
       let remaining_points_edges: Vec<FlowEdge> =
         other_teams_nodes_combinations
@@ -190,8 +200,8 @@ pub fn predict_tournament_eliminated_teams(
             let (id1, id2) = (&node1.id, &node2.id);
 
             FlowEdge::new(
-              FlowNode::clone(&source_node),
-              node1.join(node2),
+              &source_node,
+              &Arc::new(node1.join(node2)),
               Flow::Regular(
                 *tournament
                   .remaining_points
@@ -211,34 +221,18 @@ pub fn predict_tournament_eliminated_teams(
         other_teams_nodes_combinations
           .iter()
           .flat_map(|(node1, node2)| {
-            let from = node1.join(node2);
+            let from = Arc::new(node1.join(node2));
             let capacity = Flow::Infinite;
 
             vec![
-              FlowEdge::new(
-                FlowNode::clone(&from),
-                FlowNode::clone(node1),
-                capacity,
-              ),
-              FlowEdge::new(
-                FlowNode::clone(&from),
-                FlowNode::clone(node2),
-                capacity,
-              ),
+              FlowEdge::new(&from, node1, capacity),
+              FlowEdge::new(&from, node2, capacity),
             ]
           });
 
-      let teams_earned_points: HashMap<&FlowNode, usize> = other_teams
-        .iter()
-        .map(|(node, t)| (node, t.earned_points))
-        .collect();
-
       let points_to_earn_edges: Vec<FlowEdge> = other_teams_nodes
         .iter()
-        .map(|other_team_node| {
-          let from = other_team_node;
-          let to = FlowNode::clone(&sink_node);
-
+        .map(|&other_team_node| {
           let other_team_earned_points =
             *teams_earned_points.get(other_team_node).unwrap();
           let own_team_max_points = team.earned_points + team.remaining_points;
@@ -251,7 +245,9 @@ pub fn predict_tournament_eliminated_teams(
           let capacity =
             Flow::Regular(own_team_max_points - other_team_earned_points);
 
-          FlowEdge::new(FlowNode::clone(from), to, capacity)
+          let from = other_team_node;
+          let to = &sink_node;
+          FlowEdge::new(from, to, capacity)
         })
         .collect();
 
@@ -274,9 +270,7 @@ pub fn predict_tournament_eliminated_teams(
         .teams
         .iter()
         .filter(|team| {
-          mincut_maxflow
-            .mincut
-            .contains(&FlowNode::new(Arc::clone(&team.name)))
+          mincut_maxflow.mincut.contains(&FlowNode::new(&team.name))
         })
         .map(Arc::clone)
         .collect();
@@ -305,7 +299,7 @@ pub(super) fn test() {
   let examples = vec![
     TestExample {
       tournament: Tournament {
-        name: "dummy-tournament".to_string(),
+        name: Arc::new("dummy-tournament".to_string()),
         teams: vec![
           Team {
             name: Arc::new("atlanta".to_string()),
@@ -468,7 +462,7 @@ pub(super) fn test() {
     },
     TestExample {
       tournament: Tournament {
-        name: "dummy-tournament".to_string(),
+        name: Arc::new("dummy-tournament".to_string()),
         teams: vec![
           Team {
             name: Arc::new("new-york".to_string()),

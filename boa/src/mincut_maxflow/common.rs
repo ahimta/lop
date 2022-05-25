@@ -19,7 +19,7 @@ const JOINED_WITH_TAG: &str = "joined-with";
 
 impl FlowNode {
   #[must_use]
-  pub(crate) fn new(id: Arc<String>) -> Self {
+  pub(crate) fn new(id: &Arc<String>) -> Self {
     assert!(
       !id.contains(JOINED_WITH_TAG),
       "Only joined nodes can contain the joined-with tag value ({:?}, {:?}).",
@@ -27,7 +27,7 @@ impl FlowNode {
       JOINED_WITH_TAG,
     );
 
-    Self::internal_new(id)
+    Self::internal_new(Arc::clone(id))
   }
 
   #[must_use]
@@ -169,19 +169,24 @@ impl ops::SubAssign for Flow {
 #[must_use]
 #[derive(Debug)]
 pub(crate) struct FlowEdge {
-  pub(crate) from: FlowNode,
-  pub(crate) to: FlowNode,
+  pub(crate) from: Arc<FlowNode>,
+  pub(crate) to: Arc<FlowNode>,
   pub(crate) capacity: Flow,
   constructor_guard: PhantomData<()>,
 }
 
 impl FlowEdge {
   #[must_use]
-  pub(crate) fn new(from: FlowNode, to: FlowNode, capacity: Flow) -> Self {
-    ensure_valid_edge_nodes(&from, &to);
+  pub(crate) fn new(
+    from: &Arc<FlowNode>,
+    to: &Arc<FlowNode>,
+    capacity: Flow,
+  ) -> Self {
+    ensure_valid_edge_nodes(from, to);
+
     Self {
-      from,
-      to,
+      from: Arc::clone(from),
+      to: Arc::clone(to),
       capacity,
       constructor_guard: PhantomData,
     }

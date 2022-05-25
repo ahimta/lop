@@ -18,7 +18,7 @@ impl TournamentProvider for PremierLeague {
   const TEST_DATA_PREFIX: &'static str = "premier-league";
 
   #[must_use]
-  fn download_tournaments() -> Vec<(String, Vec<String>)> {
+  fn download_tournaments() -> Vec<(Arc<String>, Vec<String>)> {
     // NOTE: Used to match exactly the value used in official page.
     const PAGE_SIZE: usize = 40;
     // NOTE: Used to prevent an infinite loop in case the API response changes.
@@ -32,7 +32,7 @@ impl TournamentProvider for PremierLeague {
     ("First Team - UEFA Europa League", 3, 457, "541,49,50,52,505,53,494,81,84,364,58,366,989,61,93,95,96,26,369,97,98,63,202,65,66,105,470,635,106,69,1420,108,110,752,111,249,506,373,25,74",),
     ("PL2 - Primier League 2 - Division 1", 16, 438, "385,332,334,336,275,337,339,279,343,344,381,387,383,358",),
     ("PL2 - Primier League 2 - Division 2", 17, 447, "386,266,335,341,345,346,347,281,351,352,354,355,357,360",),
-  ].into_iter().map(|(tournament_name, competition_id, competition_season_id, competition_teams_ids)| -> (String, Vec<String>){
+  ].into_iter().map(|(tournament_name, competition_id, competition_season_id, competition_teams_ids)| -> (Arc<String>, Vec<String>){
     let mut page = 0;
     let mut tournament_results_pages_json_non_parsed: Vec<String> = vec![];
     loop {
@@ -65,14 +65,17 @@ impl TournamentProvider for PremierLeague {
       }
     }
 
-    (tournament_name.to_string(), tournament_results_pages_json_non_parsed)
+    (Arc::new(tournament_name.to_string()), tournament_results_pages_json_non_parsed)
   }).collect()
   }
 
   #[must_use]
   fn process_tournaments(
-    all_tournaments_results_pages_json_non_parsed: Vec<(String, Vec<String>)>,
-  ) -> Vec<(String, Vec<MatchResult>)> {
+    all_tournaments_results_pages_json_non_parsed: Vec<(
+      Arc<String>,
+      Vec<String>,
+    )>,
+  ) -> Vec<(Arc<String>, Vec<MatchResult>)> {
     use serde::Deserialize;
 
     #[must_use]
@@ -103,7 +106,7 @@ impl TournamentProvider for PremierLeague {
     all_tournaments_results_pages_json_non_parsed
       .into_iter()
       .map(
-        |(tournament_name, tournament_results_pages_json_non_parsed)| -> (String, Vec<MatchResult>) {
+        |(tournament_name, tournament_results_pages_json_non_parsed)| -> (Arc<String>, Vec<MatchResult>) {
           let matches_results: Vec<MatchResult> =
             tournament_results_pages_json_non_parsed
               .into_iter()
@@ -117,18 +120,18 @@ impl TournamentProvider for PremierLeague {
                   .content
                   .into_iter()
                   .map(|ContentItem { teams, .. }| {
-                    let (first_team, second_team) = &teams;
+                    let (first_team, second_team) = teams;
 
                     (
                       // NOTE: We don't handle the case where a team wins in
-                      // penalties. And we don't have because the tournaments we
-                      // support, at the moment, don't need this.
+                      // penalties. And we don't have to because the tournaments
+                      // we support, at the moment, don't need this.
                       (
-                        Arc::new(first_team.team.name.clone()),
+                        Arc::new(first_team.team.name),
                         f64_score_to_usize(first_team.score),
                       ),
                       (
-                        Arc::new(second_team.team.name.clone()),
+                        Arc::new(second_team.team.name),
                         f64_score_to_usize(second_team.score),
                       ),
                     )
@@ -167,7 +170,7 @@ impl TournamentProvider for Koora {
   const TEST_DATA_PREFIX: &'static str = "koora";
 
   #[must_use]
-  fn download_tournaments() -> Vec<(String, Vec<String>)> {
+  fn download_tournaments() -> Vec<(Arc<String>, Vec<String>)> {
     let client = get_client("https://www.goalzz.com");
 
     vec![
@@ -181,7 +184,7 @@ impl TournamentProvider for Koora {
     ]
     .into_iter()
     .map(
-      |(tournament_name, competition_id)| -> (String, Vec<String>) {
+      |(tournament_name, competition_id)| -> (Arc<String>, Vec<String>) {
         let months = vec![
           "202101", "202102", "202103", "202104", "202105", "202106", "202107",
           "202108", "202109", "202110", "202111", "202112", "202201", "202202",
@@ -190,7 +193,7 @@ impl TournamentProvider for Koora {
         ];
 
         (
-          tournament_name.to_string(),
+          Arc::new(tournament_name.to_string()),
           months
             .into_iter()
             .map(|current_month| -> String {
@@ -221,8 +224,8 @@ impl TournamentProvider for Koora {
 
   #[must_use]
   fn process_tournaments(
-    all_tournaments_responses: Vec<(String, Vec<String>)>,
-  ) -> Vec<(String, Vec<MatchResult>)> {
+    all_tournaments_responses: Vec<(Arc<String>, Vec<String>)>,
+  ) -> Vec<(Arc<String>, Vec<MatchResult>)> {
     use serde::Deserialize;
 
     #[must_use]
@@ -234,7 +237,7 @@ impl TournamentProvider for Koora {
     all_tournaments_responses
       .into_iter()
       .map(
-        |(tournament_name, responses)| -> (String, Vec<MatchResult>) {
+        |(tournament_name, responses)| -> (Arc<String>, Vec<MatchResult>) {
           let matches_results: Vec<MatchResult> = responses
             .into_iter()
             .flat_map(|current_response| {
@@ -345,7 +348,7 @@ pub(super) fn test() {
   assert_eq!(
     Koora::test_fetch_tournaments().first().unwrap(),
     &Tournament {
-      name: "Saudi Professional League".to_string(),
+      name: Arc::new("Saudi Professional League".to_string()),
       teams: vec![
         Team {
           name: Arc::new("Al Ittihad".to_string()),
@@ -664,7 +667,7 @@ pub(super) fn test() {
   assert_eq!(
     PremierLeague::test_fetch_tournaments().first().unwrap(),
     &Tournament {
-      name: "First Team - Premier League".to_string(),
+      name: Arc::new("First Team - Premier League".to_string()),
       teams: vec![
         Team {
           name: Arc::new("Manchester City".to_string()),

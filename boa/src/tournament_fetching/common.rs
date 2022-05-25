@@ -27,11 +27,11 @@ pub(super) trait TournamentProvider {
   // FIXME: Tournament-name passed around everywhere. Probably replace with full
   // team details/stats.
   #[must_use]
-  fn download_tournaments() -> Vec<(String, Vec<String>)>;
+  fn download_tournaments() -> Vec<(Arc<String>, Vec<String>)>;
   #[must_use]
   fn process_tournaments(
-    downloaded_tournament: Vec<(String, Vec<String>)>,
-  ) -> Vec<(String, Vec<MatchResult>)>;
+    downloaded_tournament: Vec<(Arc<String>, Vec<String>)>,
+  ) -> Vec<(Arc<String>, Vec<MatchResult>)>;
 
   #[must_use]
   fn fetch_tournaments() -> Vec<Tournament> {
@@ -43,7 +43,7 @@ pub(super) trait TournamentProvider {
   #[must_use]
   #[allow(clippy::too_many_lines)]
   fn postprocess_tournament(
-    all_tournaments_matches_results: Vec<(String, Vec<MatchResult>)>,
+    all_tournaments_matches_results: Vec<(Arc<String>, Vec<MatchResult>)>,
   ) -> Vec<Tournament> {
     const MATCHES_PER_TEAM_PAIR: usize = 2;
 
@@ -294,11 +294,11 @@ pub(super) trait TournamentProvider {
   }
 
   #[must_use]
-  fn test_helper_download_tournaments() -> Vec<(String, Vec<String>)> {
+  fn test_helper_download_tournaments() -> Vec<(Arc<String>, Vec<String>)> {
     use std::fs;
 
     return vec![(
-      Self::TEST_TOURNAMENT_NAME.to_string(),
+      Arc::new(Self::TEST_TOURNAMENT_NAME.to_string()),
       fs::read_to_string(format!(
         "data/{}-{}",
         Self::TEST_DATA_PREFIX,

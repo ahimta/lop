@@ -10,8 +10,8 @@ use crate::mincut_maxflow::FlowNode;
 
 #[must_use]
 pub(super) struct ResidualGraph {
-  adjacency_matrix: BTreeMap<FlowNode, Vec<Arc<RefCell<ResidualEdge>>>>,
-  nodes: HashSet<FlowNode>,
+  adjacency_matrix: BTreeMap<Arc<FlowNode>, Vec<Arc<RefCell<ResidualEdge>>>>,
+  nodes: HashSet<Arc<FlowNode>>,
   constructor_guard: PhantomData<()>,
 }
 
@@ -19,8 +19,8 @@ impl ResidualGraph {
   #[must_use]
   pub(super) fn new(
     edges: &[FlowEdge],
-    source_node: &FlowNode,
-    sink_node: &FlowNode,
+    source_node: &Arc<FlowNode>,
+    sink_node: &Arc<FlowNode>,
   ) -> Self {
     const EDGES_COUNT_MIN: usize = 1;
     const EDGES_COUNT_MAX: usize = 10 * 1000;
@@ -41,10 +41,10 @@ impl ResidualGraph {
       edges,
     );
 
-    let nodes: HashSet<FlowNode> = edges
+    let nodes: HashSet<Arc<FlowNode>> = edges
       .iter()
       .flat_map(|FlowEdge { from, to, .. }| {
-        vec![FlowNode::clone(from), FlowNode::clone(to)]
+        vec![Arc::clone(from), Arc::clone(to)]
       })
       .collect();
 
@@ -66,17 +66,17 @@ impl ResidualGraph {
     // to work with `HashMap`. This is contagious and causes other components to
     // use the same type.
     let mut adjacency_matrix: BTreeMap<
-      FlowNode,
+      Arc<FlowNode>,
       Vec<Arc<RefCell<ResidualEdge>>>,
     > = BTreeMap::new();
     for node in &nodes {
-      adjacency_matrix.insert(FlowNode::clone(node), Vec::new());
+      adjacency_matrix.insert(Arc::clone(node), Vec::new());
     }
 
     for edge in edges {
       let shared_edge = Arc::new(RefCell::new(ResidualEdge::new(
-        FlowNode::clone(&edge.from),
-        FlowNode::clone(&edge.to),
+        &edge.from,
+        &edge.to,
         edge.capacity,
       )));
       adjacency_matrix
@@ -102,7 +102,7 @@ impl ResidualGraph {
   }
 
   #[must_use]
-  pub(super) const fn nodes(&self) -> &HashSet<FlowNode> {
+  pub(super) const fn nodes(&self) -> &HashSet<Arc<FlowNode>> {
     &self.nodes
   }
 }

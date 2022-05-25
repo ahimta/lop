@@ -72,7 +72,7 @@ pub extern "C" fn boa_get_tournaments(
     local_tournaments
       .into_iter()
       .map(|tournament| TournamentNative {
-        name: CString::new(tournament.name).unwrap().into_raw(),
+        name: CString::new(&**tournament.name).unwrap().into_raw(),
         teams_count: tournament.teams.len() as u64,
         teams: Box::into_raw(
           tournament
@@ -105,15 +105,15 @@ pub extern "C" fn boa_get_tournaments(
 
 #[must_use]
 fn do_team(team: &Team) -> TeamNative {
-  let eliminating_teams =
-    match EliminationStatus::clone(&team.elimination_status) {
-      EliminationStatus::Not => vec![].into_iter().collect(),
-      EliminationStatus::Trivially(eliminating_teams)
-      | EliminationStatus::NonTrivially(eliminating_teams) => eliminating_teams,
-    };
+  let empty_eliminating_teams = vec![].into_iter().collect();
+  let eliminating_teams = match &team.elimination_status {
+    EliminationStatus::Not => &empty_eliminating_teams,
+    EliminationStatus::Trivially(eliminating_teams)
+    | EliminationStatus::NonTrivially(eliminating_teams) => eliminating_teams,
+  };
 
   TeamNative {
-    name: CString::new(String::clone(&team.name)).unwrap().into_raw(),
+    name: CString::new(&**team.name).unwrap().into_raw(),
     rank: team.rank as u64,
     matches_left: team.matches_left as u64,
     matches_drawn: team.matches_drawn as u64,
@@ -130,8 +130,8 @@ fn do_team(team: &Team) -> TeamNative {
     eliminating_teams_count: eliminating_teams.len() as u64,
     eliminating_teams: Box::into_raw(
       eliminating_teams
-        .into_iter()
-        .map(|eliminating_team| do_team(&eliminating_team))
+        .iter()
+        .map(|eliminating_team| do_team(eliminating_team))
         .collect::<Vec<_>>()
         .into_boxed_slice(),
     ) as *const TeamNative,
