@@ -1,5 +1,4 @@
 use std::cmp::Ord;
-use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::hash::Hash;
@@ -15,10 +14,8 @@ use crate::mincut_maxflow::common::FlowNode;
 
 pub type TeamId = Arc<String>;
 
-// FIXME: Trim down derives especially that it seems that not all dependent ones
-// (e.g.: `PartialEq`) are required.
 #[must_use]
-#[derive(Eq, PartialEq, Clone, Debug)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub enum EliminationStatus {
   Not,
   // FIXME: Make sure always sorted properly or use `TreeSet` everywhere when
@@ -27,9 +24,8 @@ pub enum EliminationStatus {
   NonTrivially(Vec<Arc<Team>>),
 }
 
-// FIXME: Always sort derives.
 #[must_use]
-#[derive(Eq, PartialEq, Debug)]
+#[derive(Debug)]
 pub struct Tournament {
   pub name: String,
   // FIXME: Change to `HashSet<Arc<Team>>`.
@@ -37,15 +33,31 @@ pub struct Tournament {
   // FIXME: Make sure always validated.
   pub remaining_points: HashMap<(TeamId, TeamId), usize>,
 }
+impl PartialEq for Tournament {
+  #[must_use]
+  // NOTE(MUST-CHANGE-WHENEVER-STRUCT-FIELDS-CHANGE)
+  fn eq(&self, other: &Self) -> bool {
+    if !cfg!(test) {
+      return self.name == other.name;
+    }
+
+    // NOTE(EXHAUSTIVE-EQUALITY-ONLY-FOR-TESTS)
+    self.name == other.name
+      && self.teams == other.teams
+      && self.remaining_points == other.remaining_points
+  }
+}
+impl Eq for Tournament {}
 
 #[must_use]
-#[derive(Clone, Debug, Eq)]
+#[derive(Clone, Debug)]
 pub struct Team {
   // FIXME: Rename to `name`.
   pub id: TeamId,
 
   // FIXME: Make sure always validated.
   pub rank: usize,
+  // FIXME: Add matches-played.
   // FIXME: Make sure always validated.
   pub matches_left: usize,
   pub matches_drawn: usize,
@@ -56,14 +68,27 @@ pub struct Team {
 
   pub elimination_status: EliminationStatus,
 }
-// FIXME: Implement traits using common-sense optimized logic rather than both
-// slow and wrong one.
 impl PartialEq for Team {
   #[must_use]
+  // NOTE(MUST-CHANGE-WHENEVER-STRUCT-FIELDS-CHANGE)
   fn eq(&self, other: &Self) -> bool {
-    self.id.cmp(&other.id) == Ordering::Equal
+    if !cfg!(test) {
+      return self.id == other.id;
+    }
+
+    // NOTE(EXHAUSTIVE-EQUALITY-ONLY-FOR-TESTS)
+    self.id == other.id
+      && self.rank == other.rank
+      && self.matches_left == other.matches_left
+      && self.matches_drawn == other.matches_drawn
+      && self.matches_won == other.matches_won
+      && self.matches_lost == other.matches_lost
+      && self.earned_points == other.earned_points
+      && self.remaining_points == other.remaining_points
+      && self.elimination_status == other.elimination_status
   }
 }
+impl Eq for Team {}
 impl Hash for Team {
   fn hash<H: Hasher>(&self, state: &mut H) {
     self.id.hash(state);
@@ -368,17 +393,6 @@ pub(super) fn test() {
           elimination_status: EliminationStatus::NonTrivially(
             vec![
               Team {
-                id: Arc::new("new-york".to_string()),
-                rank: 3,
-                matches_left: 6,
-                matches_drawn: 0,
-                matches_won: 78,
-                matches_lost: 0,
-                earned_points: 78,
-                remaining_points: 6,
-                elimination_status: EliminationStatus::Not,
-              },
-              Team {
                 id: Arc::new("atlanta".to_string()),
                 rank: 1,
                 matches_left: 8,
@@ -387,6 +401,17 @@ pub(super) fn test() {
                 matches_lost: 0,
                 earned_points: 83,
                 remaining_points: 8,
+                elimination_status: EliminationStatus::Not,
+              },
+              Team {
+                id: Arc::new("new-york".to_string()),
+                rank: 3,
+                matches_left: 6,
+                matches_drawn: 0,
+                matches_won: 78,
+                matches_lost: 0,
+                earned_points: 78,
+                remaining_points: 6,
                 elimination_status: EliminationStatus::Not,
               },
             ]
@@ -591,17 +616,6 @@ pub(super) fn test() {
                 elimination_status: EliminationStatus::Not,
               },
               Team {
-                id: Arc::new("boston".to_string()),
-                rank: 3,
-                matches_left: 13,
-                matches_drawn: 0,
-                matches_won: 69,
-                matches_lost: 0,
-                earned_points: 69,
-                remaining_points: 13,
-                elimination_status: EliminationStatus::Not,
-              },
-              Team {
                 id: Arc::new("baltimore".to_string()),
                 rank: 2,
                 matches_left: 21,
@@ -610,6 +624,17 @@ pub(super) fn test() {
                 matches_lost: 0,
                 earned_points: 71,
                 remaining_points: 21,
+                elimination_status: EliminationStatus::Not,
+              },
+              Team {
+                id: Arc::new("boston".to_string()),
+                rank: 3,
+                matches_left: 13,
+                matches_drawn: 0,
+                matches_won: 69,
+                matches_lost: 0,
+                earned_points: 69,
+                remaining_points: 13,
                 elimination_status: EliminationStatus::Not,
               },
             ]

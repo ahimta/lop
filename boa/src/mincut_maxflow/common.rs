@@ -9,7 +9,7 @@ pub(super) fn ensure_valid_edge_nodes(from: &FlowNode, to: &FlowNode) {
 }
 
 #[must_use]
-#[derive(Debug, Clone, Eq, PartialEq, Hash, Ord, PartialOrd)]
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub(crate) struct FlowNode {
   pub(crate) id: Arc<String>,
   constructor_guard: PhantomData<()>,
@@ -63,7 +63,7 @@ impl FlowNode {
 // degenerate cases and it's very hard to beat the current model without adding
 // undue complexity.
 #[must_use]
-#[derive(Debug, Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub(crate) enum Flow {
   Infinite,
   Regular(usize),
