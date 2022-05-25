@@ -113,7 +113,7 @@ fn do_team(team: &Team) -> TeamNative {
     };
 
   TeamNative {
-    name: CString::new(String::clone(&team.id)).unwrap().into_raw(),
+    name: CString::new(String::clone(&team.name)).unwrap().into_raw(),
     rank: team.rank as u64,
     matches_left: team.matches_left as u64,
     matches_drawn: team.matches_drawn as u64,

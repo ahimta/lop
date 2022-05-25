@@ -54,20 +54,20 @@ pub(super) trait TournamentProvider {
           .iter()
           .map(
             |(
-              (first_team_id, first_team_score),
-              (second_team_id, second_team_score),
+              (first_team_name, first_team_score),
+              (second_team_name, second_team_score),
             )| {
               match first_team_score.cmp(second_team_score) {
-                Ordering::Greater => (first_team_id, 1),
-                Ordering::Less => (second_team_id, 1),
-                Ordering::Equal => (second_team_id, 0),
+                Ordering::Greater => (first_team_name, 1),
+                Ordering::Less => (second_team_name, 1),
+                Ordering::Equal => (second_team_name, 0),
               }
             },
           )
-          .into_group_map_by(|(team_id, _)| *team_id)
+          .into_group_map_by(|(team_name, _)| *team_name)
           .into_iter()
-          .map(|(team_id, values)| {
-            (team_id, values.into_iter().fold(0, |acc, (_, v)| acc + v))
+          .map(|(team_name, values)| {
+            (team_name, values.into_iter().fold(0, |acc, (_, v)| acc + v))
           })
           .collect();
 
@@ -75,20 +75,20 @@ pub(super) trait TournamentProvider {
           .iter()
           .flat_map(
             |(
-              (first_team_id, first_team_score),
-              (second_team_id, second_team_score),
+              (first_team_name, first_team_score),
+              (second_team_name, second_team_score),
             )| {
               if first_team_score != second_team_score {
                 return vec![];
               }
 
-              vec![(first_team_id, 1), (second_team_id, 1)]
+              vec![(first_team_name, 1), (second_team_name, 1)]
             },
           )
-          .into_group_map_by(|(team_id, _)| *team_id)
+          .into_group_map_by(|(team_name, _)| *team_name)
           .into_iter()
-          .map(|(team_id, values)| {
-            (team_id, values.into_iter().fold(0, |acc, (_, v)| acc + v))
+          .map(|(team_name, values)| {
+            (team_name, values.into_iter().fold(0, |acc, (_, v)| acc + v))
           })
           .collect();
 
@@ -96,18 +96,18 @@ pub(super) trait TournamentProvider {
           .iter()
           .filter_map(
             |(
-              (first_team_id, first_team_score),
-              (second_team_id, second_team_score),
+              (first_team_name, first_team_score),
+              (second_team_name, second_team_score),
             )| match first_team_score.cmp(second_team_score) {
-              Ordering::Less => Some((first_team_id, 1)),
-              Ordering::Greater => Some((second_team_id, 1)),
+              Ordering::Less => Some((first_team_name, 1)),
+              Ordering::Greater => Some((second_team_name, 1)),
               Ordering::Equal => None,
             },
           )
-          .into_group_map_by(|(team_id, _)| *team_id)
+          .into_group_map_by(|(team_name, _)| *team_name)
           .into_iter()
-          .map(|(team_id, values)| {
-            (team_id, values.into_iter().fold(0, |acc, (_, v)| acc + v))
+          .map(|(team_name, values)| {
+            (team_name, values.into_iter().fold(0, |acc, (_, v)| acc + v))
           })
           .collect();
 
@@ -115,41 +115,41 @@ pub(super) trait TournamentProvider {
         // with this tradeoff as it doesn't affect the tournament-elimination
         // functionality and gives an almost optimal approach that only needs
         // the matches' results.
-        let teams_ids: HashSet<&TeamId> = matches_results
+        let teams_names: HashSet<&TeamId> = matches_results
           .iter()
-          .flat_map(|((first_team_id, _), (second_team_id, _))| {
-            vec![first_team_id, second_team_id]
+          .flat_map(|((first_team_name, _), (second_team_name, _))| {
+            vec![first_team_name, second_team_name]
           })
           .collect();
 
         let matches_played: HashMap<(&TeamId, &TeamId), usize> =
           matches_results
             .iter()
-            .map(|((first_team_id, _), (second_team_id, _))| {
+            .map(|((first_team_name, _), (second_team_name, _))| {
               (
                 (
-                  first_team_id.min(second_team_id),
-                  first_team_id.max(second_team_id),
+                  first_team_name.min(second_team_name),
+                  first_team_name.max(second_team_name),
                 ),
                 1,
               )
             })
-            .counts_by(|(team_pair_id, _)| team_pair_id)
+            .counts_by(|(team_pair_name, _)| team_pair_name)
             .iter()
-            .map(|((first_team_id, second_team_id), &played)| {
-              ((*first_team_id, *second_team_id), played)
+            .map(|((first_team_name, second_team_name), &played)| {
+              ((*first_team_name, *second_team_name), played)
             })
             .collect();
 
-        let matches_left: HashMap<(&TeamId, &TeamId), usize> = teams_ids
+        let matches_left: HashMap<(&TeamId, &TeamId), usize> = teams_names
           .iter()
           .combinations(2)
           .map(|team_pair| (team_pair[0], team_pair[1]))
-          .map(|(first_team_id, second_team_id)| {
+          .map(|(first_team_name, second_team_name)| {
             (
               (
-                *first_team_id.min(second_team_id),
-                *first_team_id.max(second_team_id),
+                *first_team_name.min(second_team_name),
+                *first_team_name.max(second_team_name),
               ),
               // NOTE: From a logical perspective, we should fail here as this
               // indicates incorrect data.
@@ -164,8 +164,8 @@ pub(super) trait TournamentProvider {
               MATCHES_PER_TEAM_PAIR.saturating_sub(
                 *matches_played
                   .get(&(
-                    first_team_id.min(second_team_id),
-                    first_team_id.max(second_team_id),
+                    first_team_name.min(second_team_name),
+                    first_team_name.max(second_team_name),
                   ))
                   .unwrap_or(&0),
               ),
@@ -175,9 +175,9 @@ pub(super) trait TournamentProvider {
         let tournament_remaining_points: HashMap<(TeamId, TeamId), usize> =
           matches_left
             .iter()
-            .map(|((first_team_id, second_team_id), matches_left)| {
+            .map(|((first_team_name, second_team_name), matches_left)| {
               (
-                (Arc::clone(first_team_id), Arc::clone(second_team_id)),
+                (Arc::clone(first_team_name), Arc::clone(second_team_name)),
                 matches_left.checked_mul(WIN_FACTOR).unwrap(),
               )
             })
@@ -185,48 +185,55 @@ pub(super) trait TournamentProvider {
         let matches_left_per_team: HashMap<&TeamId, usize> = matches_left
           .iter()
           .flat_map(
-            |((first_team_id, second_team_id), matches_left_between_pair)| {
+            |(
+              (first_team_name, second_team_name),
+              matches_left_between_pair,
+            )| {
               vec![
-                (first_team_id, matches_left_between_pair),
-                (second_team_id, matches_left_between_pair),
+                (first_team_name, matches_left_between_pair),
+                (second_team_name, matches_left_between_pair),
               ]
             },
           )
-          .into_group_map_by(|(team_id, _)| *team_id)
+          .into_group_map_by(|(team_name, _)| *team_name)
           .into_iter()
-          .map(|(team_id, values)| {
-            (*team_id, values.into_iter().fold(0, |acc, (_, v)| acc + v))
+          .map(|(team_name, values)| {
+            (
+              *team_name,
+              values.into_iter().fold(0, |acc, (_, v)| acc + v),
+            )
           })
           .collect();
         let remaining_points_per_team: HashMap<&TeamId, usize> =
           matches_left_per_team
             .iter()
-            .map(|(team_id, matches_left)| {
-              (*team_id, matches_left.checked_mul(WIN_FACTOR).unwrap())
+            .map(|(team_name, matches_left)| {
+              (*team_name, matches_left.checked_mul(WIN_FACTOR).unwrap())
             })
             .collect();
 
-        let mut teams: Vec<Arc<Team>> = teams_ids
+        let mut teams: Vec<Arc<Team>> = teams_names
           .iter()
-          .map(|team_id| {
-            let team_matches_drawn = *matches_drawn.get(team_id).unwrap_or(&0);
+          .map(|team_name| {
+            let team_matches_drawn =
+              *matches_drawn.get(team_name).unwrap_or(&0);
 
             Arc::new(Team {
-              id: Arc::clone(team_id),
+              name: Arc::clone(team_name),
 
               rank: 0,
-              matches_left: *matches_left_per_team.get(team_id).unwrap_or(&0),
+              matches_left: *matches_left_per_team.get(team_name).unwrap_or(&0),
               // FIXME: Make sure there's a test to cover this (e.g: using all
               // tournament states).
-              matches_won: *matches_won.get(team_id).unwrap_or(&0),
+              matches_won: *matches_won.get(team_name).unwrap_or(&0),
               matches_drawn: team_matches_drawn,
-              matches_lost: *matches_lost.get(team_id).unwrap_or(&0),
+              matches_lost: *matches_lost.get(team_name).unwrap_or(&0),
 
               earned_points: WIN_FACTOR
-                * *matches_won.get(team_id).unwrap_or(&0)
+                * *matches_won.get(team_name).unwrap_or(&0)
                 + DRAW_FACTOR * team_matches_drawn,
               remaining_points: *remaining_points_per_team
-                .get(team_id)
+                .get(team_name)
                 .unwrap_or(&0),
 
               elimination_status: EliminationStatus::Not,
@@ -236,7 +243,7 @@ pub(super) trait TournamentProvider {
 
         // FIXME: Better ranking to match actual tournaments.
         teams.sort_unstable_by_key(|team| {
-          (team.earned_points, Arc::clone(&team.id))
+          (team.earned_points, Arc::clone(&team.name))
         });
         teams.reverse();
         let ranked_teams: Vec<Arc<Team>> = teams

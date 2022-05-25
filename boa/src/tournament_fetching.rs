@@ -348,7 +348,7 @@ pub(super) fn test() {
       name: "Saudi Professional League".to_string(),
       teams: vec![
         Team {
-          id: Arc::new("Al Ittihad".to_string()),
+          name: Arc::new("Al Ittihad".to_string()),
           rank: 1,
           matches_left: 11,
           matches_won: 15,
@@ -359,7 +359,7 @@ pub(super) fn test() {
           elimination_status: EliminationStatus::Not,
         },
         Team {
-          id: Arc::new("Al Shabab".to_string()),
+          name: Arc::new("Al Shabab".to_string()),
           rank: 2,
           matches_left: 10,
           matches_won: 11,
@@ -370,7 +370,7 @@ pub(super) fn test() {
           elimination_status: EliminationStatus::Not,
         },
         Team {
-          id: Arc::new("Al Nassr".to_string()),
+          name: Arc::new("Al Nassr".to_string()),
           rank: 3,
           matches_left: 10,
           matches_won: 12,
@@ -381,7 +381,7 @@ pub(super) fn test() {
           elimination_status: EliminationStatus::Not,
         },
         Team {
-          id: Arc::new("Al Hilal".to_string()),
+          name: Arc::new("Al Hilal".to_string()),
           rank: 4,
           matches_left: 13,
           matches_won: 8,
@@ -392,7 +392,7 @@ pub(super) fn test() {
           elimination_status: EliminationStatus::Not,
         },
         Team {
-          id: Arc::new("Damac".to_string()),
+          name: Arc::new("Damac".to_string()),
           rank: 5,
           matches_left: 10,
           matches_won: 8,
@@ -403,7 +403,7 @@ pub(super) fn test() {
           elimination_status: EliminationStatus::Not,
         },
         Team {
-          id: Arc::new("Abha".to_string()),
+          name: Arc::new("Abha".to_string()),
           rank: 6,
           matches_left: 10,
           matches_won: 8,
@@ -414,7 +414,7 @@ pub(super) fn test() {
           elimination_status: EliminationStatus::Not,
         },
         Team {
-          id: Arc::new("Al Fayha".to_string()),
+          name: Arc::new("Al Fayha".to_string()),
           rank: 7,
           matches_left: 11,
           matches_won: 6,
@@ -425,7 +425,7 @@ pub(super) fn test() {
           elimination_status: EliminationStatus::Not,
         },
         Team {
-          id: Arc::new("Al Raed".to_string()),
+          name: Arc::new("Al Raed".to_string()),
           rank: 8,
           matches_left: 10,
           matches_won: 7,
@@ -436,7 +436,7 @@ pub(super) fn test() {
           elimination_status: EliminationStatus::Not,
         },
         Team {
-          id: Arc::new("Al Ahli".to_string()),
+          name: Arc::new("Al Ahli".to_string()),
           rank: 9,
           matches_left: 10,
           matches_won: 5,
@@ -447,7 +447,7 @@ pub(super) fn test() {
           elimination_status: EliminationStatus::Not,
         },
         Team {
-          id: Arc::new("Al-Tai".to_string()),
+          name: Arc::new("Al-Tai".to_string()),
           rank: 10,
           matches_left: 10,
           matches_won: 7,
@@ -458,7 +458,7 @@ pub(super) fn test() {
           elimination_status: EliminationStatus::Not,
         },
         Team {
-          id: Arc::new("Al Taawoun".to_string()),
+          name: Arc::new("Al Taawoun".to_string()),
           rank: 11,
           matches_left: 10,
           matches_won: 5,
@@ -469,7 +469,7 @@ pub(super) fn test() {
           elimination_status: EliminationStatus::Not,
         },
         Team {
-          id: Arc::new("Al Faisaly".to_string()),
+          name: Arc::new("Al Faisaly".to_string()),
           rank: 12,
           matches_left: 11,
           matches_won: 4,
@@ -480,7 +480,7 @@ pub(super) fn test() {
           elimination_status: EliminationStatus::Not,
         },
         Team {
-          id: Arc::new("Al Ettifaq".to_string()),
+          name: Arc::new("Al Ettifaq".to_string()),
           rank: 13,
           matches_left: 11,
           matches_won: 4,
@@ -491,7 +491,7 @@ pub(super) fn test() {
           elimination_status: EliminationStatus::Not,
         },
         Team {
-          id: Arc::new("Al-Batin".to_string()),
+          name: Arc::new("Al-Batin".to_string()),
           rank: 14,
           matches_left: 10,
           matches_won: 4,
@@ -502,7 +502,7 @@ pub(super) fn test() {
           elimination_status: EliminationStatus::Not,
         },
         Team {
-          id: Arc::new("Al Fateh".to_string()),
+          name: Arc::new("Al Fateh".to_string()),
           rank: 15,
           matches_left: 11,
           matches_won: 4,
@@ -513,7 +513,7 @@ pub(super) fn test() {
           elimination_status: EliminationStatus::Not,
         },
         Team {
-          id: Arc::new("Al Hazem".to_string()),
+          name: Arc::new("Al Hazem".to_string()),
           rank: 16,
           matches_left: 10,
           matches_won: 3,
@@ -667,7 +667,7 @@ pub(super) fn test() {
       name: "First Team - Premier League".to_string(),
       teams: vec![
         Team {
-          id: Arc::new("Manchester City".to_string()),
+          name: Arc::new("Manchester City".to_string()),
           rank: 1,
           matches_left: 20,
           matches_won: 14,
@@ -678,7 +678,7 @@ pub(super) fn test() {
           elimination_status: EliminationStatus::Not,
         },
         Team {
-          id: Arc::new("Liverpool".to_string()),
+          name: Arc::new("Liverpool".to_string()),
           rank: 2,
           matches_left: 20,
           matches_won: 12,
@@ -689,7 +689,7 @@ pub(super) fn test() {
           elimination_status: EliminationStatus::Not,
         },
         Team {
-          id: Arc::new("Chelsea".to_string()),
+          name: Arc::new("Chelsea".to_string()),
           rank: 3,
           matches_left: 20,
           matches_won: 11,
@@ -700,7 +700,7 @@ pub(super) fn test() {
           elimination_status: EliminationStatus::Not,
         },
         Team {
-          id: Arc::new("Arsenal".to_string()),
+          name: Arc::new("Arsenal".to_string()),
           rank: 4,
           matches_left: 20,
           matches_won: 10,
@@ -711,7 +711,7 @@ pub(super) fn test() {
           elimination_status: EliminationStatus::Not,
         },
         Team {
-          id: Arc::new("West Ham United".to_string()),
+          name: Arc::new("West Ham United".to_string()),
           rank: 5,
           matches_left: 21,
           matches_won: 8,
@@ -722,7 +722,7 @@ pub(super) fn test() {
           elimination_status: EliminationStatus::Not,
         },
         Team {
-          id: Arc::new("Manchester United".to_string()),
+          name: Arc::new("Manchester United".to_string()),
           rank: 6,
           matches_left: 22,
           matches_won: 8,
@@ -733,7 +733,7 @@ pub(super) fn test() {
           elimination_status: EliminationStatus::Not,
         },
         Team {
-          id: Arc::new("Tottenham Hotspur".to_string()),
+          name: Arc::new("Tottenham Hotspur".to_string()),
           rank: 7,
           matches_left: 23,
           matches_won: 8,
@@ -744,7 +744,7 @@ pub(super) fn test() {
           elimination_status: EliminationStatus::Not,
         },
         Team {
-          id: Arc::new("Wolverhampton Wanderers".to_string()),
+          name: Arc::new("Wolverhampton Wanderers".to_string()),
           rank: 8,
           matches_left: 20,
           matches_won: 7,
@@ -755,7 +755,7 @@ pub(super) fn test() {
           elimination_status: EliminationStatus::Not,
         },
         Team {
-          id: Arc::new("Leicester City".to_string()),
+          name: Arc::new("Leicester City".to_string()),
           rank: 9,
           matches_left: 22,
           matches_won: 6,
@@ -766,7 +766,7 @@ pub(super) fn test() {
           elimination_status: EliminationStatus::Not,
         },
         Team {
-          id: Arc::new("Aston Villa".to_string()),
+          name: Arc::new("Aston Villa".to_string()),
           rank: 10,
           matches_left: 21,
           matches_won: 7,
@@ -777,7 +777,7 @@ pub(super) fn test() {
           elimination_status: EliminationStatus::Not,
         },
         Team {
-          id: Arc::new("Crystal Palace".to_string()),
+          name: Arc::new("Crystal Palace".to_string()),
           rank: 11,
           matches_left: 21,
           matches_won: 4,
@@ -788,7 +788,7 @@ pub(super) fn test() {
           elimination_status: EliminationStatus::Not,
         },
         Team {
-          id: Arc::new("Brighton and Hove Albion".to_string()),
+          name: Arc::new("Brighton and Hove Albion".to_string()),
           rank: 12,
           matches_left: 22,
           matches_won: 4,
@@ -799,7 +799,7 @@ pub(super) fn test() {
           elimination_status: EliminationStatus::Not,
         },
         Team {
-          id: Arc::new("Brentford".to_string()),
+          name: Arc::new("Brentford".to_string()),
           rank: 13,
           matches_left: 22,
           matches_won: 5,
@@ -810,7 +810,7 @@ pub(super) fn test() {
           elimination_status: EliminationStatus::Not,
         },
         Team {
-          id: Arc::new("Everton".to_string()),
+          name: Arc::new("Everton".to_string()),
           rank: 14,
           matches_left: 21,
           matches_won: 5,
@@ -821,7 +821,7 @@ pub(super) fn test() {
           elimination_status: EliminationStatus::Not,
         },
         Team {
-          id: Arc::new("Southampton".to_string()),
+          name: Arc::new("Southampton".to_string()),
           rank: 15,
           matches_left: 21,
           matches_won: 3,
@@ -832,7 +832,7 @@ pub(super) fn test() {
           elimination_status: EliminationStatus::Not,
         },
         Team {
-          id: Arc::new("Leeds United".to_string()),
+          name: Arc::new("Leeds United".to_string()),
           rank: 16,
           matches_left: 20,
           matches_won: 3,
@@ -843,7 +843,7 @@ pub(super) fn test() {
           elimination_status: EliminationStatus::Not,
         },
         Team {
-          id: Arc::new("Watford".to_string()),
+          name: Arc::new("Watford".to_string()),
           rank: 17,
           matches_left: 22,
           matches_won: 4,
@@ -854,7 +854,7 @@ pub(super) fn test() {
           elimination_status: EliminationStatus::Not,
         },
         Team {
-          id: Arc::new("Burnley".to_string()),
+          name: Arc::new("Burnley".to_string()),
           rank: 18,
           matches_left: 23,
           matches_won: 1,
@@ -865,7 +865,7 @@ pub(super) fn test() {
           elimination_status: EliminationStatus::Not,
         },
         Team {
-          id: Arc::new("Norwich City".to_string()),
+          name: Arc::new("Norwich City".to_string()),
           rank: 19,
           matches_left: 21,
           matches_won: 2,
@@ -876,7 +876,7 @@ pub(super) fn test() {
           elimination_status: EliminationStatus::Not,
         },
         Team {
-          id: Arc::new("Newcastle United".to_string()),
+          name: Arc::new("Newcastle United".to_string()),
           rank: 20,
           matches_left: 20,
           matches_won: 1,
