@@ -155,7 +155,7 @@ pub(super) trait TournamentProvider {
               // indicates incorrect data.
               // But, in reality, it was observed that some providers can
               // respond with this invalid data.
-              // Falling back to zero fixes (using saturating-sub) this and
+              // Falling back to zero (using saturating-sub) fixes this and
               // produces correct results, I think. For example, assuming
               // finals (quarter/half/actual) are counted separately.
               // And investingating this behavior would be useful and we can
