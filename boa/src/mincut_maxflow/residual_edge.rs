@@ -4,8 +4,8 @@ use crate::mincut_maxflow::common::ensure_valid_edge_nodes;
 use crate::mincut_maxflow::common::Flow;
 use crate::mincut_maxflow::common::FlowNode;
 
-#[derive(Debug)]
 #[must_use]
+#[derive(Debug)]
 pub(super) struct ResidualEdge {
   pub(super) from: FlowNode,
   pub(super) to: FlowNode,

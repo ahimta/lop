@@ -16,11 +16,10 @@ use crate::mincut_maxflow::common::FlowNode;
 // FIXME: Change to `Arc<String>`.
 pub type TeamId = String;
 
-// FIXME: Always put `#[must_use]` first.
 // FIXME: Trim down derives especially that it seems that not all dependent ones
 // (e.g.: `PartialEq`) are required.
-#[derive(Eq, PartialEq, Clone, Debug)]
 #[must_use]
+#[derive(Eq, PartialEq, Clone, Debug)]
 pub enum EliminationStatus {
   Not,
   // FIXME: Make sure always sorted properly or use `TreeSet` everywhere when
@@ -30,8 +29,8 @@ pub enum EliminationStatus {
 }
 
 // FIXME: Always sort derives.
-#[derive(Eq, PartialEq, Debug)]
 #[must_use]
+#[derive(Eq, PartialEq, Debug)]
 pub struct Tournament {
   pub name: String,
   // FIXME: Change to `HashSet<Arc<Team>>`.
@@ -40,8 +39,8 @@ pub struct Tournament {
   pub remaining_points: HashMap<(Arc<TeamId>, Arc<TeamId>), usize>,
 }
 
-#[derive(Clone, Debug, Eq)]
 #[must_use]
+#[derive(Clone, Debug, Eq)]
 pub struct Team {
   // FIXME: Rename to `name`.
   pub id: Arc<TeamId>,
@@ -73,8 +72,8 @@ impl Hash for Team {
 }
 
 /// # Panics
-#[allow(clippy::too_many_lines)]
 #[must_use]
+#[allow(clippy::too_many_lines)]
 pub fn predict_tournament_eliminated_teams(
   tournament: &Tournament,
 ) -> Vec<Arc<Team>> {

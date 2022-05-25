@@ -40,8 +40,8 @@ pub(super) trait TournamentProvider {
     Self::postprocess_tournament(all_tournaments_matches_results)
   }
 
-  #[allow(clippy::too_many_lines)]
   #[must_use]
+  #[allow(clippy::too_many_lines)]
   fn postprocess_tournament(
     all_tournaments_matches_results: Vec<(String, Vec<MatchResult>)>,
   ) -> Vec<Tournament> {

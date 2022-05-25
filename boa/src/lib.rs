@@ -24,17 +24,16 @@ pub extern "C" fn test_native() {
   test();
 }
 
-// FIXME: Always start with no-argument annotations/attributes.
-#[repr(C)]
 #[must_use]
+#[repr(C)]
 pub struct TournamentNative {
   name: *const c_char,
   teams_count: u64,
   teams: *const TeamNative,
 }
 
-#[repr(C)]
 #[must_use]
+#[repr(C)]
 pub struct TeamNative {
   name: *const c_char,
   rank: u64,
@@ -56,9 +55,9 @@ pub fn get_tournaments() -> Vec<DisplayableTournament> {
 }
 
 /// # Panics
-#[allow(clippy::not_unsafe_ptr_arg_deref)]
 #[must_use]
 #[no_mangle]
+#[allow(clippy::not_unsafe_ptr_arg_deref)]
 pub extern "C" fn boa_get_tournaments(
   tournaments_count: *mut u64,
   tournaments: *mut *const TournamentNative,
@@ -140,8 +139,8 @@ fn do_team(team: &Team) -> TeamNative {
 }
 
 /// # Panics
-#[allow(clippy::not_unsafe_ptr_arg_deref, unused_must_use)]
 #[no_mangle]
+#[allow(clippy::not_unsafe_ptr_arg_deref, unused_must_use)]
 pub extern "C" fn boa_free_tournaments(
   tournaments: *mut *const TournamentNative,
 ) {

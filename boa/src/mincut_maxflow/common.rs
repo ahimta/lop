@@ -8,8 +8,8 @@ pub(super) fn ensure_valid_edge_nodes(from: &FlowNode, to: &FlowNode) {
   assert!(from != to, "Invalid edge nodes ({:?}, ({:?}).", from, to);
 }
 
-#[derive(Debug, Clone, Eq, PartialEq, Hash, Ord, PartialOrd)]
 #[must_use]
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Ord, PartialOrd)]
 pub(crate) struct FlowNode {
   pub(crate) id: Arc<String>,
   constructor_guard: PhantomData<()>,
@@ -62,8 +62,8 @@ impl FlowNode {
 // value for it is valid and its operators handle all cases and panic for
 // degenerate cases and it's very hard to beat the current model without adding
 // undue complexity.
-#[derive(Debug, Clone, Copy)]
 #[must_use]
+#[derive(Debug, Clone, Copy)]
 pub(crate) enum Flow {
   Infinite,
   Regular(usize),
@@ -166,8 +166,8 @@ impl ops::SubAssign for Flow {
   }
 }
 
-#[derive(Debug)]
 #[must_use]
+#[derive(Debug)]
 pub(crate) struct FlowEdge {
   pub(crate) from: FlowNode,
   pub(crate) to: FlowNode,

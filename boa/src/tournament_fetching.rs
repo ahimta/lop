@@ -75,27 +75,27 @@ impl TournamentProvider for PremierLeague {
   ) -> Vec<(String, Vec<MatchResult>)> {
     use serde::Deserialize;
 
-    #[derive(Deserialize)]
     #[must_use]
+    #[derive(Deserialize)]
     struct Page {
       content: Vec<ContentItem>,
     }
 
-    #[derive(Deserialize)]
     #[must_use]
+    #[derive(Deserialize)]
     struct ContentItem {
       teams: (ContentItemTeam, ContentItemTeam),
     }
 
-    #[derive(Deserialize)]
     #[must_use]
+    #[derive(Deserialize)]
     struct ContentItemTeam {
       score: f64,
       team: ContentItemTeamTeam,
     }
 
-    #[derive(Deserialize)]
     #[must_use]
+    #[derive(Deserialize)]
     struct ContentItemTeamTeam {
       name: String,
     }
@@ -144,8 +144,8 @@ impl TournamentProvider for PremierLeague {
   }
 }
 
-#[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
 #[must_use]
+#[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
 fn f64_score_to_usize(score: f64) -> usize {
   const EPSILON: f64 = 0.00001;
   const MAX: f64 = 1000.0;
@@ -225,8 +225,8 @@ impl TournamentProvider for Koora {
   ) -> Vec<(String, Vec<MatchResult>)> {
     use serde::Deserialize;
 
-    #[derive(Deserialize)]
     #[must_use]
+    #[derive(Deserialize)]
     struct Table {
       matches_list: Vec<serde_json::Value>,
     }

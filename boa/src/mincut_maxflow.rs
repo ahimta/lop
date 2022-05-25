@@ -17,8 +17,8 @@ use crate::mincut_maxflow::residual_graph::ResidualGraph;
 
 type EdgeTo = Arc<RefCell<BTreeMap<FlowNode, Arc<RefCell<ResidualEdge>>>>>;
 
-#[derive(Debug, Eq, PartialEq)]
 #[must_use]
+#[derive(Debug, Eq, PartialEq)]
 pub(super) struct MincutMaxflow {
   pub(super) mincut: HashSet<FlowNode>,
   pub(super) maxflow: Flow,
