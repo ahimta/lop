@@ -14,7 +14,7 @@ use crate::tournament_prediction::Tournament;
 const WIN_FACTOR: usize = 3;
 const DRAW_FACTOR: usize = 1;
 
-pub(super) type MatchResult = ((Arc<TeamId>, usize), (Arc<TeamId>, usize));
+pub(super) type MatchResult = ((TeamId, usize), (TeamId, usize));
 
 #[must_use]
 pub(super) trait TournamentProvider {
@@ -50,7 +50,7 @@ pub(super) trait TournamentProvider {
     all_tournaments_matches_results
       .into_iter()
       .map(|(tournament_name, matches_results)| -> Tournament {
-        let matches_won: HashMap<&Arc<TeamId>, usize> = matches_results
+        let matches_won: HashMap<&TeamId, usize> = matches_results
           .iter()
           .map(
             |(
@@ -71,7 +71,7 @@ pub(super) trait TournamentProvider {
           })
           .collect();
 
-        let matches_drawn: HashMap<&Arc<TeamId>, usize> = matches_results
+        let matches_drawn: HashMap<&TeamId, usize> = matches_results
           .iter()
           .flat_map(
             |(
@@ -92,7 +92,7 @@ pub(super) trait TournamentProvider {
           })
           .collect();
 
-        let matches_lost: HashMap<&Arc<TeamId>, usize> = matches_results
+        let matches_lost: HashMap<&TeamId, usize> = matches_results
           .iter()
           .filter_map(
             |(
@@ -111,14 +111,14 @@ pub(super) trait TournamentProvider {
           })
           .collect();
 
-        let teams_ids: HashSet<&Arc<TeamId>> = matches_results
+        let teams_ids: HashSet<&TeamId> = matches_results
           .iter()
           .flat_map(|((first_team_id, _), (second_team_id, _))| {
             vec![first_team_id, second_team_id]
           })
           .collect();
 
-        let matches_played: HashMap<(&Arc<TeamId>, &Arc<TeamId>), usize> =
+        let matches_played: HashMap<(&TeamId, &TeamId), usize> =
           matches_results
             .iter()
             .map(|((first_team_id, _), (second_team_id, _))| {
@@ -137,51 +137,48 @@ pub(super) trait TournamentProvider {
             })
             .collect();
 
-        let matches_left: HashMap<(Arc<TeamId>, Arc<TeamId>), usize> =
-          teams_ids
-            .iter()
-            .combinations(2)
-            .map(|team_pair| (team_pair[0], team_pair[1]))
-            .map(|(first_team_id, second_team_id)| {
-              (
-                (
-                  Arc::clone(first_team_id.min(second_team_id)),
-                  Arc::clone(first_team_id.max(second_team_id)),
-                ),
-                // NOTE: From a logical perspective, we should fail here as this
-                // indicates incorrect data.
-                // But, in reality, it was observed that some providers can
-                // respond with this invalid data.
-                // Falling back to zero fixes (using saturating-sub) this and
-                // produces correct results, I think. For example, assuming
-                // finals (quarter/half/actual) are counted separately.
-                // And investingating this behavior would be useful and we can
-                // easily do it (and test the system better) by replaying
-                // history and testing that no failures occur.
-                MATCHES_PER_TEAM_PAIR.saturating_sub(
-                  *matches_played
-                    .get(&(
-                      first_team_id.min(second_team_id),
-                      first_team_id.max(second_team_id),
-                    ))
-                    .unwrap_or(&0),
-                ),
-              )
-            })
-            .collect();
-        let tournament_remaining_points: HashMap<
-          (Arc<TeamId>, Arc<TeamId>),
-          usize,
-        > = matches_left
+        let matches_left: HashMap<(&TeamId, &TeamId), usize> = teams_ids
           .iter()
-          .map(|((first_team_id, second_team_id), matches_left)| {
+          .combinations(2)
+          .map(|team_pair| (team_pair[0], team_pair[1]))
+          .map(|(first_team_id, second_team_id)| {
             (
-              (Arc::clone(first_team_id), Arc::clone(second_team_id)),
-              matches_left.checked_mul(WIN_FACTOR).unwrap(),
+              (
+                *first_team_id.min(second_team_id),
+                *first_team_id.max(second_team_id),
+              ),
+              // NOTE: From a logical perspective, we should fail here as this
+              // indicates incorrect data.
+              // But, in reality, it was observed that some providers can
+              // respond with this invalid data.
+              // Falling back to zero fixes (using saturating-sub) this and
+              // produces correct results, I think. For example, assuming
+              // finals (quarter/half/actual) are counted separately.
+              // And investingating this behavior would be useful and we can
+              // easily do it (and test the system better) by replaying
+              // history and testing that no failures occur.
+              MATCHES_PER_TEAM_PAIR.saturating_sub(
+                *matches_played
+                  .get(&(
+                    first_team_id.min(second_team_id),
+                    first_team_id.max(second_team_id),
+                  ))
+                  .unwrap_or(&0),
+              ),
             )
           })
           .collect();
-        let matches_left_per_team: HashMap<&Arc<TeamId>, usize> = matches_left
+        let tournament_remaining_points: HashMap<(TeamId, TeamId), usize> =
+          matches_left
+            .iter()
+            .map(|((first_team_id, second_team_id), matches_left)| {
+              (
+                (Arc::clone(first_team_id), Arc::clone(second_team_id)),
+                matches_left.checked_mul(WIN_FACTOR).unwrap(),
+              )
+            })
+            .collect();
+        let matches_left_per_team: HashMap<&TeamId, usize> = matches_left
           .iter()
           .flat_map(
             |((first_team_id, second_team_id), matches_left_between_pair)| {
@@ -194,10 +191,10 @@ pub(super) trait TournamentProvider {
           .into_group_map_by(|(team_id, _)| *team_id)
           .into_iter()
           .map(|(team_id, values)| {
-            (team_id, values.into_iter().fold(0, |acc, (_, v)| acc + v))
+            (*team_id, values.into_iter().fold(0, |acc, (_, v)| acc + v))
           })
           .collect();
-        let remaining_points_per_team: HashMap<&Arc<TeamId>, usize> =
+        let remaining_points_per_team: HashMap<&TeamId, usize> =
           matches_left_per_team
             .iter()
             .map(|(team_id, matches_left)| {

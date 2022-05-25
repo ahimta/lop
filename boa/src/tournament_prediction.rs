@@ -13,8 +13,7 @@ use crate::mincut_maxflow::common::Flow;
 use crate::mincut_maxflow::common::FlowEdge;
 use crate::mincut_maxflow::common::FlowNode;
 
-// FIXME: Change to `Arc<String>`.
-pub type TeamId = String;
+pub type TeamId = Arc<String>;
 
 // FIXME: Trim down derives especially that it seems that not all dependent ones
 // (e.g.: `PartialEq`) are required.
@@ -36,14 +35,14 @@ pub struct Tournament {
   // FIXME: Change to `HashSet<Arc<Team>>`.
   pub teams: Vec<Arc<Team>>,
   // FIXME: Make sure always validated.
-  pub remaining_points: HashMap<(Arc<TeamId>, Arc<TeamId>), usize>,
+  pub remaining_points: HashMap<(TeamId, TeamId), usize>,
 }
 
 #[must_use]
 #[derive(Clone, Debug, Eq)]
 pub struct Team {
   // FIXME: Rename to `name`.
-  pub id: Arc<TeamId>,
+  pub id: TeamId,
 
   // FIXME: Make sure always validated.
   pub rank: usize,
