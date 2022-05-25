@@ -135,11 +135,12 @@ pub fn predict_tournament_eliminated_teams(
   let source_node = FlowNode::new(Arc::new("s".to_string()));
   let sink_node = FlowNode::new(Arc::new("t".to_string()));
 
-  let eliminated_teams: Vec<Arc<Team>> = (&tournament.teams)
+  let eliminated_teams: Vec<Arc<Team>> = tournament
+    .teams
     .iter()
     .map(|team| -> Arc<Team> {
-      // FIXME: Remove unnecessary borrowing.
-      let possible_eliminating_teams: Vec<Arc<Team>> = (&tournament.teams)
+      let possible_eliminating_teams: Vec<Arc<Team>> = tournament
+        .teams
         .iter()
         .filter(|candidate_team| candidate_team.name != team.name)
         .filter(|candidate_team| {
@@ -162,14 +163,15 @@ pub fn predict_tournament_eliminated_teams(
         });
       }
 
-      let other_teams: HashMap<FlowNode, &Arc<Team>> = (&tournament.teams)
+      let other_teams: HashMap<FlowNode, &Arc<Team>> = tournament
+        .teams
         .iter()
         .filter(|possible_other_team| possible_other_team.name != team.name)
         .map(|other_team| {
           (FlowNode::new(Arc::clone(&other_team.name)), other_team)
         })
         .collect();
-      let other_teams_nodes: Vec<&FlowNode> = (&other_teams)
+      let other_teams_nodes: Vec<&FlowNode> = other_teams
         .iter()
         .map(|(other_team_node, _)| other_team_node)
         .collect();
@@ -182,7 +184,7 @@ pub fn predict_tournament_eliminated_teams(
           .collect();
 
       let remaining_points_edges: Vec<FlowEdge> =
-        (&other_teams_nodes_combinations)
+        other_teams_nodes_combinations
           .iter()
           .map(|(node1, node2)| {
             let (id1, id2) = (&node1.id, &node2.id);
@@ -191,10 +193,12 @@ pub fn predict_tournament_eliminated_teams(
               FlowNode::clone(&source_node),
               node1.join(node2),
               Flow::Regular(
-                *(&tournament.remaining_points)
+                *tournament
+                  .remaining_points
                   .get(&(Arc::clone(id1), Arc::clone(id2)))
                   .unwrap_or_else(|| {
-                    (&tournament.remaining_points)
+                    tournament
+                      .remaining_points
                       .get(&(Arc::clone(id2), Arc::clone(id1)))
                       .unwrap_or(&0)
                   }),
@@ -203,32 +207,33 @@ pub fn predict_tournament_eliminated_teams(
           })
           .collect();
 
-      let intermediate_edges = (&other_teams_nodes_combinations)
-        .iter()
-        .flat_map(|(node1, node2)| {
-          let from = node1.join(node2);
-          let capacity = Flow::Infinite;
+      let intermediate_edges =
+        other_teams_nodes_combinations
+          .iter()
+          .flat_map(|(node1, node2)| {
+            let from = node1.join(node2);
+            let capacity = Flow::Infinite;
 
-          vec![
-            FlowEdge::new(
-              FlowNode::clone(&from),
-              FlowNode::clone(node1),
-              capacity,
-            ),
-            FlowEdge::new(
-              FlowNode::clone(&from),
-              FlowNode::clone(node2),
-              capacity,
-            ),
-          ]
-        });
+            vec![
+              FlowEdge::new(
+                FlowNode::clone(&from),
+                FlowNode::clone(node1),
+                capacity,
+              ),
+              FlowEdge::new(
+                FlowNode::clone(&from),
+                FlowNode::clone(node2),
+                capacity,
+              ),
+            ]
+          });
 
-      let teams_earned_points: HashMap<&FlowNode, usize> = (&other_teams)
+      let teams_earned_points: HashMap<&FlowNode, usize> = other_teams
         .iter()
         .map(|(node, t)| (node, t.earned_points))
         .collect();
 
-      let points_to_earn_edges: Vec<FlowEdge> = (&other_teams_nodes)
+      let points_to_earn_edges: Vec<FlowEdge> = other_teams_nodes
         .iter()
         .map(|other_team_node| {
           let from = other_team_node;
