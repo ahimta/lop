@@ -9,6 +9,33 @@ pub(super) fn ensure_valid_edge_nodes(from: &FlowNode, to: &FlowNode) {
 }
 
 #[must_use]
+#[derive(Debug)]
+pub(crate) struct FlowEdge {
+  pub(super) from: Arc<FlowNode>,
+  pub(super) to: Arc<FlowNode>,
+  pub(super) capacity: Flow,
+  constructor_guard: PhantomData<()>,
+}
+
+impl FlowEdge {
+  #[must_use]
+  pub(crate) fn new(
+    from: &Arc<FlowNode>,
+    to: &Arc<FlowNode>,
+    capacity: Flow,
+  ) -> Self {
+    ensure_valid_edge_nodes(from, to);
+
+    Self {
+      from: Arc::clone(from),
+      to: Arc::clone(to),
+      capacity,
+      constructor_guard: PhantomData,
+    }
+  }
+}
+
+#[must_use]
 #[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub(crate) struct FlowNode {
   pub(crate) id: Arc<String>,
@@ -163,33 +190,5 @@ impl ops::AddAssign for Flow {
 impl ops::SubAssign for Flow {
   fn sub_assign(&mut self, other: Self) {
     *self = *self - other;
-  }
-}
-
-// FIXME: Put edge first before node.
-#[must_use]
-#[derive(Debug)]
-pub(crate) struct FlowEdge {
-  pub(super) from: Arc<FlowNode>,
-  pub(super) to: Arc<FlowNode>,
-  pub(super) capacity: Flow,
-  constructor_guard: PhantomData<()>,
-}
-
-impl FlowEdge {
-  #[must_use]
-  pub(crate) fn new(
-    from: &Arc<FlowNode>,
-    to: &Arc<FlowNode>,
-    capacity: Flow,
-  ) -> Self {
-    ensure_valid_edge_nodes(from, to);
-
-    Self {
-      from: Arc::clone(from),
-      to: Arc::clone(to),
-      capacity,
-      constructor_guard: PhantomData,
-    }
   }
 }
