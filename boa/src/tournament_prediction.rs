@@ -158,8 +158,7 @@ pub fn predict_tournament_eliminated_teams(
   let source_node = Arc::new(FlowNode::new(&Arc::new("s".to_string())));
   let sink_node = Arc::new(FlowNode::new(&Arc::new("t".to_string())));
 
-  // FIXME: Rename to `teams_predictions`.
-  let eliminated_teams: BTreeSet<Arc<Team>> = tournament
+  let teams_predictions: BTreeSet<Arc<Team>> = tournament
     .teams
     .iter()
     .map(|team| -> Arc<Team> {
@@ -304,7 +303,7 @@ pub fn predict_tournament_eliminated_teams(
     })
     .collect();
 
-  eliminated_teams
+  teams_predictions
 }
 
 #[must_use]
