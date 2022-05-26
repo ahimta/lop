@@ -69,6 +69,7 @@ impl PartialEq for Team {
     // NOTE(EXHAUSTIVE-EQUALITY-ONLY-FOR-TESTS)
     self.name == other.name
       && self.rank == other.rank
+      && self.matches_played == other.matches_played
       && self.matches_left == other.matches_left
       && self.matches_drawn == other.matches_drawn
       && self.matches_won == other.matches_won
