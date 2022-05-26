@@ -1,6 +1,6 @@
-mod tournament_ambassador;
-
+mod common;
 mod mincut_maxflow;
+mod tournament_ambassador;
 mod tournament_fetching;
 mod tournament_prediction;
 
@@ -9,9 +9,9 @@ use std::ffi::CString;
 use std::os::raw::c_char;
 use std::ptr;
 
-use crate::tournament_ambassador::DisplayableTournament;
-use crate::tournament_prediction::EliminationStatus;
-use crate::tournament_prediction::Team;
+use crate::common::EliminationStatus;
+use crate::common::Team;
+use crate::common::Tournament;
 
 pub fn test() {
   mincut_maxflow::test();
@@ -51,7 +51,7 @@ pub struct TeamNative {
 }
 
 #[must_use]
-pub fn get_tournaments() -> Vec<DisplayableTournament> {
+pub fn get_tournaments() -> Vec<Tournament> {
   tournament_ambassador::get_tournaments()
 }
 

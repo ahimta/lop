@@ -166,6 +166,7 @@ impl ops::SubAssign for Flow {
   }
 }
 
+// FIXME: Put edge first before node.
 #[must_use]
 #[derive(Debug)]
 pub(crate) struct FlowEdge {

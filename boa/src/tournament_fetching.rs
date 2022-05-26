@@ -4,11 +4,11 @@ use std::sync::Arc;
 
 use reqwest::blocking::Client;
 
+use crate::common::EliminationStatus;
+use crate::common::Team;
+use crate::common::Tournament;
 use crate::tournament_fetching::common::MatchResult;
 use crate::tournament_fetching::common::TournamentProvider;
-use crate::tournament_prediction::EliminationStatus;
-use crate::tournament_prediction::Team;
-use crate::tournament_prediction::Tournament;
 
 #[must_use]
 struct PremierLeague {}
@@ -333,7 +333,7 @@ fn get_client(origin: &'static str) -> Client {
 
 /// # Panics
 #[must_use]
-pub fn fetch_tournaments() -> Vec<Tournament> {
+pub(super) fn fetch_tournaments() -> Vec<Tournament> {
   Koora::fetch_tournaments()
     .into_iter()
     .chain(PremierLeague::fetch_tournaments())

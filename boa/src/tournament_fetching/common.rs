@@ -7,10 +7,10 @@ use std::sync::Arc;
 
 use itertools::Itertools;
 
-use crate::tournament_prediction::EliminationStatus;
-use crate::tournament_prediction::Team;
-use crate::tournament_prediction::TeamId;
-use crate::tournament_prediction::Tournament;
+use crate::common::EliminationStatus;
+use crate::common::Team;
+use crate::common::TeamId;
+use crate::common::Tournament;
 
 const WIN_FACTOR: usize = 3;
 const DRAW_FACTOR: usize = 1;
