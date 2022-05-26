@@ -55,7 +55,6 @@ impl FlowNode {
     Self::source_sink_helper(Self::SINK_NODE_ID)
   }
   fn source_sink_helper(source_or_sink_id: &str) -> Arc<Self> {
-    // FIXME: Always use `String::from()` instead of `to_string()`.
     Arc::new(Self::internal_new(Arc::new(String::from(
       source_or_sink_id,
     ))))

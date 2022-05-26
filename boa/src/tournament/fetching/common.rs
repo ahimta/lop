@@ -318,7 +318,7 @@ pub(super) trait TournamentProvider {
     use std::fs;
 
     return vec![(
-      Arc::new(Self::TEST_TOURNAMENT_NAME.to_string()),
+      Arc::new(String::from(Self::TEST_TOURNAMENT_NAME)),
       fs::read_to_string(format!(
         "data/{}-{}",
         Self::TEST_DATA_PREFIX,

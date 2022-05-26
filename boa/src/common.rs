@@ -21,7 +21,7 @@ pub enum EliminationStatus {
 pub struct Tournament {
   pub name: Arc<String>,
   pub teams: BTreeSet<Arc<Team>>,
-  // FIXME: Make sure always validated.
+  // FIXME: Make sure always validated using assertions when possible.
   pub remaining_points: HashMap<(TeamId, TeamId), usize>,
 }
 impl PartialEq for Tournament {

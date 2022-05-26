@@ -217,10 +217,10 @@ pub(super) fn test() {
   let examples = vec![
     TestExample {
       tournament: Tournament {
-        name: Arc::new("dummy-tournament".to_string()),
+        name: Arc::new(String::from("dummy-tournament")),
         teams: vec![
           Team {
-            name: Arc::new("atlanta".to_string()),
+            name: Arc::new(String::from("atlanta")),
             rank: 1,
             matches_played: 83,
             matches_left: 8,
@@ -232,7 +232,7 @@ pub(super) fn test() {
             elimination_status: EliminationStatus::Not,
           },
           Team {
-            name: Arc::new("philadelphia".to_string()),
+            name: Arc::new(String::from("philadelphia")),
             rank: 2,
             matches_played: 80,
             matches_left: 3,
@@ -244,7 +244,7 @@ pub(super) fn test() {
             elimination_status: EliminationStatus::Not,
           },
           Team {
-            name: Arc::new("new-york".to_string()),
+            name: Arc::new(String::from("new-york")),
             rank: 3,
             matches_played: 78,
             matches_left: 6,
@@ -256,7 +256,7 @@ pub(super) fn test() {
             elimination_status: EliminationStatus::Not,
           },
           Team {
-            name: Arc::new("montreal".to_string()),
+            name: Arc::new(String::from("montreal")),
             rank: 4,
             matches_played: 77,
             matches_left: 3,
@@ -281,8 +281,8 @@ pub(super) fn test() {
         .map(|((team_name1, team_name2), remaining_points)| {
           (
             (
-              Arc::new(team_name1.to_string()),
-              Arc::new(team_name2.to_string()),
+              Arc::new(String::from(team_name1)),
+              Arc::new(String::from(team_name2)),
             ),
             remaining_points,
           )
@@ -291,7 +291,7 @@ pub(super) fn test() {
       },
       expected_prediction: vec![
         Team {
-          name: Arc::new("atlanta".to_string()),
+          name: Arc::new(String::from("atlanta")),
           rank: 1,
           matches_played: 83,
           matches_left: 8,
@@ -303,7 +303,7 @@ pub(super) fn test() {
           elimination_status: EliminationStatus::Not,
         },
         Team {
-          name: Arc::new("philadelphia".to_string()),
+          name: Arc::new(String::from("philadelphia")),
           rank: 2,
           matches_played: 80,
           matches_left: 3,
@@ -315,7 +315,7 @@ pub(super) fn test() {
           elimination_status: EliminationStatus::NonTrivially(
             vec![
               Team {
-                name: Arc::new("atlanta".to_string()),
+                name: Arc::new(String::from("atlanta")),
                 rank: 1,
                 matches_played: 83,
                 matches_left: 8,
@@ -327,7 +327,7 @@ pub(super) fn test() {
                 elimination_status: EliminationStatus::Not,
               },
               Team {
-                name: Arc::new("new-york".to_string()),
+                name: Arc::new(String::from("new-york")),
                 rank: 3,
                 matches_played: 78,
                 matches_left: 6,
@@ -345,7 +345,7 @@ pub(super) fn test() {
           ),
         },
         Team {
-          name: Arc::new("new-york".to_string()),
+          name: Arc::new(String::from("new-york")),
           rank: 3,
           matches_played: 78,
           matches_left: 6,
@@ -357,7 +357,7 @@ pub(super) fn test() {
           elimination_status: EliminationStatus::Not,
         },
         Team {
-          name: Arc::new("montreal".to_string()),
+          name: Arc::new(String::from("montreal")),
           rank: 4,
           matches_played: 77,
           matches_left: 3,
@@ -368,7 +368,7 @@ pub(super) fn test() {
           remaining_points: 3,
           elimination_status: EliminationStatus::Trivially(
             vec![Team {
-              name: Arc::new("atlanta".to_string()),
+              name: Arc::new(String::from("atlanta")),
               rank: 1,
               matches_played: 83,
               matches_left: 8,
@@ -391,10 +391,10 @@ pub(super) fn test() {
     },
     TestExample {
       tournament: Tournament {
-        name: Arc::new("dummy-tournament".to_string()),
+        name: Arc::new(String::from("dummy-tournament")),
         teams: vec![
           Team {
-            name: Arc::new("new-york".to_string()),
+            name: Arc::new(String::from("new-york")),
             rank: 1,
             matches_played: 75,
             matches_left: 4,
@@ -406,7 +406,7 @@ pub(super) fn test() {
             elimination_status: EliminationStatus::Not,
           },
           Team {
-            name: Arc::new("baltimore".to_string()),
+            name: Arc::new(String::from("baltimore")),
             rank: 2,
             matches_played: 71,
             matches_left: 21,
@@ -418,7 +418,7 @@ pub(super) fn test() {
             elimination_status: EliminationStatus::Not,
           },
           Team {
-            name: Arc::new("boston".to_string()),
+            name: Arc::new(String::from("boston")),
             rank: 3,
             matches_played: 69,
             matches_left: 13,
@@ -430,7 +430,7 @@ pub(super) fn test() {
             elimination_status: EliminationStatus::Not,
           },
           Team {
-            name: Arc::new("toronto".to_string()),
+            name: Arc::new(String::from("toronto")),
             rank: 4,
             matches_played: 63,
             matches_left: 17,
@@ -442,7 +442,7 @@ pub(super) fn test() {
             elimination_status: EliminationStatus::Not,
           },
           Team {
-            name: Arc::new("detroit".to_string()),
+            name: Arc::new(String::from("detroit")),
             rank: 5,
             matches_played: 49,
             matches_left: 16,
@@ -472,8 +472,8 @@ pub(super) fn test() {
         .map(|((team_name1, team_name2), remaining_points)| {
           (
             (
-              Arc::new(team_name1.to_string()),
-              Arc::new(team_name2.to_string()),
+              Arc::new(String::from(team_name1)),
+              Arc::new(String::from(team_name2)),
             ),
             remaining_points,
           )
@@ -482,7 +482,7 @@ pub(super) fn test() {
       },
       expected_prediction: vec![
         Team {
-          name: Arc::new("new-york".to_string()),
+          name: Arc::new(String::from("new-york")),
           rank: 1,
           matches_played: 75,
           matches_left: 4,
@@ -494,7 +494,7 @@ pub(super) fn test() {
           elimination_status: EliminationStatus::Not,
         },
         Team {
-          name: Arc::new("baltimore".to_string()),
+          name: Arc::new(String::from("baltimore")),
           rank: 2,
           matches_played: 71,
           matches_left: 21,
@@ -506,7 +506,7 @@ pub(super) fn test() {
           elimination_status: EliminationStatus::Not,
         },
         Team {
-          name: Arc::new("boston".to_string()),
+          name: Arc::new(String::from("boston")),
           rank: 3,
           matches_played: 69,
           matches_left: 13,
@@ -518,7 +518,7 @@ pub(super) fn test() {
           elimination_status: EliminationStatus::Not,
         },
         Team {
-          name: Arc::new("toronto".to_string()),
+          name: Arc::new(String::from("toronto")),
           rank: 4,
           matches_played: 63,
           matches_left: 17,
@@ -530,7 +530,7 @@ pub(super) fn test() {
           elimination_status: EliminationStatus::Not,
         },
         Team {
-          name: Arc::new("detroit".to_string()),
+          name: Arc::new(String::from("detroit")),
           rank: 5,
           matches_played: 49,
           matches_left: 16,
@@ -542,7 +542,7 @@ pub(super) fn test() {
           elimination_status: EliminationStatus::Trivially(
             vec![
               Team {
-                name: Arc::new("new-york".to_string()),
+                name: Arc::new(String::from("new-york")),
                 rank: 1,
                 matches_played: 75,
                 matches_left: 4,
@@ -554,7 +554,7 @@ pub(super) fn test() {
                 elimination_status: EliminationStatus::Not,
               },
               Team {
-                name: Arc::new("baltimore".to_string()),
+                name: Arc::new(String::from("baltimore")),
                 rank: 2,
                 matches_played: 71,
                 matches_left: 21,
@@ -566,7 +566,7 @@ pub(super) fn test() {
                 elimination_status: EliminationStatus::Not,
               },
               Team {
-                name: Arc::new("boston".to_string()),
+                name: Arc::new(String::from("boston")),
                 rank: 3,
                 matches_played: 69,
                 matches_left: 13,
