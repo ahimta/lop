@@ -140,6 +140,29 @@ pub(super) trait TournamentProvider {
               ((*first_team_name, *second_team_name), played)
             })
             .collect();
+        // FIXME: Extract collection helpers (e.g.: pair-to-per).
+        let matches_played_per_team: HashMap<&TeamId, usize> = matches_played
+          .iter()
+          .flat_map(
+            |(
+              (first_team_name, second_team_name),
+              matches_played_between_pair,
+            )| {
+              vec![
+                (first_team_name, matches_played_between_pair),
+                (second_team_name, matches_played_between_pair),
+              ]
+            },
+          )
+          .into_group_map_by(|(team_name, _)| *team_name)
+          .into_iter()
+          .map(|(team_name, values)| {
+            (
+              *team_name,
+              values.into_iter().fold(0, |acc, (_, v)| acc + v),
+            )
+          })
+          .collect();
 
         let matches_left: HashMap<(&TeamId, &TeamId), usize> = teams_names
           .iter()
@@ -214,7 +237,7 @@ pub(super) trait TournamentProvider {
 
         let mut teams: Vec<Arc<Team>> = teams_names
           .iter()
-          .map(|team_name| {
+          .map(|&team_name| {
             let team_matches_drawn =
               *matches_drawn.get(team_name).unwrap_or(&0);
 
@@ -222,6 +245,9 @@ pub(super) trait TournamentProvider {
               name: Arc::clone(team_name),
 
               rank: 0,
+              matches_played: *matches_played_per_team
+                .get(team_name)
+                .unwrap_or(&0),
               matches_left: *matches_left_per_team.get(team_name).unwrap_or(&0),
               // FIXME: Make sure there's a test to cover this (e.g: using all
               // tournament states).

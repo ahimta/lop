@@ -56,8 +56,8 @@ pub struct Team {
 
   // FIXME: Make sure always validated.
   pub rank: usize,
-  // FIXME: Add matches-played.
   // FIXME: Make sure always validated.
+  pub matches_played: usize,
   pub matches_left: usize,
   pub matches_drawn: usize,
   pub matches_won: usize,
@@ -304,6 +304,7 @@ pub(super) fn test() {
           Team {
             name: Arc::new("atlanta".to_string()),
             rank: 1,
+            matches_played: 83,
             matches_left: 8,
             matches_won: 83,
             matches_drawn: 0,
@@ -315,6 +316,7 @@ pub(super) fn test() {
           Team {
             name: Arc::new("philadelphia".to_string()),
             rank: 2,
+            matches_played: 80,
             matches_left: 3,
             matches_won: 80,
             matches_drawn: 0,
@@ -326,6 +328,7 @@ pub(super) fn test() {
           Team {
             name: Arc::new("new-york".to_string()),
             rank: 3,
+            matches_played: 78,
             matches_left: 6,
             matches_won: 78,
             matches_drawn: 0,
@@ -337,6 +340,7 @@ pub(super) fn test() {
           Team {
             name: Arc::new("montreal".to_string()),
             rank: 4,
+            matches_played: 77,
             matches_left: 3,
             matches_won: 77,
             matches_drawn: 0,
@@ -371,6 +375,7 @@ pub(super) fn test() {
         Team {
           name: Arc::new("atlanta".to_string()),
           rank: 1,
+          matches_played: 83,
           matches_left: 8,
           matches_won: 83,
           matches_drawn: 0,
@@ -382,6 +387,7 @@ pub(super) fn test() {
         Team {
           name: Arc::new("philadelphia".to_string()),
           rank: 2,
+          matches_played: 80,
           matches_left: 3,
           matches_won: 80,
           matches_drawn: 0,
@@ -393,6 +399,7 @@ pub(super) fn test() {
               Team {
                 name: Arc::new("atlanta".to_string()),
                 rank: 1,
+                matches_played: 83,
                 matches_left: 8,
                 matches_drawn: 0,
                 matches_won: 83,
@@ -404,6 +411,7 @@ pub(super) fn test() {
               Team {
                 name: Arc::new("new-york".to_string()),
                 rank: 3,
+                matches_played: 78,
                 matches_left: 6,
                 matches_drawn: 0,
                 matches_won: 78,
@@ -421,6 +429,7 @@ pub(super) fn test() {
         Team {
           name: Arc::new("new-york".to_string()),
           rank: 3,
+          matches_played: 78,
           matches_left: 6,
           matches_won: 78,
           matches_drawn: 0,
@@ -432,6 +441,7 @@ pub(super) fn test() {
         Team {
           name: Arc::new("montreal".to_string()),
           rank: 4,
+          matches_played: 77,
           matches_left: 3,
           matches_won: 77,
           matches_drawn: 0,
@@ -442,6 +452,7 @@ pub(super) fn test() {
             vec![Team {
               name: Arc::new("atlanta".to_string()),
               rank: 1,
+              matches_played: 83,
               matches_left: 8,
               matches_drawn: 0,
               matches_won: 83,
@@ -467,6 +478,7 @@ pub(super) fn test() {
           Team {
             name: Arc::new("new-york".to_string()),
             rank: 1,
+            matches_played: 75,
             matches_left: 4,
             matches_won: 75,
             matches_drawn: 0,
@@ -478,6 +490,7 @@ pub(super) fn test() {
           Team {
             name: Arc::new("baltimore".to_string()),
             rank: 2,
+            matches_played: 71,
             matches_left: 21,
             matches_won: 71,
             matches_drawn: 0,
@@ -489,6 +502,7 @@ pub(super) fn test() {
           Team {
             name: Arc::new("boston".to_string()),
             rank: 3,
+            matches_played: 69,
             matches_left: 13,
             matches_won: 69,
             matches_drawn: 0,
@@ -500,6 +514,7 @@ pub(super) fn test() {
           Team {
             name: Arc::new("toronto".to_string()),
             rank: 4,
+            matches_played: 63,
             matches_left: 17,
             matches_won: 63,
             matches_drawn: 0,
@@ -511,6 +526,7 @@ pub(super) fn test() {
           Team {
             name: Arc::new("detroit".to_string()),
             rank: 5,
+            matches_played: 49,
             matches_left: 16,
             matches_won: 49,
             matches_drawn: 0,
@@ -550,6 +566,7 @@ pub(super) fn test() {
         Team {
           name: Arc::new("new-york".to_string()),
           rank: 1,
+          matches_played: 75,
           matches_left: 4,
           matches_won: 75,
           matches_drawn: 0,
@@ -561,6 +578,7 @@ pub(super) fn test() {
         Team {
           name: Arc::new("baltimore".to_string()),
           rank: 2,
+          matches_played: 71,
           matches_left: 21,
           matches_won: 71,
           matches_drawn: 0,
@@ -572,6 +590,7 @@ pub(super) fn test() {
         Team {
           name: Arc::new("boston".to_string()),
           rank: 3,
+          matches_played: 69,
           matches_left: 13,
           matches_won: 69,
           matches_drawn: 0,
@@ -583,6 +602,7 @@ pub(super) fn test() {
         Team {
           name: Arc::new("toronto".to_string()),
           rank: 4,
+          matches_played: 63,
           matches_left: 17,
           matches_won: 63,
           matches_drawn: 0,
@@ -594,6 +614,7 @@ pub(super) fn test() {
         Team {
           name: Arc::new("detroit".to_string()),
           rank: 5,
+          matches_played: 49,
           matches_left: 16,
           matches_won: 49,
           matches_drawn: 0,
@@ -605,6 +626,7 @@ pub(super) fn test() {
               Team {
                 name: Arc::new("new-york".to_string()),
                 rank: 1,
+                matches_played: 75,
                 matches_left: 4,
                 matches_drawn: 0,
                 matches_won: 75,
@@ -616,6 +638,7 @@ pub(super) fn test() {
               Team {
                 name: Arc::new("baltimore".to_string()),
                 rank: 2,
+                matches_played: 71,
                 matches_left: 21,
                 matches_drawn: 0,
                 matches_won: 71,
@@ -627,6 +650,7 @@ pub(super) fn test() {
               Team {
                 name: Arc::new("boston".to_string()),
                 rank: 3,
+                matches_played: 69,
                 matches_left: 13,
                 matches_drawn: 0,
                 matches_won: 69,

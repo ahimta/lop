@@ -35,6 +35,9 @@ class _TeamNative extends Struct {
   external int rank;
   @Uint64()
   // ignore: non_constant_identifier_names
+  external int matches_played;
+  @Uint64()
+  // ignore: non_constant_identifier_names
   external int matches_left;
   @Uint64()
   // ignore: non_constant_identifier_names
@@ -66,6 +69,7 @@ class Team {
   Team(
     this.name,
     this.rank,
+    this.matchesPlayed,
     this.matchesLeft,
     this.matchesDrawn,
     this.matchesWon,
@@ -79,6 +83,7 @@ class Team {
   String name;
 
   int rank;
+  int matchesPlayed;
   int matchesLeft;
   int matchesDrawn;
   int matchesWon;
@@ -167,6 +172,7 @@ Team _doTeam(final _TeamNative teamNative) {
   return Team(
     teamNative.name.toDartString(),
     teamNative.rank,
+    teamNative.matches_played,
     teamNative.matches_left,
     teamNative.matches_drawn,
     teamNative.matches_won,

@@ -98,6 +98,9 @@ class _TeamsWidget extends StatelessWidget {
                         label: Text('Name'),
                       ),
                       DataColumn(
+                        label: Text('Matches Played'),
+                      ),
+                      DataColumn(
                         label: Text('Matches Left'),
                       ),
                       DataColumn(
@@ -128,6 +131,7 @@ class _TeamsWidget extends StatelessWidget {
                             cells: <DataCell>[
                               DataCell(Text(team.rank.toString())),
                               DataCell(Text(team.name)),
+                              DataCell(Text(team.matchesPlayed.toString())),
                               DataCell(Text(team.matchesLeft.toString())),
                               DataCell(Text(team.matchesDrawn.toString())),
                               DataCell(Text(team.matchesWon.toString())),

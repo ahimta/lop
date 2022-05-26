@@ -37,6 +37,7 @@ pub struct TournamentNative {
 pub struct TeamNative {
   name: *const c_char,
   rank: u64,
+  matches_played: u64,
   matches_left: u64,
   matches_drawn: u64,
   matches_won: u64,
@@ -115,6 +116,7 @@ fn do_team(team: &Team) -> TeamNative {
   TeamNative {
     name: CString::new(&**team.name).unwrap().into_raw(),
     rank: team.rank as u64,
+    matches_played: team.matches_played as u64,
     matches_left: team.matches_left as u64,
     matches_drawn: team.matches_drawn as u64,
     matches_won: team.matches_won as u64,
