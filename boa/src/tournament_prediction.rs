@@ -1,4 +1,6 @@
 use std::cmp::Ord;
+use std::cmp::Ordering;
+use std::collections::BTreeSet;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::hash::Hash;
@@ -18,18 +20,15 @@ pub type TeamId = Arc<String>;
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum EliminationStatus {
   Not,
-  // FIXME: Make sure always sorted properly or use `TreeSet` everywhere when
-  // teams must be sorted.
-  Trivially(Vec<Arc<Team>>),
-  NonTrivially(Vec<Arc<Team>>),
+  Trivially(BTreeSet<Arc<Team>>),
+  NonTrivially(BTreeSet<Arc<Team>>),
 }
 
 #[must_use]
 #[derive(Debug)]
 pub struct Tournament {
   pub name: Arc<String>,
-  // FIXME: Change to `HashSet<Arc<Team>>`.
-  pub teams: Vec<Arc<Team>>,
+  pub teams: BTreeSet<Arc<Team>>,
   // FIXME: Make sure always validated.
   pub remaining_points: HashMap<(TeamId, TeamId), usize>,
 }
@@ -88,6 +87,28 @@ impl PartialEq for Team {
   }
 }
 impl Eq for Team {}
+impl PartialOrd for Team {
+  #[must_use]
+  fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+    Some(self.cmp(other))
+  }
+}
+impl Ord for Team {
+  #[must_use]
+  fn cmp(&self, other: &Self) -> Ordering {
+    let mut ordering = other.earned_points.cmp(&self.earned_points);
+    if ordering != Ordering::Equal {
+      return ordering;
+    }
+
+    ordering = self.rank.cmp(&other.rank);
+    if ordering != Ordering::Equal {
+      return ordering;
+    }
+
+    self.name.cmp(&other.name)
+  }
+}
 impl Hash for Team {
   fn hash<H: Hasher>(&self, state: &mut H) {
     self.name.hash(state);
@@ -99,7 +120,7 @@ impl Hash for Team {
 #[allow(clippy::too_many_lines)]
 pub fn predict_tournament_eliminated_teams(
   tournament: &Tournament,
-) -> Vec<Arc<Team>> {
+) -> BTreeSet<Arc<Team>> {
   const TEAMS_COUNT_MIN: usize = 2;
   const TEAMS_COUNT_MAX: usize = 500;
   const REMAINING_POINTS_COUNT_MIN: usize = 1;
@@ -137,11 +158,12 @@ pub fn predict_tournament_eliminated_teams(
   let source_node = Arc::new(FlowNode::new(&Arc::new("s".to_string())));
   let sink_node = Arc::new(FlowNode::new(&Arc::new("t".to_string())));
 
-  let eliminated_teams: Vec<Arc<Team>> = tournament
+  // FIXME: Rename to `teams_predictions`.
+  let eliminated_teams: BTreeSet<Arc<Team>> = tournament
     .teams
     .iter()
     .map(|team| -> Arc<Team> {
-      let possible_eliminating_teams: Vec<&Arc<Team>> = tournament
+      let possible_eliminating_teams: BTreeSet<&Arc<Team>> = tournament
         .teams
         .iter()
         .filter(|&candidate_team| candidate_team.name != team.name)
@@ -288,7 +310,7 @@ pub fn predict_tournament_eliminated_teams(
 #[must_use]
 struct TestExample {
   tournament: Tournament,
-  expected_prediction: Vec<Arc<Team>>,
+  expected_prediction: BTreeSet<Arc<Team>>,
 }
 
 #[allow(clippy::too_many_lines)]

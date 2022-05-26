@@ -1,3 +1,4 @@
+use std::collections::BTreeSet;
 use std::marker::PhantomData;
 use std::sync::Arc;
 
@@ -10,7 +11,7 @@ use crate::tournament_prediction::Team;
 #[must_use]
 pub struct DisplayableTournament {
   pub name: Arc<String>,
-  pub teams: Vec<Arc<Team>>,
+  pub teams: BTreeSet<Arc<Team>>,
   constructor_guard: PhantomData<()>,
 }
 

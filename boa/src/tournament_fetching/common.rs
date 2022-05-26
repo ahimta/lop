@@ -1,4 +1,5 @@
 use std::cmp::Ordering;
+use std::collections::BTreeSet;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::string;
@@ -235,9 +236,9 @@ pub(super) trait TournamentProvider {
             })
             .collect();
 
-        let mut teams: Vec<Arc<Team>> = teams_names
-          .iter()
-          .map(|&team_name| {
+        let teams: BTreeSet<Arc<Team>> = teams_names
+          .into_iter()
+          .map(|team_name| {
             let team_matches_drawn =
               *matches_drawn.get(team_name).unwrap_or(&0);
 
@@ -265,14 +266,7 @@ pub(super) trait TournamentProvider {
               elimination_status: EliminationStatus::Not,
             })
           })
-          .collect();
-
-        // FIXME: Better ranking to match actual tournaments.
-        teams.sort_unstable_by_key(|team| {
-          (team.earned_points, Arc::clone(&team.name))
-        });
-        teams.reverse();
-        let ranked_teams: Vec<Arc<Team>> = teams
+          .collect::<BTreeSet<Arc<Team>>>()
           .into_iter()
           .enumerate()
           .map(|(i, team)| {
@@ -285,7 +279,7 @@ pub(super) trait TournamentProvider {
 
         Tournament {
           name: tournament_name,
-          teams: ranked_teams,
+          teams,
           remaining_points: tournament_remaining_points,
         }
       })
