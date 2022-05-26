@@ -79,10 +79,7 @@ echo >&2
 echo "Checking formatting..." >&2
 cargo fmt --quiet --all -- --check
 
-# NOTE(RUST-BACKTRACE-FULL): This value is suggested by a release run backtrace
-# but not documented.
-# SEE: https://doc.rust-lang.org/std/backtrace/index.html#environment-variables
-export RUST_BACKTRACE=full
+export RUST_BACKTRACE=1
 
 echo "Building & testing debug..." >&2
 # SEE: https://doc.rust-lang.org/cargo/commands/cargo-build.html#feature-selection
