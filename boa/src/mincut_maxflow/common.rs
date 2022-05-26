@@ -42,16 +42,33 @@ pub(crate) struct FlowNode {
   constructor_guard: PhantomData<()>,
 }
 
-const JOINED_WITH_TAG: &str = "joined-with";
-
 impl FlowNode {
+  const JOINED_WITH_TAG: &'static str = "joined-with";
+  const SOURCE_NODE_ID: &'static str = "s";
+  const SINK_NODE_ID: &'static str = "t";
+
+  #[must_use]
+  pub(crate) fn source() -> Arc<Self> {
+    Self::source_sink_helper(Self::SOURCE_NODE_ID)
+  }
+  pub(crate) fn sink() -> Arc<Self> {
+    Self::source_sink_helper(Self::SINK_NODE_ID)
+  }
+  fn source_sink_helper(source_or_sink_id: &str) -> Arc<Self> {
+    // FIXME: Always use `String::from()` instead of `to_string()`.
+    Arc::new(Self::internal_new(Arc::new(String::from(
+      source_or_sink_id,
+    ))))
+  }
+
   #[must_use]
   pub(crate) fn new(id: &Arc<String>) -> Self {
     assert!(
-      !id.contains(JOINED_WITH_TAG),
-      "Only joined nodes can contain the joined-with tag value ({:?}, {:?}).",
+      **id != Self::SOURCE_NODE_ID
+        && **id != Self::SINK_NODE_ID
+        && !id.contains(Self::JOINED_WITH_TAG),
+      "Invalid ID ({:?}).",
       id,
-      JOINED_WITH_TAG,
     );
 
     Self::internal_new(Arc::clone(id))
@@ -63,7 +80,7 @@ impl FlowNode {
     Self::internal_new(Arc::new(format!(
       "{}-{}-{}",
       node1.min(node2),
-      JOINED_WITH_TAG,
+      Self::JOINED_WITH_TAG,
       node1.max(node2),
     )))
   }

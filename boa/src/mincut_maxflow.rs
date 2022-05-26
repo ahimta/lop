@@ -296,43 +296,38 @@ pub(super) fn test() {
   #[cfg(test)]
   use pretty_assertions::assert_eq;
 
-  let source_node = "s";
-  let sink_node = "t";
-
   let examples = vec![
     TestExample {
       edges: vec![
-        (source_node, "1", Flow::Regular(10)),
-        (source_node, "2", Flow::Regular(5)),
-        (source_node, "3", Flow::Regular(15)),
-        ("1", "2", Flow::Regular(4)),
-        ("1", "4", Flow::Regular(9)),
-        ("1", "5", Flow::Regular(15)),
-        ("2", "3", Flow::Regular(4)),
-        ("2", "5", Flow::Regular(8)),
-        ("3", "6", Flow::Regular(16)),
-        ("4", "5", Flow::Regular(15)),
-        ("4", sink_node, Flow::Regular(10)),
-        ("5", "6", Flow::Regular(15)),
-        ("5", sink_node, Flow::Regular(10)),
-        ("6", "2", Flow::Regular(6)),
-        ("6", sink_node, Flow::Regular(10)),
+        (FlowNode::source(), make_node("1"), Flow::Regular(10)),
+        (FlowNode::source(), make_node("2"), Flow::Regular(5)),
+        (FlowNode::source(), make_node("3"), Flow::Regular(15)),
+        (make_node("1"), make_node("2"), Flow::Regular(4)),
+        (make_node("1"), make_node("4"), Flow::Regular(9)),
+        (make_node("1"), make_node("5"), Flow::Regular(15)),
+        (make_node("2"), make_node("3"), Flow::Regular(4)),
+        (make_node("2"), make_node("5"), Flow::Regular(8)),
+        (make_node("3"), make_node("6"), Flow::Regular(16)),
+        (make_node("4"), make_node("5"), Flow::Regular(15)),
+        (make_node("4"), FlowNode::sink(), Flow::Regular(10)),
+        (make_node("5"), make_node("6"), Flow::Regular(15)),
+        (make_node("5"), FlowNode::sink(), Flow::Regular(10)),
+        (make_node("6"), make_node("2"), Flow::Regular(6)),
+        (make_node("6"), FlowNode::sink(), Flow::Regular(10)),
       ]
       .into_iter()
-      .map(|(from, to, capacity)| {
-        FlowEdge::new(
-          &Arc::new(FlowNode::new(&Arc::new(from.to_string()))),
-          &Arc::new(FlowNode::new(&Arc::new(to.to_string()))),
-          capacity,
-        )
-      })
+      .map(|(from, to, capacity)| FlowEdge::new(&from, &to, capacity))
       .collect(),
 
       expected_mincut_maxflow: MincutMaxflow {
-        mincut: vec![source_node, "2", "3", "6"]
-          .into_iter()
-          .map(|s| Arc::new(FlowNode::new(&Arc::new(s.to_string()))))
-          .collect(),
+        mincut: vec![
+          FlowNode::source(),
+          make_node("2"),
+          make_node("3"),
+          make_node("6"),
+        ]
+        .into_iter()
+        .collect(),
         maxflow: Flow::Regular(28),
         source_full: false,
         constructor_guard: PhantomData,
@@ -340,31 +335,22 @@ pub(super) fn test() {
     },
     TestExample {
       edges: vec![
-        (source_node, "1", Flow::Regular(10)),
-        (source_node, "2", Flow::Regular(5)),
-        ("1", "3", Flow::Regular(9)),
-        ("1", "4", Flow::Regular(4)),
-        ("2", "1", Flow::Regular(4)),
-        ("2", "4", Flow::Regular(8)),
-        ("3", "4", Flow::Regular(15)),
-        ("3", sink_node, Flow::Regular(10)),
-        ("4", sink_node, Flow::Regular(10)),
+        (FlowNode::source(), make_node("1"), Flow::Regular(10)),
+        (FlowNode::source(), make_node("2"), Flow::Regular(5)),
+        (make_node("1"), make_node("3"), Flow::Regular(9)),
+        (make_node("1"), make_node("4"), Flow::Regular(4)),
+        (make_node("2"), make_node("1"), Flow::Regular(4)),
+        (make_node("2"), make_node("4"), Flow::Regular(8)),
+        (make_node("3"), make_node("4"), Flow::Regular(15)),
+        (make_node("3"), FlowNode::sink(), Flow::Regular(10)),
+        (make_node("4"), FlowNode::sink(), Flow::Regular(10)),
       ]
       .into_iter()
-      .map(|(from, to, capacity)| {
-        FlowEdge::new(
-          &Arc::new(FlowNode::new(&Arc::new(from.to_string()))),
-          &Arc::new(FlowNode::new(&Arc::new(to.to_string()))),
-          capacity,
-        )
-      })
+      .map(|(from, to, capacity)| FlowEdge::new(&from, &to, capacity))
       .collect(),
 
       expected_mincut_maxflow: MincutMaxflow {
-        mincut: vec![source_node]
-          .into_iter()
-          .map(|s| Arc::new(FlowNode::new(&Arc::new(s.to_string()))))
-          .collect(),
+        mincut: vec![FlowNode::source()].into_iter().collect(),
         maxflow: Flow::Regular(15),
         source_full: true,
         constructor_guard: PhantomData,
@@ -372,44 +358,35 @@ pub(super) fn test() {
     },
     TestExample {
       edges: vec![
-        (source_node, "alice", Flow::Regular(1)),
-        (source_node, "bob", Flow::Regular(1)),
-        (source_node, "carol", Flow::Regular(1)),
-        (source_node, "dave", Flow::Regular(1)),
-        (source_node, "eliza", Flow::Regular(1)),
-        ("alice", "adobe", Flow::Infinite),
-        ("alice", "amazon", Flow::Infinite),
-        ("alice", "google", Flow::Infinite),
-        ("bob", "adobe", Flow::Infinite),
-        ("bob", "amazon", Flow::Infinite),
-        ("carol", "adobe", Flow::Infinite),
-        ("carol", "facebook", Flow::Infinite),
-        ("carol", "google", Flow::Infinite),
-        ("dave", "amazon", Flow::Infinite),
-        ("dave", "yahoo", Flow::Infinite),
-        ("eliza", "amazon", Flow::Infinite),
-        ("eliza", "yahoo", Flow::Infinite),
-        ("adobe", sink_node, Flow::Regular(1)),
-        ("amazon", sink_node, Flow::Regular(1)),
-        ("facebook", sink_node, Flow::Regular(1)),
-        ("google", sink_node, Flow::Regular(1)),
-        ("yahoo", sink_node, Flow::Regular(1)),
+        (FlowNode::source(), make_node("alice"), Flow::Regular(1)),
+        (FlowNode::source(), make_node("bob"), Flow::Regular(1)),
+        (FlowNode::source(), make_node("carol"), Flow::Regular(1)),
+        (FlowNode::source(), make_node("dave"), Flow::Regular(1)),
+        (FlowNode::source(), make_node("eliza"), Flow::Regular(1)),
+        (make_node("alice"), make_node("adobe"), Flow::Infinite),
+        (make_node("alice"), make_node("amazon"), Flow::Infinite),
+        (make_node("alice"), make_node("google"), Flow::Infinite),
+        (make_node("bob"), make_node("adobe"), Flow::Infinite),
+        (make_node("bob"), make_node("amazon"), Flow::Infinite),
+        (make_node("carol"), make_node("adobe"), Flow::Infinite),
+        (make_node("carol"), make_node("facebook"), Flow::Infinite),
+        (make_node("carol"), make_node("google"), Flow::Infinite),
+        (make_node("dave"), make_node("amazon"), Flow::Infinite),
+        (make_node("dave"), make_node("yahoo"), Flow::Infinite),
+        (make_node("eliza"), make_node("amazon"), Flow::Infinite),
+        (make_node("eliza"), make_node("yahoo"), Flow::Infinite),
+        (make_node("adobe"), FlowNode::sink(), Flow::Regular(1)),
+        (make_node("amazon"), FlowNode::sink(), Flow::Regular(1)),
+        (make_node("facebook"), FlowNode::sink(), Flow::Regular(1)),
+        (make_node("google"), FlowNode::sink(), Flow::Regular(1)),
+        (make_node("yahoo"), FlowNode::sink(), Flow::Regular(1)),
       ]
       .into_iter()
-      .map(|(from, to, capacity)| {
-        FlowEdge::new(
-          &Arc::new(FlowNode::new(&Arc::new(from.to_string()))),
-          &Arc::new(FlowNode::new(&Arc::new(to.to_string()))),
-          capacity,
-        )
-      })
+      .map(|(from, to, capacity)| FlowEdge::new(&from, &to, capacity))
       .collect(),
 
       expected_mincut_maxflow: MincutMaxflow {
-        mincut: vec![source_node]
-          .into_iter()
-          .map(|s| Arc::new(FlowNode::new(&Arc::new(s.to_string()))))
-          .collect(),
+        mincut: vec![FlowNode::source()].into_iter().collect(),
         maxflow: Flow::Regular(5),
         source_full: true,
         constructor_guard: PhantomData,
@@ -417,27 +394,18 @@ pub(super) fn test() {
     },
     TestExample {
       edges: vec![
-        (source_node, "1", Flow::Regular(100)),
-        (source_node, "2", Flow::Regular(100)),
-        ("1", "2", Flow::Regular(1)),
-        ("1", sink_node, Flow::Regular(100)),
-        ("2", sink_node, Flow::Regular(100)),
+        (FlowNode::source(), make_node("1"), Flow::Regular(100)),
+        (FlowNode::source(), make_node("2"), Flow::Regular(100)),
+        (make_node("1"), make_node("2"), Flow::Regular(1)),
+        (make_node("1"), FlowNode::sink(), Flow::Regular(100)),
+        (make_node("2"), FlowNode::sink(), Flow::Regular(100)),
       ]
       .into_iter()
-      .map(|(from, to, capacity)| {
-        FlowEdge::new(
-          &Arc::new(FlowNode::new(&Arc::new(from.to_string()))),
-          &Arc::new(FlowNode::new(&Arc::new(to.to_string()))),
-          capacity,
-        )
-      })
+      .map(|(from, to, capacity)| FlowEdge::new(&from, &to, capacity))
       .collect(),
 
       expected_mincut_maxflow: MincutMaxflow {
-        mincut: vec![source_node]
-          .into_iter()
-          .map(|s| Arc::new(FlowNode::new(&Arc::new(s.to_string()))))
-          .collect(),
+        mincut: vec![FlowNode::source()].into_iter().collect(),
         maxflow: Flow::Regular(200),
         source_full: true,
         constructor_guard: PhantomData,
@@ -451,14 +419,14 @@ pub(super) fn test() {
   } in examples
   {
     assert_eq!(
-      calculate_mincut_maxflow(
-        &edges,
-        &Arc::new(FlowNode::new(&Arc::new(source_node.to_string()))),
-        &Arc::new(FlowNode::new(&Arc::new(sink_node.to_string()))),
-      ),
+      calculate_mincut_maxflow(&edges, &FlowNode::source(), &FlowNode::sink(),),
       expected_mincut_maxflow
     );
   }
+}
+
+fn make_node(s: &str) -> Arc<FlowNode> {
+  Arc::new(FlowNode::new(&Arc::new(String::from(s))))
 }
 
 #[cfg(test)]

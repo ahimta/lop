@@ -52,10 +52,8 @@ pub(super) fn predict_tournament_eliminated_teams(
     tournament.remaining_points,
   );
 
-  // FIXME: Better source/sink logic. Probably centeralized in `ResidualGraph`
-  // or part of new sum-type `FlowNode`.
-  let source_node = Arc::new(FlowNode::new(&Arc::new("s".to_string())));
-  let sink_node = Arc::new(FlowNode::new(&Arc::new("t".to_string())));
+  let source_node = FlowNode::source();
+  let sink_node = FlowNode::sink();
 
   let teams_predictions: BTreeSet<Arc<Team>> = tournament
     .teams
