@@ -170,9 +170,9 @@ impl ops::SubAssign for Flow {
 #[must_use]
 #[derive(Debug)]
 pub(crate) struct FlowEdge {
-  pub(crate) from: Arc<FlowNode>,
-  pub(crate) to: Arc<FlowNode>,
-  pub(crate) capacity: Flow,
+  pub(super) from: Arc<FlowNode>,
+  pub(super) to: Arc<FlowNode>,
+  pub(super) capacity: Flow,
   constructor_guard: PhantomData<()>,
 }
 

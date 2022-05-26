@@ -1,11 +1,12 @@
+mod fetching;
+mod prediction;
+
 use std::collections::HashMap;
 
 use crate::common::Tournament;
-use crate::tournament_fetching::fetch_tournaments;
-use crate::tournament_prediction::predict_tournament_eliminated_teams;
+use crate::tournament::fetching::fetch_tournaments;
+use crate::tournament::prediction::predict_tournament_eliminated_teams;
 
-// FIXME: Rearrange so that ambassador is redundant and all tournament concerns
-// are under `tournament` module.
 /// # Panics
 #[must_use]
 pub(super) fn get_tournaments() -> Vec<Tournament> {
@@ -21,4 +22,9 @@ pub(super) fn get_tournaments() -> Vec<Tournament> {
       }
     })
     .collect()
+}
+
+pub(super) fn test() {
+  fetching::test();
+  prediction::test();
 }

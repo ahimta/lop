@@ -7,8 +7,8 @@ use reqwest::blocking::Client;
 use crate::common::EliminationStatus;
 use crate::common::Team;
 use crate::common::Tournament;
-use crate::tournament_fetching::common::MatchResult;
-use crate::tournament_fetching::common::TournamentProvider;
+use crate::tournament::fetching::common::MatchResult;
+use crate::tournament::fetching::common::TournamentProvider;
 
 #[must_use]
 struct PremierLeague {}

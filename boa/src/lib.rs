@@ -1,8 +1,6 @@
 mod common;
 mod mincut_maxflow;
-mod tournament_ambassador;
-mod tournament_fetching;
-mod tournament_prediction;
+mod tournament;
 
 use std::boxed::Box;
 use std::ffi::CString;
@@ -15,8 +13,7 @@ use crate::common::Tournament;
 
 pub fn test() {
   mincut_maxflow::test();
-  tournament_prediction::test();
-  tournament_fetching::test();
+  tournament::test();
 }
 
 #[no_mangle]
@@ -52,7 +49,7 @@ pub struct TeamNative {
 
 #[must_use]
 pub fn get_tournaments() -> Vec<Tournament> {
-  tournament_ambassador::get_tournaments()
+  tournament::get_tournaments()
 }
 
 /// # Panics
@@ -63,7 +60,7 @@ pub extern "C" fn boa_get_tournaments(
   tournaments_count: *mut u64,
   tournaments: *mut *const TournamentNative,
 ) -> i32 {
-  let local_tournaments = tournament_ambassador::get_tournaments();
+  let local_tournaments = tournament::get_tournaments();
 
   unsafe {
     *tournaments_count = local_tournaments.len() as u64;
