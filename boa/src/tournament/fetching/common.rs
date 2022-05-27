@@ -59,18 +59,15 @@ pub(super) trait TournamentProvider {
               (second_team_name, second_team_score),
             )| {
               match first_team_score.cmp(second_team_score) {
+                // FIXME: Always use `Ordering`.
                 Ordering::Greater => (first_team_name, 1),
                 Ordering::Less => (second_team_name, 1),
                 Ordering::Equal => (second_team_name, 0),
               }
             },
           )
-          .into_group_map_by(|(team_name, _)| *team_name)
-          .into_iter()
-          .map(|(team_name, values)| {
-            (team_name, values.into_iter().fold(0, |acc, (_, v)| acc + v))
-          })
-          .collect();
+          .into_grouping_map()
+          .sum();
 
         let matches_drawn: HashMap<&TeamId, usize> = matches_results
           .iter()
@@ -86,12 +83,8 @@ pub(super) trait TournamentProvider {
               vec![(first_team_name, 1), (second_team_name, 1)]
             },
           )
-          .into_group_map_by(|(team_name, _)| *team_name)
-          .into_iter()
-          .map(|(team_name, values)| {
-            (team_name, values.into_iter().fold(0, |acc, (_, v)| acc + v))
-          })
-          .collect();
+          .into_grouping_map()
+          .sum();
 
         let matches_lost: HashMap<&TeamId, usize> = matches_results
           .iter()
@@ -105,12 +98,8 @@ pub(super) trait TournamentProvider {
               Ordering::Equal => None,
             },
           )
-          .into_group_map_by(|(team_name, _)| *team_name)
-          .into_iter()
-          .map(|(team_name, values)| {
-            (team_name, values.into_iter().fold(0, |acc, (_, v)| acc + v))
-          })
-          .collect();
+          .into_grouping_map()
+          .sum();
 
         // NOTE: Only teams that have played so far are included and we're OK
         // with this tradeoff as it doesn't affect the tournament-elimination
@@ -147,23 +136,16 @@ pub(super) trait TournamentProvider {
           .flat_map(
             |(
               (first_team_name, second_team_name),
-              matches_played_between_pair,
+              &matches_played_between_pair,
             )| {
               vec![
-                (first_team_name, matches_played_between_pair),
-                (second_team_name, matches_played_between_pair),
+                (*first_team_name, matches_played_between_pair),
+                (*second_team_name, matches_played_between_pair),
               ]
             },
           )
-          .into_group_map_by(|(team_name, _)| *team_name)
-          .into_iter()
-          .map(|(team_name, values)| {
-            (
-              *team_name,
-              values.into_iter().fold(0, |acc, (_, v)| acc + v),
-            )
-          })
-          .collect();
+          .into_grouping_map()
+          .sum();
 
         let matches_left: HashMap<(&TeamId, &TeamId), usize> = teams_names
           .iter()
@@ -211,23 +193,16 @@ pub(super) trait TournamentProvider {
           .flat_map(
             |(
               (first_team_name, second_team_name),
-              matches_left_between_pair,
+              &matches_left_between_pair,
             )| {
               vec![
-                (first_team_name, matches_left_between_pair),
-                (second_team_name, matches_left_between_pair),
+                (*first_team_name, matches_left_between_pair),
+                (*second_team_name, matches_left_between_pair),
               ]
             },
           )
-          .into_group_map_by(|(team_name, _)| *team_name)
-          .into_iter()
-          .map(|(team_name, values)| {
-            (
-              *team_name,
-              values.into_iter().fold(0, |acc, (_, v)| acc + v),
-            )
-          })
-          .collect();
+          .into_grouping_map()
+          .sum();
         let remaining_points_per_team: HashMap<&TeamId, usize> =
           matches_left_per_team
             .iter()

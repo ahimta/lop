@@ -114,7 +114,6 @@ impl Tournament {
             .flat_map(|((team_name1, team_name2), &remaining)| {
               vec![(team_name1, remaining), (team_name2, remaining)]
             })
-            // FIXME: Always use `into_grouping_map` instead of `into_group_map_by`.
             .into_grouping_map()
             .sum();
         assert!(
