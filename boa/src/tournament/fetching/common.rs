@@ -59,7 +59,6 @@ pub(super) trait TournamentProvider {
               (second_team_name, second_team_score),
             )| {
               match first_team_score.cmp(second_team_score) {
-                // FIXME: Always use `Ordering`.
                 Ordering::Greater => (first_team_name, 1),
                 Ordering::Less => (second_team_name, 1),
                 Ordering::Equal => (second_team_name, 0),
@@ -76,11 +75,12 @@ pub(super) trait TournamentProvider {
               (first_team_name, first_team_score),
               (second_team_name, second_team_score),
             )| {
-              if first_team_score != second_team_score {
-                return vec![];
+              match first_team_score.cmp(second_team_score) {
+                Ordering::Greater | Ordering::Less => vec![],
+                Ordering::Equal => {
+                  vec![(first_team_name, 1), (second_team_name, 1)]
+                }
               }
-
-              vec![(first_team_name, 1), (second_team_name, 1)]
             },
           )
           .into_grouping_map()
@@ -112,6 +112,7 @@ pub(super) trait TournamentProvider {
           })
           .collect();
 
+        // FIXME: Use consistent naming (esp. for per-pair collections)
         let matches_played: HashMap<(&TeamId, &TeamId), usize> =
           matches_results
             .iter()
