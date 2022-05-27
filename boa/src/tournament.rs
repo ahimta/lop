@@ -1,8 +1,6 @@
 mod fetching;
 mod prediction;
 
-use std::collections::HashMap;
-
 use crate::common::Tournament;
 use crate::tournament::fetching::fetch_tournaments;
 use crate::tournament::prediction::predict_tournament_eliminated_teams;
@@ -14,12 +12,7 @@ pub(super) fn get_tournaments() -> Vec<Tournament> {
     .into_iter()
     .map(|tournament| {
       let teams = predict_tournament_eliminated_teams(&tournament);
-
-      Tournament {
-        name: tournament.name,
-        teams,
-        remaining_points: HashMap::new(),
-      }
+      Tournament::new(&tournament.name, teams, None)
     })
     .collect()
 }

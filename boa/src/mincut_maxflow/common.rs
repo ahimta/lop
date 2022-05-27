@@ -51,9 +51,11 @@ impl FlowNode {
   pub(crate) fn source() -> Arc<Self> {
     Self::source_sink_helper(Self::SOURCE_NODE_ID)
   }
+  #[must_use]
   pub(crate) fn sink() -> Arc<Self> {
     Self::source_sink_helper(Self::SINK_NODE_ID)
   }
+  #[must_use]
   fn source_sink_helper(source_or_sink_id: &str) -> Arc<Self> {
     Arc::new(Self::internal_new(Arc::new(String::from(
       source_or_sink_id,

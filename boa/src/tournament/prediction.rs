@@ -1,7 +1,5 @@
-use std::cmp::Ord;
 use std::collections::BTreeSet;
 use std::collections::HashMap;
-use std::collections::HashSet;
 use std::sync::Arc;
 
 use itertools::Itertools;
@@ -20,38 +18,6 @@ use crate::mincut_maxflow::common::FlowNode;
 pub(super) fn predict_tournament_eliminated_teams(
   tournament: &Tournament,
 ) -> BTreeSet<Arc<Team>> {
-  const TEAMS_COUNT_MIN: usize = 2;
-  const TEAMS_COUNT_MAX: usize = 500;
-  const REMAINING_POINTS_COUNT_MIN: usize = 1;
-  const REMAINING_POINTS_COUNT_MAX: usize = 1000;
-
-  assert!(
-    tournament.teams.len() >= TEAMS_COUNT_MIN
-      && tournament.teams.len() <= TEAMS_COUNT_MAX,
-    "Invalid no. of teams ({:?}).",
-    tournament.teams.len()
-  );
-
-  assert!(
-    tournament.remaining_points.len() >= REMAINING_POINTS_COUNT_MIN
-      && tournament.remaining_points.len() <= REMAINING_POINTS_COUNT_MAX,
-    "Invalid no. of remaining-points ({:?}).",
-    tournament.remaining_points.len(),
-  );
-
-  assert!(
-    tournament.remaining_points.len()
-      == tournament
-        .remaining_points
-        .keys()
-        .into_iter()
-        .map(|(name1, name2)| (name1.min(name2), name1.max(name2)))
-        .collect::<HashSet<_>>()
-        .len(),
-    "Duplicate remaining-points entries ({:?}).",
-    tournament.remaining_points,
-  );
-
   let source_node = FlowNode::source();
   let sink_node = FlowNode::sink();
 
@@ -59,6 +25,11 @@ pub(super) fn predict_tournament_eliminated_teams(
     .teams
     .iter()
     .map(|team| -> Arc<Team> {
+      match team.elimination_status {
+        None => {}
+        Some(_) => panic!("Team elimination-status already predicted"),
+      };
+
       let possible_eliminating_teams: BTreeSet<&Arc<Team>> = tournament
         .teams
         .iter()
@@ -74,15 +45,15 @@ pub(super) fn predict_tournament_eliminated_teams(
       // 1. The mincut-maxflow algorithm/implementation can't handle it.
       // 2. Even more special-handling has to be done otherwise.
       if !possible_eliminating_teams.is_empty() {
-        return Arc::new(Team {
-          elimination_status: EliminationStatus::Trivially(
+        return Arc::new(Team::with_elimination_status(
+          team,
+          &EliminationStatus::Trivially(
             possible_eliminating_teams
               .into_iter()
               .map(Arc::clone)
               .collect(),
           ),
-          ..Team::clone(team)
-        });
+        ));
       }
 
       let other_teams: HashMap<Arc<FlowNode>, &Arc<Team>> = tournament
@@ -111,6 +82,11 @@ pub(super) fn predict_tournament_eliminated_teams(
         .map(|nodes| (*nodes[0], *nodes[1]))
         .collect();
 
+      let remaining_points = match &tournament.remaining_points {
+        None => panic!("Missing remaining-points"),
+        Some(value) => value,
+      };
+
       let remaining_points_edges: Vec<FlowEdge> =
         other_teams_nodes_combinations
           .iter()
@@ -121,12 +97,10 @@ pub(super) fn predict_tournament_eliminated_teams(
               &source_node,
               &Arc::new(node1.join(node2)),
               Flow::Regular(
-                *tournament
-                  .remaining_points
+                *remaining_points
                   .get(&(Arc::clone(id1), Arc::clone(id2)))
                   .unwrap_or_else(|| {
-                    tournament
-                      .remaining_points
+                    remaining_points
                       .get(&(Arc::clone(id2), Arc::clone(id1)))
                       .unwrap_or(&0)
                   }),
@@ -178,10 +152,10 @@ pub(super) fn predict_tournament_eliminated_teams(
         calculate_mincut_maxflow(&edges, &source_node, &sink_node);
 
       if mincut_maxflow.source_full {
-        return Arc::new(Team {
-          elimination_status: EliminationStatus::Not,
-          ..Team::clone(team)
-        });
+        return Arc::new(Team::with_elimination_status(
+          team,
+          &EliminationStatus::Not,
+        ));
       }
 
       let eliminating_teams = tournament
@@ -193,10 +167,10 @@ pub(super) fn predict_tournament_eliminated_teams(
         .map(Arc::clone)
         .collect();
 
-      Arc::new(Team {
-        elimination_status: EliminationStatus::NonTrivially(eliminating_teams),
-        ..Team::clone(team)
-      })
+      Arc::new(Team::with_elimination_status(
+        team,
+        &EliminationStatus::NonTrivially(eliminating_teams),
+      ))
     })
     .collect();
 
@@ -216,373 +190,377 @@ pub(super) fn test() {
 
   let examples = vec![
     TestExample {
-      tournament: Tournament {
-        name: Arc::new(String::from("dummy-tournament")),
-        teams: vec![
-          Team {
-            name: Arc::new(String::from("atlanta")),
-            rank: 1,
-            matches_played: 83,
-            matches_left: 8,
-            matches_won: 83,
-            matches_drawn: 0,
-            matches_lost: 0,
-            earned_points: 83,
-            remaining_points: 8,
-            elimination_status: EliminationStatus::Not,
-          },
-          Team {
-            name: Arc::new(String::from("philadelphia")),
-            rank: 2,
-            matches_played: 80,
-            matches_left: 3,
-            matches_won: 80,
-            matches_drawn: 0,
-            matches_lost: 0,
-            earned_points: 80,
-            remaining_points: 3,
-            elimination_status: EliminationStatus::Not,
-          },
-          Team {
-            name: Arc::new(String::from("new-york")),
-            rank: 3,
-            matches_played: 78,
-            matches_left: 6,
-            matches_won: 78,
-            matches_drawn: 0,
-            matches_lost: 0,
-            earned_points: 78,
-            remaining_points: 6,
-            elimination_status: EliminationStatus::Not,
-          },
-          Team {
-            name: Arc::new(String::from("montreal")),
-            rank: 4,
-            matches_played: 77,
-            matches_left: 3,
-            matches_won: 77,
-            matches_drawn: 0,
-            matches_lost: 0,
-            earned_points: 77,
-            remaining_points: 3,
-            elimination_status: EliminationStatus::Not,
-          },
+      tournament: Tournament::new(
+        &Arc::new(String::from("dummy-tournament")),
+        vec![
+          Team::new(
+            &Arc::new(String::from("atlanta")),
+            1,
+            83,
+            8,
+            83,
+            0,
+            0,
+            83,
+            8,
+            None,
+          ),
+          Team::new(
+            &Arc::new(String::from("philadelphia")),
+            2,
+            80,
+            3,
+            80,
+            0,
+            0,
+            80,
+            3,
+            None,
+          ),
+          Team::new(
+            &Arc::new(String::from("new-york")),
+            3,
+            78,
+            6,
+            78,
+            0,
+            0,
+            78,
+            6,
+            None,
+          ),
+          Team::new(
+            &Arc::new(String::from("montreal")),
+            4,
+            77,
+            3,
+            77,
+            0,
+            0,
+            77,
+            3,
+            None,
+          ),
         ]
         .into_iter()
         .map(Arc::new)
         .collect(),
-        remaining_points: vec![
-          (("atlanta", "philadelphia"), 1),
-          (("atlanta", "new-york"), 6),
-          (("atlanta", "montreal"), 1),
-          (("philadelphia", "montreal"), 2),
-        ]
-        .into_iter()
-        .map(|((team_name1, team_name2), remaining_points)| {
-          (
+        Some(
+          vec![
+            (("atlanta", "philadelphia"), 1),
+            (("atlanta", "new-york"), 6),
+            (("atlanta", "montreal"), 1),
+            (("philadelphia", "montreal"), 2),
+          ]
+          .into_iter()
+          .map(|((team_name1, team_name2), remaining_points)| {
             (
-              Arc::new(String::from(team_name1)),
-              Arc::new(String::from(team_name2)),
-            ),
-            remaining_points,
-          )
-        })
-        .collect(),
-      },
+              (
+                Arc::new(String::from(team_name1)),
+                Arc::new(String::from(team_name2)),
+              ),
+              remaining_points,
+            )
+          })
+          .collect(),
+        ),
+      ),
       expected_prediction: vec![
-        Team {
-          name: Arc::new(String::from("atlanta")),
-          rank: 1,
-          matches_played: 83,
-          matches_left: 8,
-          matches_won: 83,
-          matches_drawn: 0,
-          matches_lost: 0,
-          earned_points: 83,
-          remaining_points: 8,
-          elimination_status: EliminationStatus::Not,
-        },
-        Team {
-          name: Arc::new(String::from("philadelphia")),
-          rank: 2,
-          matches_played: 80,
-          matches_left: 3,
-          matches_won: 80,
-          matches_drawn: 0,
-          matches_lost: 0,
-          earned_points: 80,
-          remaining_points: 3,
-          elimination_status: EliminationStatus::NonTrivially(
+        Team::new(
+          &Arc::new(String::from("atlanta")),
+          1,
+          83,
+          8,
+          83,
+          0,
+          0,
+          83,
+          8,
+          Some(EliminationStatus::Not),
+        ),
+        Team::new(
+          &Arc::new(String::from("philadelphia")),
+          2,
+          80,
+          3,
+          80,
+          0,
+          0,
+          80,
+          3,
+          Some(EliminationStatus::NonTrivially(
             vec![
-              Team {
-                name: Arc::new(String::from("atlanta")),
-                rank: 1,
-                matches_played: 83,
-                matches_left: 8,
-                matches_drawn: 0,
-                matches_won: 83,
-                matches_lost: 0,
-                earned_points: 83,
-                remaining_points: 8,
-                elimination_status: EliminationStatus::Not,
-              },
-              Team {
-                name: Arc::new(String::from("new-york")),
-                rank: 3,
-                matches_played: 78,
-                matches_left: 6,
-                matches_drawn: 0,
-                matches_won: 78,
-                matches_lost: 0,
-                earned_points: 78,
-                remaining_points: 6,
-                elimination_status: EliminationStatus::Not,
-              },
+              Team::new(
+                &Arc::new(String::from("atlanta")),
+                1,
+                83,
+                8,
+                83,
+                0,
+                0,
+                83,
+                8,
+                None,
+              ),
+              Team::new(
+                &Arc::new(String::from("new-york")),
+                3,
+                78,
+                6,
+                78,
+                0,
+                0,
+                78,
+                6,
+                None,
+              ),
             ]
             .into_iter()
             .map(Arc::new)
             .collect(),
-          ),
-        },
-        Team {
-          name: Arc::new(String::from("new-york")),
-          rank: 3,
-          matches_played: 78,
-          matches_left: 6,
-          matches_won: 78,
-          matches_drawn: 0,
-          matches_lost: 0,
-          earned_points: 78,
-          remaining_points: 6,
-          elimination_status: EliminationStatus::Not,
-        },
-        Team {
-          name: Arc::new(String::from("montreal")),
-          rank: 4,
-          matches_played: 77,
-          matches_left: 3,
-          matches_won: 77,
-          matches_drawn: 0,
-          matches_lost: 0,
-          earned_points: 77,
-          remaining_points: 3,
-          elimination_status: EliminationStatus::Trivially(
-            vec![Team {
-              name: Arc::new(String::from("atlanta")),
-              rank: 1,
-              matches_played: 83,
-              matches_left: 8,
-              matches_drawn: 0,
-              matches_won: 83,
-              matches_lost: 0,
-              earned_points: 83,
-              remaining_points: 8,
-              elimination_status: EliminationStatus::Not,
-            }]
+          )),
+        ),
+        Team::new(
+          &Arc::new(String::from("new-york")),
+          3,
+          78,
+          6,
+          78,
+          0,
+          0,
+          78,
+          6,
+          Some(EliminationStatus::Not),
+        ),
+        Team::new(
+          &Arc::new(String::from("montreal")),
+          4,
+          77,
+          3,
+          77,
+          0,
+          0,
+          77,
+          3,
+          Some(EliminationStatus::Trivially(
+            vec![Team::new(
+              &Arc::new(String::from("atlanta")),
+              1,
+              83,
+              8,
+              83,
+              0,
+              0,
+              83,
+              8,
+              None,
+            )]
             .into_iter()
             .map(Arc::new)
             .collect(),
-          ),
-        },
+          )),
+        ),
       ]
       .into_iter()
       .map(Arc::new)
       .collect(),
     },
     TestExample {
-      tournament: Tournament {
-        name: Arc::new(String::from("dummy-tournament")),
-        teams: vec![
-          Team {
-            name: Arc::new(String::from("new-york")),
-            rank: 1,
-            matches_played: 75,
-            matches_left: 4,
-            matches_won: 75,
-            matches_drawn: 0,
-            matches_lost: 0,
-            earned_points: 75,
-            remaining_points: 4,
-            elimination_status: EliminationStatus::Not,
-          },
-          Team {
-            name: Arc::new(String::from("baltimore")),
-            rank: 2,
-            matches_played: 71,
-            matches_left: 21,
-            matches_won: 71,
-            matches_drawn: 0,
-            matches_lost: 0,
-            earned_points: 71,
-            remaining_points: 21,
-            elimination_status: EliminationStatus::Not,
-          },
-          Team {
-            name: Arc::new(String::from("boston")),
-            rank: 3,
-            matches_played: 69,
-            matches_left: 13,
-            matches_won: 69,
-            matches_drawn: 0,
-            matches_lost: 0,
-            earned_points: 69,
-            remaining_points: 13,
-            elimination_status: EliminationStatus::Not,
-          },
-          Team {
-            name: Arc::new(String::from("toronto")),
-            rank: 4,
-            matches_played: 63,
-            matches_left: 17,
-            matches_won: 63,
-            matches_drawn: 0,
-            matches_lost: 0,
-            earned_points: 63,
-            remaining_points: 17,
-            elimination_status: EliminationStatus::Not,
-          },
-          Team {
-            name: Arc::new(String::from("detroit")),
-            rank: 5,
-            matches_played: 49,
-            matches_left: 16,
-            matches_won: 49,
-            matches_drawn: 0,
-            matches_lost: 0,
-            earned_points: 49,
-            remaining_points: 16,
-            elimination_status: EliminationStatus::Not,
-          },
+      tournament: Tournament::new(
+        &Arc::new(String::from("dummy-tournament")),
+        vec![
+          Team::new(
+            &Arc::new(String::from("new-york")),
+            1,
+            75,
+            21,
+            75,
+            0,
+            0,
+            75,
+            21,
+            None,
+          ),
+          Team::new(
+            &Arc::new(String::from("baltimore")),
+            2,
+            71,
+            19,
+            71,
+            0,
+            0,
+            71,
+            19,
+            None,
+          ),
+          Team::new(
+            &Arc::new(String::from("boston")),
+            3,
+            69,
+            13,
+            69,
+            0,
+            0,
+            69,
+            13,
+            None,
+          ),
+          Team::new(
+            &Arc::new(String::from("toronto")),
+            4,
+            63,
+            17,
+            63,
+            0,
+            0,
+            63,
+            17,
+            None,
+          ),
+          Team::new(
+            &Arc::new(String::from("detroit")),
+            5,
+            49,
+            16,
+            49,
+            0,
+            0,
+            49,
+            16,
+            None,
+          ),
         ]
         .into_iter()
         .map(Arc::new)
         .collect(),
-        remaining_points: vec![
-          (("new-york", "baltimore"), 3),
-          (("new-york", "boston"), 8),
-          (("new-york", "toronto"), 7),
-          (("new-york", "detroit"), 3),
-          (("baltimore", "boston"), 2),
-          (("baltimore", "toronto"), 7),
-          (("baltimore", "detroit"), 7),
-          (("boston", "detroit"), 3),
-          (("toronto", "detroit"), 3),
-        ]
-        .into_iter()
-        .map(|((team_name1, team_name2), remaining_points)| {
-          (
+        Some(
+          vec![
+            (("new-york", "baltimore"), 3),
+            (("new-york", "boston"), 8),
+            (("new-york", "toronto"), 7),
+            (("new-york", "detroit"), 3),
+            (("baltimore", "boston"), 2),
+            (("baltimore", "toronto"), 7),
+            (("baltimore", "detroit"), 7),
+            (("boston", "detroit"), 3),
+            (("toronto", "detroit"), 3),
+          ]
+          .into_iter()
+          .map(|((team_name1, team_name2), remaining_points)| {
             (
-              Arc::new(String::from(team_name1)),
-              Arc::new(String::from(team_name2)),
-            ),
-            remaining_points,
-          )
-        })
-        .collect(),
-      },
+              (
+                Arc::new(String::from(team_name1)),
+                Arc::new(String::from(team_name2)),
+              ),
+              remaining_points,
+            )
+          })
+          .collect(),
+        ),
+      ),
       expected_prediction: vec![
-        Team {
-          name: Arc::new(String::from("new-york")),
-          rank: 1,
-          matches_played: 75,
-          matches_left: 4,
-          matches_won: 75,
-          matches_drawn: 0,
-          matches_lost: 0,
-          earned_points: 75,
-          remaining_points: 4,
-          elimination_status: EliminationStatus::Not,
-        },
-        Team {
-          name: Arc::new(String::from("baltimore")),
-          rank: 2,
-          matches_played: 71,
-          matches_left: 21,
-          matches_won: 71,
-          matches_drawn: 0,
-          matches_lost: 0,
-          earned_points: 71,
-          remaining_points: 21,
-          elimination_status: EliminationStatus::Not,
-        },
-        Team {
-          name: Arc::new(String::from("boston")),
-          rank: 3,
-          matches_played: 69,
-          matches_left: 13,
-          matches_won: 69,
-          matches_drawn: 0,
-          matches_lost: 0,
-          earned_points: 69,
-          remaining_points: 13,
-          elimination_status: EliminationStatus::Not,
-        },
-        Team {
-          name: Arc::new(String::from("toronto")),
-          rank: 4,
-          matches_played: 63,
-          matches_left: 17,
-          matches_won: 63,
-          matches_drawn: 0,
-          matches_lost: 0,
-          earned_points: 63,
-          remaining_points: 17,
-          elimination_status: EliminationStatus::Not,
-        },
-        Team {
-          name: Arc::new(String::from("detroit")),
-          rank: 5,
-          matches_played: 49,
-          matches_left: 16,
-          matches_won: 49,
-          matches_drawn: 0,
-          matches_lost: 0,
-          earned_points: 49,
-          remaining_points: 16,
-          elimination_status: EliminationStatus::Trivially(
+        Team::new(
+          &Arc::new(String::from("new-york")),
+          1,
+          75,
+          21,
+          75,
+          0,
+          0,
+          75,
+          21,
+          Some(EliminationStatus::Not),
+        ),
+        Team::new(
+          &Arc::new(String::from("baltimore")),
+          2,
+          71,
+          19,
+          71,
+          0,
+          0,
+          71,
+          19,
+          Some(EliminationStatus::Not),
+        ),
+        Team::new(
+          &Arc::new(String::from("boston")),
+          3,
+          69,
+          13,
+          69,
+          0,
+          0,
+          69,
+          13,
+          Some(EliminationStatus::Not),
+        ),
+        Team::new(
+          &Arc::new(String::from("toronto")),
+          4,
+          63,
+          17,
+          63,
+          0,
+          0,
+          63,
+          17,
+          Some(EliminationStatus::Not),
+        ),
+        Team::new(
+          &Arc::new(String::from("detroit")),
+          5,
+          49,
+          16,
+          49,
+          0,
+          0,
+          49,
+          16,
+          Some(EliminationStatus::Trivially(
             vec![
-              Team {
-                name: Arc::new(String::from("new-york")),
-                rank: 1,
-                matches_played: 75,
-                matches_left: 4,
-                matches_drawn: 0,
-                matches_won: 75,
-                matches_lost: 0,
-                earned_points: 75,
-                remaining_points: 4,
-                elimination_status: EliminationStatus::Not,
-              },
-              Team {
-                name: Arc::new(String::from("baltimore")),
-                rank: 2,
-                matches_played: 71,
-                matches_left: 21,
-                matches_drawn: 0,
-                matches_won: 71,
-                matches_lost: 0,
-                earned_points: 71,
-                remaining_points: 21,
-                elimination_status: EliminationStatus::Not,
-              },
-              Team {
-                name: Arc::new(String::from("boston")),
-                rank: 3,
-                matches_played: 69,
-                matches_left: 13,
-                matches_drawn: 0,
-                matches_won: 69,
-                matches_lost: 0,
-                earned_points: 69,
-                remaining_points: 13,
-                elimination_status: EliminationStatus::Not,
-              },
+              Team::new(
+                &Arc::new(String::from("new-york")),
+                1,
+                75,
+                21,
+                75,
+                0,
+                0,
+                75,
+                21,
+                None,
+              ),
+              Team::new(
+                &Arc::new(String::from("baltimore")),
+                2,
+                71,
+                19,
+                71,
+                0,
+                0,
+                71,
+                19,
+                None,
+              ),
+              Team::new(
+                &Arc::new(String::from("boston")),
+                3,
+                69,
+                13,
+                69,
+                0,
+                0,
+                69,
+                13,
+                None,
+              ),
             ]
             .into_iter()
             .map(Arc::new)
             .collect(),
-          ),
-        },
+          )),
+        ),
       ]
       .into_iter()
       .map(Arc::new)

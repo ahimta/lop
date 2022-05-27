@@ -105,9 +105,11 @@ pub extern "C" fn boa_get_tournaments(
 fn do_team(team: &Team) -> TeamNative {
   let empty_eliminating_teams = vec![].into_iter().collect();
   let eliminating_teams = match &team.elimination_status {
-    EliminationStatus::Not => &empty_eliminating_teams,
-    EliminationStatus::Trivially(eliminating_teams)
-    | EliminationStatus::NonTrivially(eliminating_teams) => eliminating_teams,
+    None | Some(EliminationStatus::Not) => &empty_eliminating_teams,
+    Some(
+      EliminationStatus::Trivially(eliminating_teams)
+      | EliminationStatus::NonTrivially(eliminating_teams),
+    ) => eliminating_teams,
   };
 
   TeamNative {
@@ -121,10 +123,10 @@ fn do_team(team: &Team) -> TeamNative {
     earned_points: team.earned_points as u64,
     remaining_points: team.remaining_points as u64,
 
-    elimination_status: match team.elimination_status {
-      EliminationStatus::Not => 1u64,
-      EliminationStatus::Trivially(_) => 2u64,
-      EliminationStatus::NonTrivially(_) => 3u64,
+    elimination_status: match &team.elimination_status {
+      None | Some(EliminationStatus::Not) => 1u64,
+      Some(EliminationStatus::Trivially(_)) => 2u64,
+      Some(EliminationStatus::NonTrivially(_)) => 3u64,
     },
     eliminating_teams_count: eliminating_teams.len() as u64,
     eliminating_teams: Box::into_raw(

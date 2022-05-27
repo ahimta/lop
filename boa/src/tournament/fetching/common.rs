@@ -7,7 +7,6 @@ use std::sync::Arc;
 
 use itertools::Itertools;
 
-use crate::common::EliminationStatus;
 use crate::common::Team;
 use crate::common::TeamId;
 use crate::common::Tournament;
@@ -46,6 +45,7 @@ pub(super) trait TournamentProvider {
   fn postprocess_tournament(
     all_tournaments_matches_results: Vec<(Arc<String>, Vec<MatchResult>)>,
   ) -> Vec<Tournament> {
+    const HACKY_INTERMEDIATE_RANK: usize = 42;
     const MATCHES_PER_TEAM_PAIR: usize = 2;
 
     all_tournaments_matches_results
@@ -242,46 +242,33 @@ pub(super) trait TournamentProvider {
             let team_matches_drawn =
               *matches_drawn.get(team_name).unwrap_or(&0);
 
-            Arc::new(Team {
-              name: Arc::clone(team_name),
-
-              rank: 0,
-              matches_played: *matches_played_per_team
-                .get(team_name)
-                .unwrap_or(&0),
-              matches_left: *matches_left_per_team.get(team_name).unwrap_or(&0),
+            Arc::new(Team::new(
+              team_name,
+              HACKY_INTERMEDIATE_RANK,
+              *matches_played_per_team.get(team_name).unwrap_or(&0),
+              *matches_left_per_team.get(team_name).unwrap_or(&0),
               // FIXME: Make sure there's a test to cover this (e.g: using all
               // tournament states).
-              matches_won: *matches_won.get(team_name).unwrap_or(&0),
-              matches_drawn: team_matches_drawn,
-              matches_lost: *matches_lost.get(team_name).unwrap_or(&0),
-
-              earned_points: WIN_FACTOR
-                * *matches_won.get(team_name).unwrap_or(&0)
+              *matches_won.get(team_name).unwrap_or(&0),
+              team_matches_drawn,
+              *matches_lost.get(team_name).unwrap_or(&0),
+              WIN_FACTOR * *matches_won.get(team_name).unwrap_or(&0)
                 + DRAW_FACTOR * team_matches_drawn,
-              remaining_points: *remaining_points_per_team
-                .get(team_name)
-                .unwrap_or(&0),
-
-              elimination_status: EliminationStatus::Not,
-            })
+              *remaining_points_per_team.get(team_name).unwrap_or(&0),
+              None,
+            ))
           })
           .collect::<BTreeSet<Arc<Team>>>()
           .into_iter()
           .enumerate()
-          .map(|(i, team)| {
-            Arc::new(Team {
-              rank: i + 1,
-              ..Team::clone(&team)
-            })
-          })
+          .map(|(i, team)| Arc::new(Team::with_rank(&team, i + 1)))
           .collect();
 
-        Tournament {
-          name: tournament_name,
+        Tournament::new(
+          &tournament_name,
           teams,
-          remaining_points: tournament_remaining_points,
-        }
+          Some(tournament_remaining_points),
+        )
       })
       .collect()
   }
