@@ -36,7 +36,7 @@ impl FlowEdge {
 }
 
 #[must_use]
-#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[derive(Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub(crate) struct FlowNode {
   pub(crate) id: Arc<String>,
   constructor_guard: PhantomData<()>,
