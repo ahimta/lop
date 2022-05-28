@@ -15,6 +15,7 @@ pub(super) struct ResidualGraph {
   constructor_guard: PhantomData<()>,
 }
 
+#[must_use]
 impl ResidualGraph {
   #[must_use]
   pub(super) fn new(

@@ -28,6 +28,7 @@ pub struct Tournament {
   pub remaining_points: Option<HashMap<(TeamId, TeamId), usize>>,
   constructor_guard: PhantomData<()>,
 }
+#[must_use]
 impl PartialEq for Tournament {
   #[must_use]
   // NOTE(MUST-CHANGE-WHENEVER-STRUCT-FIELDS-CHANGE)
@@ -42,9 +43,10 @@ impl PartialEq for Tournament {
       && self.remaining_points == other.remaining_points
   }
 }
+#[must_use]
 impl Eq for Tournament {}
 
-// FIXME: Use `#[must_use]` with all impls/traits.
+#[must_use]
 impl Tournament {
   #[must_use]
   pub fn new(
@@ -153,6 +155,7 @@ pub struct Team {
 
   constructor_guard: PhantomData<()>,
 }
+#[must_use]
 impl PartialEq for Team {
   #[must_use]
   // NOTE(MUST-CHANGE-WHENEVER-STRUCT-FIELDS-CHANGE)
@@ -174,13 +177,16 @@ impl PartialEq for Team {
       && self.elimination_status == other.elimination_status
   }
 }
+#[must_use]
 impl Eq for Team {}
+#[must_use]
 impl PartialOrd for Team {
   #[must_use]
   fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
     Some(self.cmp(other))
   }
 }
+#[must_use]
 impl Ord for Team {
   #[must_use]
   fn cmp(&self, other: &Self) -> Ordering {
@@ -197,12 +203,14 @@ impl Ord for Team {
     self.name.cmp(&other.name)
   }
 }
+#[must_use]
 impl Hash for Team {
   fn hash<H: Hasher>(&self, state: &mut H) {
     self.name.hash(state);
   }
 }
 
+#[must_use]
 impl Team {
   #[must_use]
   #[allow(clippy::too_many_arguments)]
