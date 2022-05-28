@@ -8,7 +8,14 @@ source ./scripts/_base.sh
 # `$HOME/Android/Sdk`. After adding it, you may have to close all VS Code
 # instances.
 ANDROID_SDK_ROOT="${ANDROID_SDK_ROOT:?"ANDROID_SDK_ROOT env. var. missing!"}"
+PRE_COMMIT_CHECK="${PRE_COMMIT_CHECK:?"PRE_COMMIT_CHECK env. var. missing!"}"
 RUN_IN_CONTAINER="${RUN_IN_CONTAINER:?"RUN_IN_CONTAINER env. var. missing!"}"
+
+if [[ "${PRE_COMMIT_CHECK}" = "1" && "${RUN_IN_CONTAINER}" != "1" ]]; then
+  echo "Invalid PRE_COMMIT_CHECK (${PRE_COMMIT_CHECK}) and" >&2
+  echo "RUN_IN_CONTAINER (${RUN_IN_CONTAINER}) combination" >&2
+  exit 1
+fi
 
 source ./public.env
 
@@ -23,6 +30,7 @@ if [[ "${RUN_IN_CONTAINER}" = "1" ]]; then
   # anything for build if `Containerfile` changes.
   "${CONTAINER_COMMAND}" build \
     --tag lop \
+    --build-arg PRE_COMMIT_CHECK="${PRE_COMMIT_CHECK}" \
     --build-arg ANDROID_COMPILE_SDK_VERSION="${ANDROID_COMPILE_SDK_VERSION}" \
     --build-arg ANDROID_NDK_VERSION="${ANDROID_NDK_VERSION}" \
     --file ./Containerfile .

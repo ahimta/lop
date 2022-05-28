@@ -50,7 +50,10 @@
           "isDefault": true
         },
         "options": {
-          "env": { "RUN_IN_CONTAINER": "0" },
+          "env": {
+            "PRE_COMMIT_CHECK": "0",
+            "RUN_IN_CONTAINER": "0"
+          },
           "cwd": "${workspaceFolder}"
         },
         "problemMatcher": [

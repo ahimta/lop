@@ -5,4 +5,4 @@ set -o errexit
 source ./scripts/_base.sh
 
 trap ./scripts/notify-user.sh EXIT
-RUN_IN_CONTAINER=1 ./scripts/continuous-integration.sh podman
+PRE_COMMIT_CHECK=1 RUN_IN_CONTAINER=1 ./scripts/continuous-integration.sh podman

@@ -20,4 +20,4 @@ jobs:
         # NOTE: We use Docker instead of Podman here because there doesn't seem
         # to be a supported way to use Podman in GitHub Actions.
         run: |
-          RUN_IN_CONTAINER=1 ./scripts/continuous-integration.sh docker
+          PRE_COMMIT_CHECK=1 RUN_IN_CONTAINER=1 ./scripts/continuous-integration.sh docker

@@ -139,13 +139,13 @@ RUN ${SET_SHELL_SAFE_OPTIONS}; \
 
 COPY --chown=lop:lop . /lop
 WORKDIR /lop
-# FIXME: Only discard untracked files behind an option.
+ARG PRE_COMMIT_CHECK
 RUN ${SET_SHELL_SAFE_OPTIONS}; \
   # NOTE: We don't do `git restore --staged .` here because it discards changes
   # about to be committed. This is important for pre-commit checks and maybe
   # even useful for other usecases.
-  git restore .; \
-  git clean -dx --force --quiet; \
+  ([ "${PRE_COMMIT_CHECK}" = "1" ] && git restore .); \
+  ([ "${PRE_COMMIT_CHECK}" = "1" ] && git clean -dx --force --quiet); \
   # NOTE: This is mostly just to kick of installing all Rust tooling and project
   # dependencies once and avoiding repeating this for each run/container.
   (cd boa && cargo --quiet check --no-default-features --jobs "$(nproc)");
@@ -155,6 +155,7 @@ RUN ${SET_SHELL_SAFE_OPTIONS}; \
 ENV ANDROID_SDK_ROOT ${ANDROID_SDK_ROOT}
 ENV ANDROID_NDK_VERSION ${ANDROID_NDK_VERSION}
 ENV ANDROID_COMPILE_SDK_VERSION ${ANDROID_COMPILE_SDK_VERSION}
+ENV PRE_COMMIT_CHECK 0
 ENV RUN_IN_CONTAINER 0
 
 # NOTE: We use `ENTRYPOINT` instead of `CMD` deliberately as it doesn't use a
