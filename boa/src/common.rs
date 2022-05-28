@@ -184,12 +184,12 @@ impl PartialOrd for Team {
 impl Ord for Team {
   #[must_use]
   fn cmp(&self, other: &Self) -> Ordering {
-    let mut ordering = other.earned_points.cmp(&self.earned_points);
+    let ordering = other.earned_points.cmp(&self.earned_points);
     if ordering != Ordering::Equal {
       return ordering;
     }
 
-    ordering = self.rank.cmp(&other.rank);
+    let ordering = self.rank.cmp(&other.rank);
     if ordering != Ordering::Equal {
       return ordering;
     }
