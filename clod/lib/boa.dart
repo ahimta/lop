@@ -128,8 +128,6 @@ final _BoaFreeTournaments _boaFreeTournaments = _boa
     .asFunction();
 
 List<Tournament> getTournaments() {
-  // FIXME: Answer Stackoverflow question.
-  // SEE: https://stackoverflow.com/questions/67313913/dart-flutter-ffiforeign-function-interface-calling-a-native-function-with-out.
   final tournamentsCountNative = calloc.allocate<Uint64>(sizeOf<Uint64>());
   final tournamentsNative = calloc.allocate<Pointer<_TournamentNative>>(
     sizeOf<Pointer<_TournamentNative>>(),

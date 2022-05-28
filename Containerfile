@@ -79,10 +79,6 @@ USER lop:lop
 WORKDIR /home/lop
 ARG HOME=/home/lop
 
-# FIXME: Answer Stackoverflow questions after making sure everything works.
-# SEE: https://stackoverflow.com/questions/65262340/cmdline-tools-could-not-determine-sdk-root
-# SEE: https://stackoverflow.com/questions/17963508/how-to-install-android-sdk-build-tools-on-the-command-line
-
 # NOTE: This is the latest version that seems to work with Rust.
 ARG ANDROID_BUILD_TOOLS=29.0.2
 ARG ANDROID_SDK_ROOT=$HOME/Android/Sdk
