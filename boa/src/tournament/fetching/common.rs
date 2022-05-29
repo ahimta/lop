@@ -50,7 +50,11 @@ pub(super) trait TournamentProvider {
 
     all_tournaments_matches_results
       .into_iter()
-      .map(|(tournament_name, matches_results)| -> Tournament {
+      .filter_map(|(tournament_name, matches_results)| -> Option<Tournament> {
+        if matches_results.is_empty() {
+          return None;
+        }
+
         let matches_won_per_team: HashMap<&TeamId, usize> = matches_results
           .iter()
           .map(
@@ -240,11 +244,11 @@ pub(super) trait TournamentProvider {
           .map(|(i, team)| Arc::new(Team::with_rank(&team, i + 1)))
           .collect();
 
-        Tournament::new(
+        Some(Tournament::new(
           &tournament_name,
           teams,
           Some(remaining_points_per_pair),
-        )
+        ))
       })
       .collect()
   }
