@@ -251,6 +251,8 @@ pub(super) fn test() {
             (("atlanta", "new-york"), 6),
             (("atlanta", "montreal"), 1),
             (("philadelphia", "montreal"), 2),
+            (("philadelphia", "new-york"), 0),
+            (("new-york", "montreal"), 0),
           ]
           .into_iter()
           .map(|((team_name1, team_name2), remaining_points)| {
@@ -443,6 +445,7 @@ pub(super) fn test() {
             (("baltimore", "toronto"), 7),
             (("baltimore", "detroit"), 7),
             (("boston", "detroit"), 3),
+            (("boston", "toronto"), 0),
             (("toronto", "detroit"), 3),
           ]
           .into_iter()

@@ -56,12 +56,19 @@ impl Tournament {
   ) -> Self {
     const NAME_LENGTH_MIN: usize = 1;
     const NAME_LENGTH_MAX: usize = 100;
-    const REMAINING_POINTS_COUNT_MIN: usize = 1;
-    const REMAINING_POINTS_COUNT_MAX: usize = 1000;
-    // FIXME: Will probably have to handle zero-teams that can happen at the start
-    // of a tournament.
+    // NOTE: Reamining-points counts and teams counts are significant.
+    // Teams count must be at least 2 because the provided teams may be
+    // extracted from a tournament matches-results where a single match would
+    // contain 2 teams. Creating tournaments with any fewer teams isn't
+    // supported and doesn't make sense anyway.
+    // Remaining-points count is just a by-product of teams-count and contains
+    // all remaining-points for each pair of teams.
     const TEAMS_COUNT_MIN: usize = 2;
     const TEAMS_COUNT_MAX: usize = 500;
+    const REMAINING_POINTS_COUNT_MIN: usize =
+      min_pair_combinations(TEAMS_COUNT_MIN);
+    const REMAINING_POINTS_COUNT_MAX: usize =
+      max_pair_combinations(TEAMS_COUNT_MAX);
 
     assert!(
       name.len() >= NAME_LENGTH_MIN && name.len() <= NAME_LENGTH_MAX,
@@ -80,9 +87,12 @@ impl Tournament {
       Some(remaining_points_value) => {
         assert!(
           remaining_points_value.len() >= REMAINING_POINTS_COUNT_MIN
-            && remaining_points_value.len() <= REMAINING_POINTS_COUNT_MAX,
-          "Invalid no. of remaining-points ({:?}).",
+            && remaining_points_value.len() <= REMAINING_POINTS_COUNT_MAX
+            && remaining_points_value.len()
+              == max_pair_combinations(teams.len()),
+          "Invalid no. of remaining-points ({:?}, {:?}).",
           remaining_points_value.len(),
+          teams.len(),
         );
 
         assert!(
@@ -118,6 +128,16 @@ impl Tournament {
             })
             .into_grouping_map()
             .sum();
+        if remaining_points_value.is_empty() || teams.is_empty() {
+          // NOTE: This is important to check as otherwise the validation may
+          // break/not-run due to empty-collection.
+          assert!(
+            remaining_points_value.is_empty() && teams.is_empty(),
+            "Invalid remaining-points & teams lengths ({:?}, {:?}).",
+            remaining_points_value.len(),
+            teams.len(),
+          );
+        }
         assert!(
           teams.iter().all(|team| team.remaining_points
             == *remaining_points_per_team.get(&team.name).unwrap_or(&0)),
@@ -135,6 +155,14 @@ impl Tournament {
       constructor_guard: PhantomData,
     }
   }
+}
+#[must_use]
+const fn min_pair_combinations(x: usize) -> usize {
+  x - 1
+}
+#[must_use]
+const fn max_pair_combinations(x: usize) -> usize {
+  x * (x - 1) / 2
 }
 
 #[must_use]
