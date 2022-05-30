@@ -48,6 +48,17 @@ pub(super) trait TournamentProvider {
     const HACKY_INTERMEDIATE_RANK: usize = 42;
     const MATCHES_PER_TEAM_PAIR: usize = 2;
 
+    assert!(
+      all_tournaments_matches_results.len()
+        == all_tournaments_matches_results
+          .iter()
+          .map(|(tournament_name, _)| tournament_name)
+          .collect::<HashSet<&Arc<String>>>()
+          .len(),
+      "Duplicate tournament-names ({:?}).",
+      all_tournaments_matches_results,
+    );
+
     all_tournaments_matches_results
       .into_iter()
       .filter_map(|(tournament_name, matches_results)| -> Option<Tournament> {
