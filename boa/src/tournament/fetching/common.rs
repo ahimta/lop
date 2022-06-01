@@ -24,8 +24,6 @@ pub(super) trait TournamentProvider {
 
   // NOTE: `download_tournaments()` and `process_tournaments()` only separated
   // for easier testing.
-  // FIXME: Tournament-name passed around everywhere. Probably replace with full
-  // team details/stats.
   #[must_use]
   fn download_tournaments() -> Vec<(Arc<String>, Vec<String>)>;
   #[must_use]
