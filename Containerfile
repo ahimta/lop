@@ -84,7 +84,7 @@ ARG ANDROID_BUILD_TOOLS=29.0.2
 ARG ANDROID_SDK_ROOT=$HOME/Android/Sdk
 # SEE: https://developer.android.com/studio/index.html#downloads
 ARG ANDROID_SDK_TOOLS=8512546
-ARG ANDROID_SDK_TOOLS_CHECKSUM_SHA256=2ccbda4302db862a28ada25aa7425d99dce9462046003c1714b059b5c47970d8
+ARG ANDROID_SDK_TOOLS_CHECKSUM_SHA384=0d3b02daf15259980aed5845972fe6d7fcead35550c6dae4a9eb17adcf3ef97be3dd6825bd467c29c9dc34071e5d3c2e
 ARG ANDROID_COMPILE_SDK_VERSION
 ARG ANDROID_NDK_VERSION
 
@@ -92,7 +92,7 @@ RUN ${SET_SHELL_SAFE_OPTIONS}; \
   echo Installing Android SDK/NDK...; \
   wget -qq --output-document=android-sdk.zip \
   http://dl.google.com/android/repository/commandlinetools-linux-${ANDROID_SDK_TOOLS}_latest.zip; \
-  echo "${ANDROID_SDK_TOOLS_CHECKSUM_SHA256} android-sdk.zip" | sha256sum --check --quiet --strict -; \
+  echo "${ANDROID_SDK_TOOLS_CHECKSUM_SHA384} android-sdk.zip" | sha384sum --check --quiet --strict -; \
   unzip -qq android-sdk.zip -d android-sdk; \
   rm android-sdk.zip; \
   # NOTE: This is the expected path as implied by this error message:
@@ -113,9 +113,8 @@ RUN ${SET_SHELL_SAFE_OPTIONS}; \
 # SEE: https://docs.flutter.dev/release/breaking-changes
 # SEE: https://docs.flutter.dev/development/tools/sdk/release-notes
 # FIXME: Use better names like "FLUTTER_VERSION".
-# FIXME: Use sha384 instead of sha256.
 ARG FLUTTER=3.0.4
-ARG FLUTTER_CHECKSUM_SHA256=be1dd08cb18504ddf6d435044fd5e162a4a420b8c48fe66a0002eefe6c58fa0a
+ARG FLUTTER_CHECKSUM_SHA384=a9d76af7c351225355409b7d6b6fac052f0bea67718a340bd48451508c6c4b8b5b7414b71dc8fbf18437bf836d91ddfe
 ARG FLUTTER_SDK_ROOT=$HOME/flutter
 
 # SEE: https://flutter.dev/docs/get-started/install/linux
@@ -123,7 +122,7 @@ RUN ${SET_SHELL_SAFE_OPTIONS}; \
   echo Installing Flutter SDK...; \
   wget -qq --output-document=flutter-sdk.tar.xz \
   https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_${FLUTTER}-stable.tar.xz; \
-  echo "${FLUTTER_CHECKSUM_SHA256} flutter-sdk.tar.xz" | sha256sum --check --quiet --strict -; \
+  echo "${FLUTTER_CHECKSUM_SHA384} flutter-sdk.tar.xz" | sha384sum --check --quiet --strict -; \
   tar xf flutter-sdk.tar.xz; \
   rm flutter-sdk.tar.xz; \
   # NOTE: Just check that the file was extracted in the right location.
