@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 # SEE: https://github.com/rust-lang/rust/blob/master/RELEASES.md
-ARG RUST_VERSION="1.60.0"
+ARG RUST_VERSION="1.62.0"
 # SEE: https://hub.docker.com/_/rust
 FROM "docker.io/library/rust:${RUST_VERSION}-slim-bullseye"
 LABEL author "Abdullah Alansari <ahimta@gmail.com>"
@@ -83,8 +83,8 @@ ARG HOME=/home/lop
 ARG ANDROID_BUILD_TOOLS=29.0.2
 ARG ANDROID_SDK_ROOT=$HOME/Android/Sdk
 # SEE: https://developer.android.com/studio/index.html#downloads
-ARG ANDROID_SDK_TOOLS=7583922
-ARG ANDROID_SDK_TOOLS_CHECKSUM_SHA256=124f2d5115eee365df6cf3228ffbca6fc3911d16f8025bebd5b1c6e2fcfa7faf
+ARG ANDROID_SDK_TOOLS=8512546
+ARG ANDROID_SDK_TOOLS_CHECKSUM_SHA256=2ccbda4302db862a28ada25aa7425d99dce9462046003c1714b059b5c47970d8
 ARG ANDROID_COMPILE_SDK_VERSION
 ARG ANDROID_NDK_VERSION
 
@@ -112,8 +112,10 @@ RUN ${SET_SHELL_SAFE_OPTIONS}; \
 
 # SEE: https://docs.flutter.dev/release/breaking-changes
 # SEE: https://docs.flutter.dev/development/tools/sdk/release-notes
-ARG FLUTTER=3.0.1
-ARG FLUTTER_CHECKSUM_SHA256=fe088c6c399d3bf6958171cec1dfdb387bacb1b643413fa07e6c353fad80adc1
+# FIXME: Use better names like "FLUTTER_VERSION".
+# FIXME: Use sha384 instead of sha256.
+ARG FLUTTER=3.0.4
+ARG FLUTTER_CHECKSUM_SHA256=be1dd08cb18504ddf6d435044fd5e162a4a420b8c48fe66a0002eefe6c58fa0a
 ARG FLUTTER_SDK_ROOT=$HOME/flutter
 
 # SEE: https://flutter.dev/docs/get-started/install/linux
@@ -144,8 +146,10 @@ RUN ${SET_SHELL_SAFE_OPTIONS}; \
   # NOTE: We don't do `git restore --staged .` here because it discards changes
   # about to be committed. This is important for pre-commit checks and maybe
   # even useful for other usecases.
-  ([ "${PRE_COMMIT_CHECK}" = "1" ] && git restore .); \
-  ([ "${PRE_COMMIT_CHECK}" = "1" ] && git clean -dx --force --quiet); \
+  if [ "${PRE_COMMIT_CHECK}" = "1" ]; then \
+  git restore .; \
+  git clean -dx --force --quiet; \
+  fi; \
   # NOTE: This is mostly just to kick of installing all Rust tooling and project
   # dependencies once and avoiding repeating this for each run/container.
   (cd boa && cargo --quiet check --no-default-features --jobs "$(nproc)");
@@ -155,6 +159,8 @@ RUN ${SET_SHELL_SAFE_OPTIONS}; \
 ENV ANDROID_SDK_ROOT ${ANDROID_SDK_ROOT}
 ENV ANDROID_NDK_VERSION ${ANDROID_NDK_VERSION}
 ENV ANDROID_COMPILE_SDK_VERSION ${ANDROID_COMPILE_SDK_VERSION}
+# FIXME: `PRE_COMMIT_CHECK` and `RUN_IN_CONTAINER` set to fixed values instead
+# of using `ARG` values.
 ENV PRE_COMMIT_CHECK 0
 ENV RUN_IN_CONTAINER 0
 

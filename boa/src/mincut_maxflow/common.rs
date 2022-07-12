@@ -17,7 +17,6 @@ pub(crate) struct FlowEdge {
   constructor_guard: PhantomData<()>,
 }
 
-#[must_use]
 impl FlowEdge {
   #[must_use]
   pub(crate) fn new(
@@ -43,7 +42,6 @@ pub(crate) struct FlowNode {
   constructor_guard: PhantomData<()>,
 }
 
-#[must_use]
 impl FlowNode {
   const JOINED_WITH_TAG: &'static str = "joined-with";
   const SOURCE_NODE_ID: &'static str = "s";
@@ -117,7 +115,6 @@ pub(crate) enum Flow {
   NegativeExcess(usize),
 }
 
-#[must_use]
 impl Flow {
   const INFINITE_FLOW_VALUE: isize = isize::MAX;
 
@@ -142,7 +139,6 @@ impl Flow {
   }
 }
 
-#[must_use]
 impl PartialOrd for Flow {
   #[must_use]
   fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
@@ -150,7 +146,6 @@ impl PartialOrd for Flow {
   }
 }
 
-#[must_use]
 impl Ord for Flow {
   #[must_use]
   fn cmp(&self, other: &Self) -> Ordering {
@@ -158,17 +153,14 @@ impl Ord for Flow {
   }
 }
 
-#[must_use]
 impl PartialEq for Flow {
   #[must_use]
   fn eq(&self, other: &Self) -> bool {
     self.cmp(other) == Ordering::Equal
   }
 }
-#[must_use]
 impl Eq for Flow {}
 
-#[must_use]
 impl ops::Add for Flow {
   type Output = Self;
 
@@ -188,7 +180,6 @@ impl ops::Add for Flow {
   }
 }
 
-#[must_use]
 impl ops::Sub for Flow {
   type Output = Self;
 
@@ -208,14 +199,12 @@ impl ops::Sub for Flow {
   }
 }
 
-#[must_use]
 impl ops::AddAssign for Flow {
   fn add_assign(&mut self, other: Self) {
     *self = *self + other;
   }
 }
 
-#[must_use]
 impl ops::SubAssign for Flow {
   fn sub_assign(&mut self, other: Self) {
     *self = *self - other;

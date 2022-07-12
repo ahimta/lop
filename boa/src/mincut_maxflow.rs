@@ -167,7 +167,6 @@ struct SinkToSourceIterator {
   current_node: Arc<FlowNode>,
 }
 
-#[must_use]
 impl SinkToSourceIterator {
   #[must_use]
   fn new(
@@ -183,7 +182,6 @@ impl SinkToSourceIterator {
   }
 }
 
-#[must_use]
 impl Iterator for SinkToSourceIterator {
   type Item = (Arc<FlowNode>, Arc<RefCell<ResidualEdge>>);
 

@@ -15,7 +15,6 @@ pub(super) struct ResidualEdge {
   constructor_guard: PhantomData<()>,
 }
 
-#[must_use]
 impl ResidualEdge {
   #[must_use]
   pub(super) fn new(

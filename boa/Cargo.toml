@@ -57,8 +57,8 @@ itertools = { version = "^0.10.3", default-features = false, features = [
 # `native-tls` feature would require `openssl` for Android which is feasible but
 # adds unnecessary complexity and so we use the `rustls-tls` feature which is
 # much easier to build.
-# SEE: https://docs.rs/reqwest/0.11.8/reqwest/#optional-features
-reqwest = { version = "^0.11.8", default-features = false, features = [
+# SEE: https://docs.rs/reqwest/0.11.11/reqwest/index.html#optional-features
+reqwest = { version = "^0.11.11", default-features = false, features = [
   "blocking",
   "gzip",
   "brotli",
@@ -69,19 +69,19 @@ reqwest = { version = "^0.11.8", default-features = false, features = [
 # NOTE: Must add the "derive" feature (which isn't included in official docs)
 # for the typed examples to work.
 # SEE: https://github.com/serde-rs/json/issues/728#issuecomment-725961686
-# SEE: https://docs.rs/serde/1.0.133
-serde = { version = "^1.0.133", default-features = false, features = [
+# SEE: https://docs.rs/serde/1.0.139
+serde = { version = "^1.0.139", default-features = false, features = [
   "derive",
 ] }
-# SEE: https://docs.rs/serde_json/1.0.74
-serde_json = { version = "^1.0.74", default-features = false, features = [
+# SEE: https://docs.rs/serde_json/1.0.82
+serde_json = { version = "^1.0.82", default-features = false, features = [
   "std",
 ] }
 
 # SEE: https://doc.rust-lang.org/cargo/reference/specifying-dependencies.html#development-dependencies
 [dev-dependencies]
-# SEE: https://docs.rs/pretty_assertions/1.2.0
-pretty_assertions = { version = "^1.2.0", default-features = false, features = [
+# SEE: https://docs.rs/pretty_assertions/1.2.1
+pretty_assertions = { version = "^1.2.1", default-features = false, features = [
   "alloc",
   "std",
 ] }

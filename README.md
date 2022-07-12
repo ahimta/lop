@@ -81,6 +81,8 @@ sudo apt install -qq --yes \
 sudo snap install flutter --classic
 flutter sdk-path
 flutter upgrade
+# NOTE: `precache` downloads all platform-specific files eagerly.
+flutter precache
 mkdir --parents ~/.local/share/bash-completion/completions
 # FIXME: Command fails due to a mysterious permission error.
 flutter bash-completion > ~/.local/share/bash-completion/completions/flutter
@@ -174,6 +176,12 @@ cargo fix --edition
 ```bash
 flutter pub add english_words
 flutter pub remove english_words
+
+flutter pub outdated
+flutter pub upgrade --dry-run
+flutter pub upgrade
+flutter pub upgrade --dry-run --major-versions
+flutter pub upgrade --major-versions
 
 LD_LIBRARY_PATH=../boa/target/release flutter run --device-id linux
 ```

@@ -11,7 +11,6 @@ use crate::tournament::fetching::common::TournamentProvider;
 
 #[must_use]
 struct PremierLeague {}
-#[must_use]
 impl TournamentProvider for PremierLeague {
   const TEST_TOURNAMENT_NAME: &'static str = "First Team - Premier League";
   const TEST_DATA_FILE_ID: &'static str = "2021-12-26T14:58:52";
@@ -164,7 +163,6 @@ fn f64_score_to_usize(score: f64) -> usize {
 
 #[must_use]
 struct Koora {}
-#[must_use]
 impl TournamentProvider for Koora {
   const TEST_TOURNAMENT_NAME: &'static str = "Saudi Professional League";
   const TEST_DATA_FILE_ID: &'static str = "2022-02-14T22:50:10";

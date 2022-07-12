@@ -24,6 +24,7 @@ ANDROID_NDK_VERSION="${ANDROID_NDK_VERSION:?"ANDROID_NDK_VERSION env. var. missi
 
 if [[ "${RUN_IN_CONTAINER}" = "1" ]]; then
   CONTAINER_COMMAND="${1}"
+  # FIXME: Validate container command (`podman|docker`).
 
   # NOTE: This avoids the common occurrence of changing `Containerfile` and
   # forgetting to call build and Docker/Podman caching should only do
@@ -33,7 +34,8 @@ if [[ "${RUN_IN_CONTAINER}" = "1" ]]; then
     --build-arg PRE_COMMIT_CHECK="${PRE_COMMIT_CHECK}" \
     --build-arg ANDROID_COMPILE_SDK_VERSION="${ANDROID_COMPILE_SDK_VERSION}" \
     --build-arg ANDROID_NDK_VERSION="${ANDROID_NDK_VERSION}" \
-    --file ./Containerfile .
+    --file ./Containerfile \
+    .
 
   # NOTE: The `exec` trick avoids the need for an additional wrapper script when
   # using container.
