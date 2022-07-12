@@ -8,6 +8,7 @@ source ./scripts/_base.sh
 # `$HOME/Android/Sdk`. After adding it, you may have to close all VS Code
 # instances.
 ANDROID_SDK_ROOT="${ANDROID_SDK_ROOT:?"ANDROID_SDK_ROOT env. var. missing!"}"
+# FIXME: pre-commit checks do ignore all files but not `Containerfile`.
 PRE_COMMIT_CHECK="${PRE_COMMIT_CHECK:?"PRE_COMMIT_CHECK env. var. missing!"}"
 RUN_IN_CONTAINER="${RUN_IN_CONTAINER:?"RUN_IN_CONTAINER env. var. missing!"}"
 
@@ -24,7 +25,14 @@ ANDROID_NDK_VERSION="${ANDROID_NDK_VERSION:?"ANDROID_NDK_VERSION env. var. missi
 
 if [[ "${RUN_IN_CONTAINER}" = "1" ]]; then
   CONTAINER_COMMAND="${1}"
-  # FIXME: Validate container command (`podman|docker`).
+  if [[ \
+    "${CONTAINER_COMMAND}" != "podman" && \
+    "${CONTAINER_COMMAND}" != "docker" \
+  ]]; then
+    echo "Invalid container-command (${CONTAINER_COMMAND})" >&2
+    echo 'Expected ("podman" or "docker")' >&2
+    exit 1
+  fi
 
   # NOTE: This avoids the common occurrence of changing `Containerfile` and
   # forgetting to call build and Docker/Podman caching should only do
