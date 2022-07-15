@@ -34,6 +34,7 @@ if [[ "${RUN_IN_CONTAINER}" = "1" ]]; then
     exit 1
   fi
 
+  # FIXME: Change `CONTAINER_COMMAND` and env. variable (just like others).
   # NOTE: This avoids the common occurrence of changing `Containerfile` and
   # forgetting to call build and Docker/Podman caching should only do
   # anything for build if `Containerfile` changes.
@@ -61,9 +62,9 @@ function on-exit-trap {
   ./scripts/notify-user.sh
 
   if [[ "${EXIT_CODE}" = "0" ]]; then
-    echo "============================SUCCEEDED============================" >&2
+    echo "================CONTINUOUS-INTEGRATION SUCCEEDED================" >&2
   else
-    echo "=============================FAILED=============================" >&2
+    echo "================CONTINUOUS-INTEGRATION FAILED================" >&2
   fi
 }
 

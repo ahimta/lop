@@ -141,9 +141,9 @@ COPY --chown=lop:lop . /lop
 WORKDIR /lop
 ARG PRE_COMMIT_CHECK
 RUN ${SET_SHELL_SAFE_OPTIONS}; \
-  # NOTE: We don't do `git restore --staged .` here because it discards changes
-  # about to be committed. This is important for pre-commit checks and maybe
-  # even useful for other usecases.
+  # NOTE(GIT-RESET-FOR-PRE-COMMIT-CHECK): We don't do `git restore --staged .`
+  # here because it discards changes about to be committed. This is important
+  # for pre-commit checks and maybe even useful for other usecases.
   if [ "${PRE_COMMIT_CHECK}" = "1" ]; then \
   git restore .; \
   git clean -dx --force --quiet; \
