@@ -90,4 +90,7 @@ git clean -dx --force --quiet
 # FIXME: Check submodules not dirty.
 # FIXME: Check indeed no pending changes other than staging-area.
 
-PRE_COMMIT_CHECK=1 RUN_IN_CONTAINER=1 ./scripts/continuous-integration.sh podman
+CONTAINER_COMMAND=podman \
+  PRE_COMMIT_CHECK=1 \
+  RUN_IN_CONTAINER=1 \
+  ./scripts/continuous-integration.sh

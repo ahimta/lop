@@ -51,6 +51,7 @@
         },
         "options": {
           "env": {
+            "CONTAINER_COMMAND": "podman",
             "PRE_COMMIT_CHECK": "0",
             "RUN_IN_CONTAINER": "0"
           },

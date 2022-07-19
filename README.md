@@ -113,7 +113,10 @@ flutter doctor
 
 ```bash
 # NOTE: This is the core and includes all checks, builds, tests, etc...
-PRE_COMMIT_CHECK=0 RUN_IN_CONTAINER=0 ./scripts/continuous-integration.sh
+CONTAINER_COMMAND=podman \
+  PRE_COMMIT_CHECK=0 \
+  RUN_IN_CONTAINER=0 \
+  ./scripts/continuous-integration.sh
 ```
 
 ## BASH Completions
@@ -130,7 +133,10 @@ rustup completions bash cargo > ~/.local/share/bash-completion/completions/cargo
 ## Using Podman/Docker
 
 ```bash
-PRE_COMMIT_CHECK=0 RUN_IN_CONTAINER=1 ./scripts/continuous-integration.sh podman; \
+CONTAINER_COMMAND=podman \
+  PRE_COMMIT_CHECK=0 \
+  RUN_IN_CONTAINER=1 \
+  ./scripts/continuous-integration.sh; \
   ./scripts/notify-user.sh
 ```
 

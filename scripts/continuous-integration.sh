@@ -4,17 +4,57 @@
 set -o errexit
 source ./scripts/_base.sh
 
+if [[ "$#" != "0" ]]; then
+  echo "Invalid no. of arguments: this script only takes env. vars." >&2
+  exit 1
+fi
+if [[ \
+  "${0}" != "./scripts/continuous-integration.sh" && \
+  "${0}" != "${PWD}/scripts/continuous-integration.sh"
+  ]]; then
+  echo "Invalid script-file (${0})" >&2
+  exit 1
+fi
+
 # NOTE: The `ANDROID_SDK_ROOT` must be defined and it's typically
 # `$HOME/Android/Sdk`. After adding it, you may have to close all VS Code
 # instances.
 ANDROID_SDK_ROOT="${ANDROID_SDK_ROOT:?"ANDROID_SDK_ROOT env. var. missing!"}"
-# FIXME: pre-commit checks do ignore all files but not `Containerfile`.
-PRE_COMMIT_CHECK="${PRE_COMMIT_CHECK:?"PRE_COMMIT_CHECK env. var. missing!"}"
-RUN_IN_CONTAINER="${RUN_IN_CONTAINER:?"RUN_IN_CONTAINER env. var. missing!"}"
+if [[ ! -d "${ANDROID_SDK_ROOT}" ]]; then
+  echo "Invalid 'ANDROID_SDK_ROOT' env. var. (${ANDROID_SDK_ROOT})" >&2
+  echo "Expected path to exist" >&2
+  exit 1
+fi
 
+# NOTE: Use of `getpots` was considered but eliminated due to very little value
+# and its major drawback of seeming to encourage mysterious single-letter flags.
+# SEE: https://devdocs.io/bash/bourne-shell-builtins#getopts
+# SEE: https://github.com/abbaspour/auth0-bash/blob/9606b477dee6b89dbe913a230d4dbba60d4356ab/tenant/debug.sh
+CONTAINER_COMMAND="${CONTAINER_COMMAND:?"CONTAINER_COMMAND env. var. missing!"}"
+if [[ \
+  "${CONTAINER_COMMAND}" != "podman" && \
+  "${CONTAINER_COMMAND}" != "docker" \
+]]; then
+  echo "Invalid 'CONTAINER_COMMAND' env. var. (${CONTAINER_COMMAND})" >&2
+  echo "Expected ('podman' or 'docker')" >&2
+  exit 1
+fi
+PRE_COMMIT_CHECK="${PRE_COMMIT_CHECK:?"PRE_COMMIT_CHECK env. var. missing!"}"
+if [[ "${PRE_COMMIT_CHECK}" != "0" && "${PRE_COMMIT_CHECK}" != "1" ]]; then
+  echo "Invalid 'PRE_COMMIT_CHECK' env. var. (${PRE_COMMIT_CHECK})" >&2
+  echo "Expected ('0' or '1')" >&2
+  exit 1
+fi
+RUN_IN_CONTAINER="${RUN_IN_CONTAINER:?"RUN_IN_CONTAINER env. var. missing!"}"
+RUN_IN_CONTAINER="${RUN_IN_CONTAINER:?"RUN_IN_CONTAINER env. var. missing!"}"
+if [[ "${RUN_IN_CONTAINER}" != "0" && "${RUN_IN_CONTAINER}" != "1" ]]; then
+  echo "Invalid 'RUN_IN_CONTAINER' env. var. (${RUN_IN_CONTAINER})" >&2
+  echo "Expected ('0' or '1')" >&2
+  exit 1
+fi
 if [[ "${PRE_COMMIT_CHECK}" = "1" && "${RUN_IN_CONTAINER}" != "1" ]]; then
-  echo "Invalid PRE_COMMIT_CHECK (${PRE_COMMIT_CHECK}) and" >&2
-  echo "RUN_IN_CONTAINER (${RUN_IN_CONTAINER}) combination" >&2
+  echo "Invalid 'PRE_COMMIT_CHECK' (${PRE_COMMIT_CHECK}) and" >&2
+  echo "'RUN_IN_CONTAINER' (${RUN_IN_CONTAINER}) env. var. combination" >&2
   exit 1
 fi
 
@@ -24,17 +64,6 @@ ANDROID_COMPILE_SDK_VERSION="${ANDROID_COMPILE_SDK_VERSION:?"ANDROID_COMPILE_SDK
 ANDROID_NDK_VERSION="${ANDROID_NDK_VERSION:?"ANDROID_NDK_VERSION env. var. missing!"}"
 
 if [[ "${RUN_IN_CONTAINER}" = "1" ]]; then
-  CONTAINER_COMMAND="${1}"
-  if [[ \
-    "${CONTAINER_COMMAND}" != "podman" && \
-    "${CONTAINER_COMMAND}" != "docker" \
-  ]]; then
-    echo "Invalid container-command (${CONTAINER_COMMAND})" >&2
-    echo 'Expected ("podman" or "docker")' >&2
-    exit 1
-  fi
-
-  # FIXME: Change `CONTAINER_COMMAND` and env. variable (just like others).
   # NOTE: This avoids the common occurrence of changing `Containerfile` and
   # forgetting to call build and Docker/Podman caching should only do
   # anything for build if `Containerfile` changes.
