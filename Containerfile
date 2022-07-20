@@ -147,6 +147,20 @@ COPY \
   \
   /lop/boa/
 WORKDIR /lop/boa
+ARG LOCAL_ANDROID_NDK_PATH=${LOCAL_ANDROID_SDK_ROOT}/ndk/${ANDROID_NDK_VERSION}
+ARG LOCAL_ANDROID_AR=${LOCAL_ANDROID_NDK_PATH}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android-ar
+# NOTE(RUST-ANDROID-ENV-VARS-AARCH64)
+ARG LOCAL_AARCH64_COMPILER_AND_LINKER=${LOCAL_ANDROID_NDK_PATH}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android${ANDROID_COMPILE_SDK_VERSION}-clang
+ENV CC_aarch64_linux_android ${LOCAL_AARCH64_COMPILER_AND_LINKER}
+ENV CXX_aarch64_linux_android ${LOCAL_AARCH64_COMPILER_AND_LINKER}
+ENV AR_aarch64_linux_android ${LOCAL_ANDROID_AR}
+ENV CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER ${LOCAL_AARCH64_COMPILER_AND_LINKER}
+# NOTE(RUST-ANDROID-ENV-VARS-X8664)
+ARG LOCAL_X86_64_COMPILER_AND_LINKER=${LOCAL_ANDROID_NDK_PATH}/toolchains/llvm/prebuilt/linux-x86_64/bin/x86_64-linux-android${ANDROID_COMPILE_SDK_VERSION}-clang
+ENV CC_x86_64_linux_android ${LOCAL_X86_64_COMPILER_AND_LINKER}
+ENV CXX_x86_64_linux_android ${LOCAL_X86_64_COMPILER_AND_LINKER}
+ENV AR_x86_64_linux_android ${LOCAL_ANDROID_AR}
+ENV CARGO_TARGET_X86_64_LINUX_ANDROID_LINKER ${LOCAL_X86_64_COMPILER_AND_LINKER}
 RUN ${LOCAL_SET_SHELL_SAFE_OPTIONS}; \
   mkdir src; \
   # NOTE: We have to include all public APIs here as otherwise Rust build fails
@@ -158,13 +172,14 @@ RUN ${LOCAL_SET_SHELL_SAFE_OPTIONS}; \
   echo 'pub fn get_tournaments() {' >> src/lib.rs; \
   echo 'println!("Hello, world!");' >> src/lib.rs; \
   echo '}' >> src/lib.rs; \
-  # FIXME: Build all other architectures too and everything else (e.g., flutter)
-  # for faster builds.
+  # FIXME: Build everything else (e.g., flutter) for faster builds.
   cargo --quiet build --no-default-features --jobs "$(nproc)"; \
   cargo --quiet test --jobs "$(nproc)" --no-default-features; \
   cargo --quiet build --no-default-features --jobs "$(nproc)" --release; \
   cargo --quiet test --jobs "$(nproc)" --no-default-features --release; \
   cargo --quiet build --no-default-features --jobs "$(nproc)" --target x86_64-unknown-linux-gnu --release; \
+  cargo --quiet build --no-default-features --jobs "$(nproc)" --target aarch64-linux-android --release; \
+  cargo --quiet build --no-default-features --jobs "$(nproc)" --target x86_64-linux-android --release; \
   rm --force --recursive src; \
   mkdir /tmp/boa-cached-build-files; \
   mv ./target /tmp/boa-cached-build-files/target;

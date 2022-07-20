@@ -186,6 +186,7 @@ ANDROID_NDK_PATH="${ANDROID_SDK_ROOT}/ndk/${ANDROID_NDK_VERSION}"
 ANDROID_AR="${ANDROID_NDK_PATH}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android-ar"
 
 echo "Building Android aarch64..." >&2
+# NOTE(RUST-ANDROID-ENV-VARS-AARCH64)
 AARCH64_COMPILER_AND_LINKER="${ANDROID_NDK_PATH}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android${ANDROID_COMPILE_SDK_VERSION}-clang"
 # SEE: https://github.com/rust-embedded/cross/blob/2f1ef07fdaf92ba31e6d6ce0ab4c5dca63ca0aa7/docker/Dockerfile.aarch64-linux-android#L26
 export CC_aarch64_linux_android="${AARCH64_COMPILER_AND_LINKER}"
@@ -195,6 +196,7 @@ export CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER="${AARCH64_COMPILER_AND_LINKER}
 boa-cargo-build --target aarch64-linux-android --release
 
 echo "Building Android x86_64..." >&2
+# NOTE(RUST-ANDROID-ENV-VARS-X8664)
 X86_64_COMPILER_AND_LINKER="${ANDROID_NDK_PATH}/toolchains/llvm/prebuilt/linux-x86_64/bin/x86_64-linux-android${ANDROID_COMPILE_SDK_VERSION}-clang"
 export CC_x86_64_linux_android="${X86_64_COMPILER_AND_LINKER}"
 export CXX_x86_64_linux_android="${X86_64_COMPILER_AND_LINKER}"

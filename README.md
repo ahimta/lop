@@ -84,7 +84,8 @@ flutter upgrade
 # NOTE: `precache` downloads all platform-specific files eagerly.
 flutter precache
 mkdir --parents ~/.local/share/bash-completion/completions
-# FIXME: Command fails due to a mysterious permission error.
+# NOTE: Command fails due to a mysterious permission error. And only seems to
+# work when run from home directory.
 flutter bash-completion > ~/.local/share/bash-completion/completions/flutter
 
 flutter config \
