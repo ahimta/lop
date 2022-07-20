@@ -117,6 +117,17 @@ find ./scripts -type f -print0 | xargs --null shellcheck \
 
 cd "${ROOT_DIR}/boa"
 
+function boa-cargo() {
+  cargo --quiet "$@"
+}
+function boa-cargo-build() {
+  # SEE: https://doc.rust-lang.org/cargo/commands/cargo-build.html#feature-selection
+  boa-cargo build --jobs "$(nproc)" --no-default-features "$@"
+}
+function boa-cargo-test() {
+  boa-cargo test --jobs "$(nproc)" --no-default-features "$@"
+}
+
 echo >&2
 echo "Cleaning for Rust using 'cargo clean' skipped as it slows build" >&2
 echo "significantly and incremental Rust builds are so reliable and we use" >&2
@@ -125,18 +136,17 @@ echo "fail build." >&2
 echo >&2
 
 echo "Checking formatting..." >&2
-cargo fmt --quiet --all -- --check
+boa-cargo fmt --all -- --check
 
 export RUST_BACKTRACE=1
 
 echo "Building & testing debug..." >&2
-# SEE: https://doc.rust-lang.org/cargo/commands/cargo-build.html#feature-selection
-cargo build --quiet --jobs "$(nproc)" --no-default-features
-cargo test --quiet --jobs "$(nproc)" --no-default-features
+boa-cargo-build
+boa-cargo-test
 
 echo "Building & testing release..." >&2
-cargo build --quiet --jobs "$(nproc)" --no-default-features --release
-cargo test --quiet --jobs "$(nproc)" --no-default-features --release
+boa-cargo-build --release
+boa-cargo-test --release
 
 unset RUST_BACKTRACE
 
@@ -152,7 +162,7 @@ echo "Linting..." >&2
 # NOTE: We disable `double-must-use` because it requires global knowledge and
 # ensuring that only a single must-use is used. Which is just an invitation for
 # errors.
-cargo clippy --quiet -- \
+boa-cargo clippy --quiet -- \
   -D warnings \
   \
   -W clippy::all \
@@ -170,7 +180,7 @@ cargo clippy --quiet -- \
   -A clippy::double-must-use \
 
 echo "Building Linux x86_64..." >&2
-cargo build --quiet --target x86_64-unknown-linux-gnu --release
+boa-cargo-build --target x86_64-unknown-linux-gnu --release
 
 ANDROID_NDK_PATH="${ANDROID_SDK_ROOT}/ndk/${ANDROID_NDK_VERSION}"
 ANDROID_AR="${ANDROID_NDK_PATH}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android-ar"
@@ -182,7 +192,7 @@ export CC_aarch64_linux_android="${AARCH64_COMPILER_AND_LINKER}"
 export CXX_aarch64_linux_android="${AARCH64_COMPILER_AND_LINKER}"
 export AR_aarch64_linux_android="${ANDROID_AR}"
 export CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER="${AARCH64_COMPILER_AND_LINKER}"
-cargo build --quiet --target aarch64-linux-android --release
+boa-cargo-build --target aarch64-linux-android --release
 
 echo "Building Android x86_64..." >&2
 X86_64_COMPILER_AND_LINKER="${ANDROID_NDK_PATH}/toolchains/llvm/prebuilt/linux-x86_64/bin/x86_64-linux-android${ANDROID_COMPILE_SDK_VERSION}-clang"
@@ -190,7 +200,7 @@ export CC_x86_64_linux_android="${X86_64_COMPILER_AND_LINKER}"
 export CXX_x86_64_linux_android="${X86_64_COMPILER_AND_LINKER}"
 export AR_x86_64_linux_android="${ANDROID_AR}"
 export CARGO_TARGET_X86_64_LINUX_ANDROID_LINKER="${X86_64_COMPILER_AND_LINKER}"
-cargo build --quiet --target x86_64-linux-android --release
+boa-cargo-build --target x86_64-linux-android --release
 
 X86_64_DIR="${ROOT_DIR}/clod/android/app/src/main/jniLibs/x86_64"
 mkdir --parents "${X86_64_DIR}"
