@@ -146,7 +146,9 @@ RUN ${SET_SHELL_SAFE_OPTIONS}; \
   # for pre-commit checks and maybe even useful for other usecases.
   if [ "${PRE_COMMIT_CHECK}" = "1" ]; then \
   git restore .; \
+  git submodule --quiet foreach --recursive 'git restore .'; \
   git clean -dx --force --quiet; \
+  git submodule --quiet foreach --recursive 'git clean -dx --force --quiet'; \
   fi; \
   # NOTE: This is mostly just to kick of installing all Rust tooling and project
   # dependencies once and avoiding repeating this for each run/container.

@@ -86,8 +86,9 @@ cd "${SLIPPAGE_LOP_LAUNCHPAD_DIR}"
 
 # NOTE(GIT-RESET-FOR-PRE-COMMIT-CHECK)
 git restore .
+git submodule --quiet foreach --recursive 'git restore .'
 git clean -dx --force --quiet
-# FIXME: Check submodules not dirty.
+git submodule --quiet foreach --recursive 'git clean -dx --force --quiet'
 # FIXME: Check indeed no pending changes other than staging-area.
 
 CONTAINER_COMMAND=podman \
