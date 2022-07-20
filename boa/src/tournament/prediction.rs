@@ -26,7 +26,7 @@ pub(super) fn predict_tournament_eliminated_teams(
     .iter()
     .map(|team| -> Arc<Team> {
       match team.elimination_status {
-        None => {}
+        None => {},
         Some(_) => panic!("Team elimination-status already predicted"),
       };
 

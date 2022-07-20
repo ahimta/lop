@@ -80,7 +80,7 @@ impl Tournament {
     );
 
     match &remaining_points {
-      None => {}
+      None => {},
       Some(remaining_points_value) => {
         assert!(
           remaining_points_value.len() >= REMAINING_POINTS_COUNT_MIN
@@ -142,7 +142,7 @@ impl Tournament {
           remaining_points_value,
           teams,
         );
-      }
+      },
     }
 
     Self {
@@ -287,7 +287,7 @@ impl Team {
     );
 
     match &elimination_status {
-      None | Some(EliminationStatus::Not) => {}
+      None | Some(EliminationStatus::Not) => {},
       Some(
         EliminationStatus::Trivially(eliminating_teams)
         | EliminationStatus::NonTrivially(eliminating_teams),
@@ -306,7 +306,7 @@ impl Team {
             eliminating_team,
           );
         }
-      }
+      },
     }
 
     Self {
@@ -373,16 +373,16 @@ impl Team {
               ))
             })
             .collect()
-        }
+        },
       };
     let sanitized_elimination_status = match &elimination_status {
       EliminationStatus::Not => EliminationStatus::Not,
       EliminationStatus::Trivially(_) => {
         EliminationStatus::Trivially(sanitized_eliminating_teams)
-      }
+      },
       EliminationStatus::NonTrivially(_) => {
         EliminationStatus::NonTrivially(sanitized_eliminating_teams)
-      }
+      },
     };
 
     Self::new(

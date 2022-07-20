@@ -92,7 +92,7 @@ pub(super) trait TournamentProvider {
                 Ordering::Greater | Ordering::Less => vec![],
                 Ordering::Equal => {
                   vec![(first_team_name, 1), (second_team_name, 1)]
-                }
+                },
               }
             },
           )

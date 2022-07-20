@@ -175,7 +175,7 @@ impl ops::Add for Flow {
       // accidentally moving flow to an infinity blackhole.
       (Self::Infinite, _) | (_, Self::Infinite) => {
         panic!("Can't add to infinity.")
-      }
+      },
     }
   }
 }
@@ -190,7 +190,7 @@ impl ops::Sub for Flow {
       // accidentally moving flow to an infinity blackhole.
       (Self::Infinite, Self::NegativeExcess(_)) => {
         panic!("Can't subtract negative-excess from infinity.")
-      }
+      },
       (
         flow1 @ (Self::Regular(_) | Self::NegativeExcess(_) | Self::Infinite),
         flow2 @ (Self::Regular(_) | Self::NegativeExcess(_) | Self::Infinite),
