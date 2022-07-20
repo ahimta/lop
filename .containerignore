@@ -1,8 +1,10 @@
-# NOTE: Generated using `git status --ignored --porcelain=v1`.
 # NOTE: This files is important for fast copies to image as otherwise most time
 # would be wasted on generated files.
+
 *.env
 !public.env
+
+# NOTE: Generated using `git status --ignored --porcelain=v1`.
 boa/target/
 clod/.dart_tool/
 clod/.idea/
@@ -17,7 +19,10 @@ clod/android/gradlew.bat
 clod/android/local.properties
 clod/build/
 clod/clod.iml
-clod/ios/Flutter/Generated.xcconfig
+clod/flutter_*.log
 clod/ios/Flutter/flutter_export_environment.sh
+clod/ios/Flutter/Generated.xcconfig
 clod/ios/Runner/GeneratedPluginRegistrant.h
 clod/ios/Runner/GeneratedPluginRegistrant.m
+clod/linux/flutter/ephemeral/
+clod/macos/Flutter/ephemeral/
