@@ -1,5 +1,6 @@
 # syntax=docker/dockerfile:1
 # SEE: https://github.com/rust-lang/rust/blob/master/RELEASES.md
+# FIXME: Use consistent `LOCAL_ARG_` prefix for non-exported args.
 ARG RUST_VERSION="1.62.0"
 # SEE: https://hub.docker.com/_/rust
 FROM "docker.io/library/rust:${RUST_VERSION}-slim-bullseye"
@@ -137,6 +138,38 @@ RUN ${SET_SHELL_SAFE_OPTIONS}; \
   # checked manually whenever this file changes.
   flutter doctor;
 
+# NOTE: This is mostly for optimization and doing as much as possible once.
+COPY \
+  --chown=lop:lop \
+  \
+  ./boa/Cargo.lock \
+  ./boa/Cargo.toml \
+  ./boa/rust-toolchain.toml \
+  \
+  /lop/boa/
+WORKDIR /lop/boa
+RUN ${SET_SHELL_SAFE_OPTIONS}; \
+  mkdir src; \
+  # NOTE: We have to include all public APIs here as otherwise Rust build fails
+  # in `continuous-integration.sh` with a weird error indicating that these APIs
+  # don't exist in `boa`.
+  echo 'pub fn test() {' >> src/lib.rs; \
+  echo 'println!("Hello, world!");' >> src/lib.rs; \
+  echo '}' >> src/lib.rs; \
+  echo 'pub fn get_tournaments() {' >> src/lib.rs; \
+  echo 'println!("Hello, world!");' >> src/lib.rs; \
+  echo '}' >> src/lib.rs; \
+  # FIXME: Build all other architectures too and everything else (e.g., flutter)
+  # for faster builds.
+  cargo --quiet build --no-default-features --jobs "$(nproc)"; \
+  cargo --quiet test --jobs "$(nproc)" --no-default-features; \
+  cargo --quiet build --no-default-features --jobs "$(nproc)" --release; \
+  cargo --quiet test --jobs "$(nproc)" --no-default-features --release; \
+  cargo --quiet build --no-default-features --jobs "$(nproc)" --target x86_64-unknown-linux-gnu --release; \
+  rm --force --recursive src; \
+  mkdir /tmp/boa-cached-build-files; \
+  mv ./target /tmp/boa-cached-build-files/target;
+
 COPY --chown=lop:lop . /lop
 WORKDIR /lop
 ARG PRE_COMMIT_CHECK
@@ -150,9 +183,7 @@ RUN ${SET_SHELL_SAFE_OPTIONS}; \
   git clean -dx --force --quiet; \
   git submodule --quiet foreach --recursive 'git clean -dx --force --quiet'; \
   fi; \
-  # NOTE: This is mostly just to kick of installing all Rust tooling and project
-  # dependencies once and avoiding repeating this for each run/container.
-  (cd boa && cargo --quiet check --no-default-features --jobs "$(nproc)");
+  mv /tmp/boa-cached-build-files/target boa/target;
 
 # NOTE: Only `ANDROID_SDK_ROOT` is an official Android environment-variable.
 # SEE: https://developer.android.com/studio/command-line/variables
