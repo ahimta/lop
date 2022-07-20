@@ -1,9 +1,8 @@
 # syntax=docker/dockerfile:1
 # SEE: https://github.com/rust-lang/rust/blob/master/RELEASES.md
-# FIXME: Use consistent `LOCAL_ARG_` prefix for non-exported args.
-ARG RUST_VERSION="1.62.0"
+ARG LOCAL_RUST_VERSION="1.62.0"
 # SEE: https://hub.docker.com/_/rust
-FROM "docker.io/library/rust:${RUST_VERSION}-slim-bullseye"
+FROM "docker.io/library/rust:${LOCAL_RUST_VERSION}-slim-bullseye"
 LABEL author "Abdullah Alansari <ahimta@gmail.com>"
 
 # SEE: https://docs.docker.com/develop/develop-images/dockerfile_best-practices
@@ -33,7 +32,7 @@ LABEL author "Abdullah Alansari <ahimta@gmail.com>"
 # 4. `-u` instad of `-o nounset`.
 # SEE: https://devdocs.io/bash/the-set-builtin#set
 # NOTE: We add a space after the first `set` as otherwise it'd fail.
-ARG SET_SHELL_SAFE_OPTIONS="set -e ; set -Cfu"
+ARG LOCAL_SET_SHELL_SAFE_OPTIONS="set -e ; set -Cfu"
 
 # NOTE(SIMPLE-LOCALE-FOR-CONSISTENT-BEHAVIOR)
 # SEE: https://unix.stackexchange.com/a/87763.
@@ -44,7 +43,7 @@ ENV LC_ALL C
 # NOTE: This is important to avoid build hanging waiting for user-input.
 ENV DEBIAN_FRONTEND noninteractive
 
-RUN ${SET_SHELL_SAFE_OPTIONS}; \
+RUN ${LOCAL_SET_SHELL_SAFE_OPTIONS}; \
   echo Installing dependencies...; \
   apt-get update -qq --yes; \
   apt-get upgrade -qq --yes >/dev/null; \
@@ -73,62 +72,62 @@ RUN ${SET_SHELL_SAFE_OPTIONS}; \
 # NOTE: We drop all privileges as we no longer need them.
 # NOTE: `--no-log-init` is to avoid a possibly rare case of disk exhaustion.
 # SEE: https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#user
-RUN ${SET_SHELL_SAFE_OPTIONS}; \
+RUN ${LOCAL_SET_SHELL_SAFE_OPTIONS}; \
   groupadd --system lop; \
   useradd --create-home --no-log-init --system --gid lop lop;
 USER lop:lop
 WORKDIR /home/lop
-ARG HOME=/home/lop
+ARG LOCAL_HOME=/home/lop
 
 # NOTE: This is the latest version that seems to work with Rust.
-ARG ANDROID_BUILD_TOOLS_VERSION=29.0.2
-ARG ANDROID_SDK_ROOT=$HOME/Android/Sdk
+ARG LOCAL_ANDROID_BUILD_TOOLS_VERSION=29.0.2
+ARG LOCAL_ANDROID_SDK_ROOT=$LOCAL_HOME/Android/Sdk
 # SEE: https://developer.android.com/studio/index.html#downloads
-ARG ANDROID_SDK_CMD_LINE_TOOLS_VERSION=8512546
-ARG ANDROID_SDK_CMD_LINE_TOOLS_VERSION_CHECKSUM_SHA384=0d3b02daf15259980aed5845972fe6d7fcead35550c6dae4a9eb17adcf3ef97be3dd6825bd467c29c9dc34071e5d3c2e
+ARG LOCAL_ANDROID_SDK_CMD_LINE_TOOLS_VERSION=8512546
+ARG LOCAL_ANDROID_SDK_CMD_LINE_TOOLS_VERSION_CHECKSUM_SHA384=0d3b02daf15259980aed5845972fe6d7fcead35550c6dae4a9eb17adcf3ef97be3dd6825bd467c29c9dc34071e5d3c2e
 ARG ANDROID_COMPILE_SDK_VERSION
 ARG ANDROID_NDK_VERSION
 
-RUN ${SET_SHELL_SAFE_OPTIONS}; \
+RUN ${LOCAL_SET_SHELL_SAFE_OPTIONS}; \
   echo Installing Android SDK/NDK...; \
   wget -qq --output-document=android-sdk.zip \
-  http://dl.google.com/android/repository/commandlinetools-linux-${ANDROID_SDK_CMD_LINE_TOOLS_VERSION}_latest.zip; \
-  echo "${ANDROID_SDK_CMD_LINE_TOOLS_VERSION_CHECKSUM_SHA384} android-sdk.zip" | sha384sum --check --quiet --strict -; \
+  http://dl.google.com/android/repository/commandlinetools-linux-${LOCAL_ANDROID_SDK_CMD_LINE_TOOLS_VERSION}_latest.zip; \
+  echo "${LOCAL_ANDROID_SDK_CMD_LINE_TOOLS_VERSION_CHECKSUM_SHA384} android-sdk.zip" | sha384sum --check --quiet --strict -; \
   unzip -qq android-sdk.zip -d android-sdk; \
   rm android-sdk.zip; \
   # NOTE: This is the expected path as implied by this error message:
   # Error: Could not determine SDK root.
   # Error: Either specify it explicitly with --sdk_root= or move this package into its expected location: <sdk>/cmdline-tools/latest/
-  mkdir --parents ${ANDROID_SDK_ROOT}/cmdline-tools; \
-  mv android-sdk/cmdline-tools ${ANDROID_SDK_ROOT}/cmdline-tools/latest; \
+  mkdir --parents ${LOCAL_ANDROID_SDK_ROOT}/cmdline-tools; \
+  mv android-sdk/cmdline-tools ${LOCAL_ANDROID_SDK_ROOT}/cmdline-tools/latest; \
   rmdir android-sdk;
-ENV PATH "${PATH}:${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin"
+ENV PATH "${PATH}:${LOCAL_ANDROID_SDK_ROOT}/cmdline-tools/latest/bin"
 # SEE: https://developer.android.com/studio/command-line/sdkmanager
-RUN ${SET_SHELL_SAFE_OPTIONS}; \
+RUN ${LOCAL_SET_SHELL_SAFE_OPTIONS}; \
   echo y | sdkmanager "platforms;android-${ANDROID_COMPILE_SDK_VERSION}" >/dev/null; \
   echo y | sdkmanager "platform-tools" >/dev/null; \
-  echo y | sdkmanager "build-tools;${ANDROID_BUILD_TOOLS_VERSION}" >/dev/null; \
+  echo y | sdkmanager "build-tools;${LOCAL_ANDROID_BUILD_TOOLS_VERSION}" >/dev/null; \
   echo y | sdkmanager "ndk;${ANDROID_NDK_VERSION}" >/dev/null; \
   echo y | sdkmanager --licenses >/dev/null;
 
 # SEE: https://docs.flutter.dev/release/breaking-changes
 # SEE: https://docs.flutter.dev/development/tools/sdk/release-notes
-ARG FLUTTER_SDK_VERSION=3.0.4
-ARG FLUTTER_SDK_CHECKSUM_SHA384=a9d76af7c351225355409b7d6b6fac052f0bea67718a340bd48451508c6c4b8b5b7414b71dc8fbf18437bf836d91ddfe
-ARG FLUTTER_SDK_ROOT=$HOME/flutter
+ARG LOCAL_FLUTTER_SDK_VERSION=3.0.4
+ARG LOCAL_FLUTTER_SDK_CHECKSUM_SHA384=a9d76af7c351225355409b7d6b6fac052f0bea67718a340bd48451508c6c4b8b5b7414b71dc8fbf18437bf836d91ddfe
+ARG LOCAL_FLUTTER_SDK_ROOT=$LOCAL_HOME/flutter
 
 # SEE: https://flutter.dev/docs/get-started/install/linux
-RUN ${SET_SHELL_SAFE_OPTIONS}; \
+RUN ${LOCAL_SET_SHELL_SAFE_OPTIONS}; \
   echo Installing Flutter SDK...; \
   wget -qq --output-document=flutter-sdk.tar.xz \
-  https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_${FLUTTER_SDK_VERSION}-stable.tar.xz; \
-  echo "${FLUTTER_SDK_CHECKSUM_SHA384} flutter-sdk.tar.xz" | sha384sum --check --quiet --strict -; \
+  https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_${LOCAL_FLUTTER_SDK_VERSION}-stable.tar.xz; \
+  echo "${LOCAL_FLUTTER_SDK_CHECKSUM_SHA384} flutter-sdk.tar.xz" | sha384sum --check --quiet --strict -; \
   tar xf flutter-sdk.tar.xz; \
   rm flutter-sdk.tar.xz; \
   # NOTE: Just check that the file was extracted in the right location.
-  ls ${FLUTTER_SDK_ROOT} >/dev/null;
-ENV PATH "${PATH}:${FLUTTER_SDK_ROOT}/bin"
-RUN ${SET_SHELL_SAFE_OPTIONS}; \
+  ls ${LOCAL_FLUTTER_SDK_ROOT} >/dev/null;
+ENV PATH "${PATH}:${LOCAL_FLUTTER_SDK_ROOT}/bin"
+RUN ${LOCAL_SET_SHELL_SAFE_OPTIONS}; \
   flutter config --no-analytics >/dev/null; \
   dart --disable-analytics >/dev/null; \
   flutter precache >/dev/null; \
@@ -148,7 +147,7 @@ COPY \
   \
   /lop/boa/
 WORKDIR /lop/boa
-RUN ${SET_SHELL_SAFE_OPTIONS}; \
+RUN ${LOCAL_SET_SHELL_SAFE_OPTIONS}; \
   mkdir src; \
   # NOTE: We have to include all public APIs here as otherwise Rust build fails
   # in `continuous-integration.sh` with a weird error indicating that these APIs
@@ -173,7 +172,7 @@ RUN ${SET_SHELL_SAFE_OPTIONS}; \
 COPY --chown=lop:lop . /lop
 WORKDIR /lop
 ARG PRE_COMMIT_CHECK
-RUN ${SET_SHELL_SAFE_OPTIONS}; \
+RUN ${LOCAL_SET_SHELL_SAFE_OPTIONS}; \
   # NOTE(GIT-RESET-FOR-PRE-COMMIT-CHECK): We don't do `git restore --staged .`
   # here because it discards changes about to be committed. This is important
   # for pre-commit checks and maybe even useful for other usecases.
@@ -187,7 +186,7 @@ RUN ${SET_SHELL_SAFE_OPTIONS}; \
 
 # NOTE: Only `ANDROID_SDK_ROOT` is an official Android environment-variable.
 # SEE: https://developer.android.com/studio/command-line/variables
-ENV ANDROID_SDK_ROOT ${ANDROID_SDK_ROOT}
+ENV ANDROID_SDK_ROOT ${LOCAL_ANDROID_SDK_ROOT}
 ENV ANDROID_NDK_VERSION ${ANDROID_NDK_VERSION}
 ENV ANDROID_COMPILE_SDK_VERSION ${ANDROID_COMPILE_SDK_VERSION}
 # NOTE: `CONTAINER_COMMAND`, `PRE_COMMIT_CHECK`, and `RUN_IN_CONTAINER` values
