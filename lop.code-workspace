@@ -21,13 +21,19 @@
       "mikestead.dotenv",
       "ms-azuretools.vscode-docker",
       "naco-siren.gradle-language",
+      // NOTE: Official Rust extension.
+      // SEE: https://code.visualstudio.com/docs/languages/rust
       "rust-lang.rust-analyzer",
       "tamasfe.even-better-toml",
+      // NOTE: Debugger recommended by VS Code official documentation for Rust.
+      // SEE: https://code.visualstudio.com/docs/languages/rust#_install-debugging-support
       "vadimcn.vscode-lldb",
       "vscode-icons-team.vscode-icons"
     ]
   },
   "settings": {
+    // NOTE: `debug.allowBreakpointsEverywhere` recommended by VS Code for Rust.
+    // SEE: https://code.visualstudio.com/docs/languages/rust#_using-rust-analyzer-debug
     "debug.allowBreakpointsEverywhere": true,
     "editor.formatOnPaste": true,
     "editor.formatOnSave": true,
@@ -46,6 +52,7 @@
           // NOTE: We use `build` here instead of `test` because it's much
           // faster and runs instantly (thanks to `isDefault`)
           // with just `Ctrl+Shift+B`.
+          // Use `Ctrl+Shift+P` and type `Task: Run Task` for other tasks.
           "kind": "build",
           "isDefault": true
         },
