@@ -1,5 +1,6 @@
 # syntax=docker/dockerfile:1
 # SEE: https://github.com/rust-lang/rust/blob/master/RELEASES.md
+# SEE: https://github.com/rust-lang/rust/releases
 ARG LOCAL_RUST_VERSION="1.62.0"
 # SEE: https://hub.docker.com/_/rust
 FROM "docker.io/library/rust:${LOCAL_RUST_VERSION}-slim-bullseye"
@@ -112,8 +113,8 @@ RUN ${LOCAL_SET_SHELL_SAFE_OPTIONS}; \
 
 # SEE: https://docs.flutter.dev/release/breaking-changes
 # SEE: https://docs.flutter.dev/development/tools/sdk/release-notes
-ARG LOCAL_FLUTTER_SDK_VERSION=3.0.4
-ARG LOCAL_FLUTTER_SDK_CHECKSUM_SHA384=a9d76af7c351225355409b7d6b6fac052f0bea67718a340bd48451508c6c4b8b5b7414b71dc8fbf18437bf836d91ddfe
+ARG LOCAL_FLUTTER_SDK_VERSION=3.0.5
+ARG LOCAL_FLUTTER_SDK_CHECKSUM_SHA384=853eb0a8508c20b8aee5692bf394d54ef972147783e217f487e779b2cf2d957540bca22132a2b5ddb564b471dd9a2935
 ARG LOCAL_FLUTTER_SDK_ROOT=$LOCAL_HOME/flutter
 
 # SEE: https://flutter.dev/docs/get-started/install/linux
