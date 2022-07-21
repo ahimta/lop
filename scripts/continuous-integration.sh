@@ -122,6 +122,7 @@ function boa-cargo() {
 }
 function boa-cargo-build() {
   # SEE: https://doc.rust-lang.org/cargo/commands/cargo-build.html#feature-selection
+  # NOTE(CARGO-BUILD)
   boa-cargo build --jobs "$(nproc)" --no-default-features "$@"
 }
 function boa-cargo-test() {

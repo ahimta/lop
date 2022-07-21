@@ -61,53 +61,37 @@
           {
             "owner": "rust",
             "base": "$rustc",
-            "fileLocation": ["autoDetect", "${workspaceFolder:Core}"]
+            "fileLocation": [
+              "autoDetect",
+              "${workspaceFolder:Core}"
+            ]
           }
           // FIXME: Add support for flutter and other errors in root.
         ],
         "command": "./scripts/continuous-integration.sh"
       },
-      // NOTE: Rest of tasks are automatically generated and some debug/run
-      // configuration of our own may depend on them. And once this is resolved,
-      // we should remove them.
       {
-        "type": "cargo",
-        "subcommand": "check",
+        "label": "Build Boa",
+        "type": "shell",
+        "group": {
+          "kind": "build",
+          "isDefault": false
+        },
         "options": {
           "cwd": "${workspaceFolder:Core}"
         },
-        "problemMatcher": ["$rustc"],
-        "group": "build",
-        "label": "Rust: cargo check - boa"
-      },
-      {
-        "type": "cargo",
-        "subcommand": "build",
-        "options": {
-          "cwd": "${workspaceFolder:Core}"
-        },
-        "problemMatcher": ["$rustc"],
-        "group": "build",
-        "label": "Rust: cargo build - boa"
-      },
-      {
-        "type": "cargo",
-        "subcommand": "test",
-        "options": {
-          "cwd": "${workspaceFolder:Core}"
-        },
-        "problemMatcher": ["$rustc"],
-        "group": "test",
-        "label": "Rust: cargo test - boa"
-      },
-      {
-        "type": "cargo",
-        "subcommand": "run",
-        "options": {
-          "cwd": "${workspaceFolder:Core}"
-        },
-        "problemMatcher": ["$rustc"],
-        "label": "Rust: cargo run - boa"
+        "problemMatcher": [
+          {
+            "owner": "rust",
+            "base": "$rustc",
+            "fileLocation": [
+              "autoDetect",
+              "${workspaceFolder:Core}"
+            ]
+          }
+        ],
+        // NOTE(CARGO-BUILD)
+        "command": "cargo --quiet build --jobs \"$(nproc)\" --no-default-features"
       }
     ]
   },
@@ -121,7 +105,7 @@
         "name": "Debug Rust with LLDB",
         "type": "lldb",
         "request": "launch",
-        "preLaunchTask": "Rust: cargo build - boa",
+        "preLaunchTask": "Build Boa",
         "program": "${workspaceFolder:Core}/target/debug/boa",
         "cwd": "${workspaceFolder:Core}"
       },
