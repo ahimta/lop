@@ -72,8 +72,39 @@
               "autoDetect",
               "${workspaceFolder:Core}"
             ]
-          }
-          // FIXME: Add support for flutter and other errors in root.
+          },
+          {
+            "owner": "rust",
+            "base": "$rustc",
+            "fileLocation": [
+              "autoDetect",
+              "${workspaceFolder:Root}"
+            ]
+          },
+          // NOTE: There doesn't seem to exist a proper problem matcher that
+          // actually works for Flutter/Dart. And this doesn't matter much as
+          // VS Code has good support without this.
+          // We can easily create a custom matcher if we need to.
+          // SEE: https://code.visualstudio.com/docs/editor/tasks#_defining-a-problem-matcher
+          // The matchers below we found from the Dart VS Code plugin but they
+          // don't seem to work. We didn't find anything in the Flutter plugin.
+          // SEE: https://github.com/Dart-Code/Dart-Code/blob/467ea3b5d35363622c384970c3628d0beb3c9580/package.json#L2659
+          {
+            "owner": "dart",
+            "base": "$dart-build_runner",
+            "fileLocation": [
+              "autoDetect",
+              "${workspaceFolder:Frontend}"
+            ]
+          },
+          {
+            "owner": "dart",
+            "base": "$dart-build_runner",
+            "fileLocation": [
+              "autoDetect",
+              "${workspaceFolder:Root}"
+            ]
+          },
         ],
         "command": "./scripts/continuous-integration.sh"
       },
