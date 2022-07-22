@@ -59,11 +59,13 @@
         "options": {
           "env": {
             "CONTAINER_COMMAND": "podman",
+            "IS_IN_CONTAINER": "0",
             "PRE_COMMIT_CHECK": "0",
             "RUN_IN_CONTAINER": "0"
           },
           "cwd": "${workspaceFolder}"
         },
+        "command": "./scripts/continuous-integration.sh",
         "problemMatcher": [
           {
             "owner": "rust",
@@ -105,8 +107,7 @@
               "${workspaceFolder:Root}"
             ]
           },
-        ],
-        "command": "./scripts/continuous-integration.sh"
+        ]
       },
       {
         "label": "Build Boa",

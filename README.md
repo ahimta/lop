@@ -115,6 +115,7 @@ flutter doctor
 ```bash
 # NOTE: This is the core and includes all checks, builds, tests, etc...
 CONTAINER_COMMAND=podman \
+  IS_IN_CONTAINER=0 \
   PRE_COMMIT_CHECK=0 \
   RUN_IN_CONTAINER=0 \
   ./scripts/continuous-integration.sh
@@ -136,9 +137,9 @@ rustup completions bash cargo > ~/.local/share/bash-completion/completions/cargo
 ```bash
 CONTAINER_COMMAND=podman \
   PRE_COMMIT_CHECK=0 \
+  IS_IN_CONTAINER=0 \
   RUN_IN_CONTAINER=1 \
-  ./scripts/continuous-integration.sh; \
-  ./scripts/notify-user.sh
+  ./scripts/continuous-integration.sh
 ```
 
 ## Using Nix (not functional and only as a starting point)

@@ -4,6 +4,35 @@
 set -o errexit
 source ./scripts/_base.sh
 
+# FIXME: Replace with notify-user path and use pushd/popd for other references.
+ROOT_DIR="$(realpath "$(pwd)")"
+
+IS_IN_CONTAINER="${IS_IN_CONTAINER:?"IS_IN_CONTAINER env. var. missing!"}"
+if [[ "${IS_IN_CONTAINER}" != "0" && "${IS_IN_CONTAINER}" != "1" ]]; then
+  echo "Invalid 'IS_IN_CONTAINER' env. var. (${IS_IN_CONTAINER})" >&2
+  echo "Expected ('0' or '1')" >&2
+  exit 1
+fi
+
+# NOTE: To avoid calling exit trap twice since container calls back to script.
+if [[ "${IS_IN_CONTAINER}" = "0" ]]; then
+  function on-exit-trap {
+    local EXIT_CODE="$?"
+
+    # FIXME: Notification can fail if in incorrect path.
+    cd "${ROOT_DIR}"
+    ./scripts/notify-user.sh
+
+    if [[ "${EXIT_CODE}" = "0" ]]; then
+      echo "================CONTINUOUS-INTEGRATION SUCCEEDED================" >&2
+    else
+      echo "================CONTINUOUS-INTEGRATION FAILED================" >&2
+    fi
+  }
+
+  trap on-exit-trap EXIT
+fi
+
 if [[ "$#" != "0" ]]; then
   echo "Invalid no. of arguments: this script only takes env. vars." >&2
   exit 1
@@ -52,6 +81,11 @@ if [[ "${RUN_IN_CONTAINER}" != "0" && "${RUN_IN_CONTAINER}" != "1" ]]; then
   echo "Expected ('0' or '1')" >&2
   exit 1
 fi
+if [[ "${IS_IN_CONTAINER}" = "1" && "${RUN_IN_CONTAINER}" = "1" ]]; then
+  echo "Invalid 'IS_IN_CONTAINER' (${IS_IN_CONTAINER}) and" >&2
+  echo "'RUN_IN_CONTAINER' (${RUN_IN_CONTAINER}) env. var. combination" >&2
+  exit 1
+fi
 if [[ "${PRE_COMMIT_CHECK}" = "1" && "${RUN_IN_CONTAINER}" != "1" ]]; then
   echo "Invalid 'PRE_COMMIT_CHECK' (${PRE_COMMIT_CHECK}) and" >&2
   echo "'RUN_IN_CONTAINER' (${RUN_IN_CONTAINER}) env. var. combination" >&2
@@ -64,6 +98,24 @@ ANDROID_COMPILE_SDK_VERSION="${ANDROID_COMPILE_SDK_VERSION:?"ANDROID_COMPILE_SDK
 ANDROID_NDK_VERSION="${ANDROID_NDK_VERSION:?"ANDROID_NDK_VERSION env. var. missing!"}"
 
 if [[ "${RUN_IN_CONTAINER}" = "1" ]]; then
+  # NOTE: We use exclusive execution instead of building different images for 2
+  # main reasons:
+  # 1. The main way to build different/independent images is by using randomized
+  # tags but this may produce too many images that podman/docker can't cleanup
+  # automatically and cause the storage to fill unnecessarily quickly.
+  # 2. There would still be an inherent race-condition and unexpected behavior
+  # where project files only copied/used late in the image build process.
+
+  # NOTE(EXCLUSIVE-SCRIPT-EXECUTION)
+  LOCK_FILE="/tmp/lop-continuous-integration-container.lock"
+  LOCK_FD="4243"
+  # NOTE(LOCK-FD-HARDCODED-SINCE-IT-ONLY-WORKS-THIS-WAY)
+  exec 4243>|"${LOCK_FILE}"
+  if ! flock --exclusive --nonblock "${LOCK_FD}"; then
+    echo "Continuous-integration (with container) script already running somewhere else!" >&2
+    exit 1
+  fi
+
   # NOTE: This avoids the common occurrence of changing `Containerfile` and
   # forgetting to call build and Docker/Podman caching should only do
   # anything for build if `Containerfile` changes.
@@ -74,30 +126,20 @@ if [[ "${RUN_IN_CONTAINER}" = "1" ]]; then
     --build-arg ANDROID_NDK_VERSION="${ANDROID_NDK_VERSION}" \
     --file ./Containerfile \
     .
+  "${CONTAINER_COMMAND}" run --rm lop
 
-  # NOTE: The `exec` trick avoids the need for an additional wrapper script when
-  # using container.
-  exec "${CONTAINER_COMMAND}" run --rm lop
+  exit 0
 fi
 
-# NOTE: Exit-trap and its related logic after container-check because it doesn't
-# work with an `exec`.
-ROOT_DIR="$(realpath "$(pwd)")"
-
-function on-exit-trap {
-  local EXIT_CODE="$?"
-
-  cd "${ROOT_DIR}"
-  ./scripts/notify-user.sh
-
-  if [[ "${EXIT_CODE}" = "0" ]]; then
-    echo "================CONTINUOUS-INTEGRATION SUCCEEDED================" >&2
-  else
-    echo "================CONTINUOUS-INTEGRATION FAILED================" >&2
-  fi
-}
-
-trap on-exit-trap EXIT
+# NOTE(EXCLUSIVE-SCRIPT-EXECUTION)
+LOCK_FILE="/tmp/lop-continuous-integration.lock"
+LOCK_FD="4445"
+# NOTE(LOCK-FD-HARDCODED-SINCE-IT-ONLY-WORKS-THIS-WAY)
+exec 4445>|"${LOCK_FILE}"
+if ! flock --exclusive --nonblock "${LOCK_FD}"; then
+  echo "Continuous-integration script already running somewhere else!" >&2
+  exit 1
+fi
 
 echo "Linting scripts..."
 # NOTE: We ignore `SC2312` because it protects against discarding the exit

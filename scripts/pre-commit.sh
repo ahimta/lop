@@ -18,9 +18,6 @@ export LANG=C
 export LANGUAGE=C
 export LC_ALL=C
 
-SLIPPAGE_BOTH_PROJECT_AND_DIR_NAME="lop"
-SLIPPAGE_LOP_LAUNCHPAD_DIR="/tmp/${SLIPPAGE_BOTH_PROJECT_AND_DIR_NAME}"
-
 function slippage-on-exit() {
   # FIXME: `$?` can incorrectly be zero/success. For example, when the script is
   # just run then followed by `Ctrl+C`.
@@ -45,6 +42,8 @@ function slippage-on-exit() {
 
 trap slippage-on-exit EXIT
 
+SLIPPAGE_BOTH_PROJECT_AND_DIR_NAME="lop"
+
 SLIPPAGE_LOP_SOURCE_DIR="$(pwd -P)"
 if [[ \
     "$(basename "${SLIPPAGE_LOP_SOURCE_DIR}")" != \
@@ -62,15 +61,17 @@ if [[ \
   exit 1
 fi
 
-SLIPPAGE_LOCK_FILE="/tmp/lop.lock"
+# NOTE(EXCLUSIVE-SCRIPT-EXECUTION)
+SLIPPAGE_LOCK_FILE="/tmp/lop-pre-commit.lock"
 SLIPPAGE_LOCK_FD="4243"
-# NOTE: We hardcode `SLIPPAGE_LOCK_FD` because it only works this way.
+# NOTE(LOCK-FD-HARDCODED-SINCE-IT-ONLY-WORKS-THIS-WAY)
 exec 4243>|"${SLIPPAGE_LOCK_FILE}"
 if ! flock --exclusive --nonblock "${SLIPPAGE_LOCK_FD}"; then
   echo "Pre-commit checks already running somewhere else!" >&2
   exit 1
 fi
 
+SLIPPAGE_LOP_LAUNCHPAD_DIR="/tmp/${SLIPPAGE_BOTH_PROJECT_AND_DIR_NAME}"
 rm --force --recursive "${SLIPPAGE_LOP_LAUNCHPAD_DIR}"
 mkdir "${SLIPPAGE_LOP_LAUNCHPAD_DIR}"
 # NOTE: `/..` used in `cp` destrination as otherwise we'd have an accidentaly
@@ -86,6 +87,7 @@ git submodule --quiet foreach --recursive 'git clean -dx --force --quiet'
 # FIXME: Check indeed no pending changes other than staging-area.
 
 CONTAINER_COMMAND=podman \
+  IS_IN_CONTAINER=0 \
   PRE_COMMIT_CHECK=1 \
   RUN_IN_CONTAINER=1 \
   ./scripts/continuous-integration.sh
