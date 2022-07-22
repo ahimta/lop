@@ -171,7 +171,7 @@ function boa-cargo-build() {
   boa-cargo build --jobs "$(nproc)" --no-default-features "$@"
 }
 function boa-cargo-test() {
-  boa-cargo test --jobs "$(nproc)" --no-default-features "$@"
+  boa-cargo test --jobs "$(nproc)" --no-default-features "$@" >/dev/null
 }
 
 echo >&2

@@ -64,7 +64,7 @@ RUN ${LOCAL_SET_SHELL_SAFE_OPTIONS}; \
   unzip \
   wget \
   xz-utils \
-  > /dev/null; \
+  >/dev/null; \
   apt-get autoremove -qq --yes; \
   apt-get autoclean -qq --yes; \
   apt-get clean -qq --yes; \
@@ -175,9 +175,9 @@ RUN ${LOCAL_SET_SHELL_SAFE_OPTIONS}; \
   echo '}' >> src/lib.rs; \
   # FIXME: Build everything else (e.g., flutter) for faster builds.
   cargo --quiet build --no-default-features --jobs "$(nproc)"; \
-  cargo --quiet test --jobs "$(nproc)" --no-default-features; \
+  cargo --quiet test --jobs "$(nproc)" --no-default-features >/dev/null; \
   cargo --quiet build --no-default-features --jobs "$(nproc)" --release; \
-  cargo --quiet test --jobs "$(nproc)" --no-default-features --release; \
+  cargo --quiet test --jobs "$(nproc)" --no-default-features --release >/dev/null; \
   cargo --quiet build --no-default-features --jobs "$(nproc)" --target x86_64-unknown-linux-gnu --release; \
   cargo --quiet build --no-default-features --jobs "$(nproc)" --target aarch64-linux-android --release; \
   cargo --quiet build --no-default-features --jobs "$(nproc)" --target x86_64-linux-android --release; \
