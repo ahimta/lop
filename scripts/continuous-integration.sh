@@ -4,8 +4,6 @@
 set -o errexit
 source ./scripts/_base.sh
 
-# FIXME: Replace with notify-user path and use pushd/popd for other references.
-ROOT_DIR="$(realpath "$(pwd)")"
 
 IS_IN_CONTAINER="${IS_IN_CONTAINER:?"IS_IN_CONTAINER env. var. missing!"}"
 if [[ "${IS_IN_CONTAINER}" != "0" && "${IS_IN_CONTAINER}" != "1" ]]; then
@@ -19,9 +17,14 @@ if [[ "${IS_IN_CONTAINER}" = "0" ]]; then
   function on-exit-trap {
     local EXIT_CODE="$?"
 
-    # FIXME: Notification can fail if in incorrect path.
-    cd "${ROOT_DIR}"
-    ./scripts/notify-user.sh
+    # NOTE(SOUND-NOTIFICATION)
+    mpv \
+        --really-quiet \
+        \
+        /usr/share/sounds/freedesktop/stereo/phone-incoming-call.oga \
+        \
+        2>/dev/null \
+      || echo "can't play sound notification and that's fine." >&2
 
     if [[ "${EXIT_CODE}" = "0" ]]; then
       echo "================CONTINUOUS-INTEGRATION SUCCEEDED================" >&2
@@ -157,7 +160,7 @@ find ./scripts -type f -print0 | xargs --null shellcheck \
   --severity=style \
   --wiki-link-count=1
 
-cd "${ROOT_DIR}/boa"
+pushd "./boa" >/dev/null
 
 function boa-cargo() {
   cargo --quiet "$@"
@@ -247,13 +250,14 @@ export AR_x86_64_linux_android="${ANDROID_AR}"
 export CARGO_TARGET_X86_64_LINUX_ANDROID_LINKER="${X86_64_COMPILER_AND_LINKER}"
 boa-cargo-build --target x86_64-linux-android --release
 
-X86_64_DIR="${ROOT_DIR}/clod/android/app/src/main/jniLibs/x86_64"
+X86_64_DIR="${PWD}/../clod/android/app/src/main/jniLibs/x86_64"
 mkdir --parents "${X86_64_DIR}"
 ln --force --symbolic \
   ../../../../../../../boa/target/x86_64-linux-android/release/libboa.so \
   "${X86_64_DIR}/libboa.so"
 
-cd "${ROOT_DIR}/clod"
+popd >/dev/null
+pushd "./clod" >/dev/null
 
 echo >&2
 echo "Cleaning for Flutter using 'flutter clean' skipped as it slows build" >&2
