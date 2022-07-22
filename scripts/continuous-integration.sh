@@ -181,22 +181,22 @@ echo "tooling/linting that ensures that warnings omitted in incremental" >&2
 echo "fail build." >&2
 echo >&2
 
-echo "Checking formatting..." >&2
+echo "Checking boa formatting..." >&2
 boa-cargo fmt --all -- --check
 
 export RUST_BACKTRACE=1
 
-echo "Building & testing debug..." >&2
+echo "Building & testing boa (debug for host)..." >&2
 boa-cargo-build
 boa-cargo-test
 
-echo "Building & testing release..." >&2
+echo "Building & testing boa (release for host)..." >&2
 boa-cargo-build --release
 boa-cargo-test --release
 
 unset RUST_BACKTRACE
 
-echo "Linting..." >&2
+echo "Linting boa..." >&2
 # NOTE: We use all the lints available and make all warnings errors. And to keep
 # up with this we should add new lint categories that are added in the future
 # that can be found on the project's main GitHub page.
@@ -225,13 +225,13 @@ boa-cargo clippy --quiet -- \
   -A clippy::multiple-crate-versions \
   -A clippy::double-must-use \
 
-echo "Building Linux x86_64..." >&2
+echo "Building boa (release for Linux x86_64)..." >&2
 boa-cargo-build --target x86_64-unknown-linux-gnu --release
 
 ANDROID_NDK_PATH="${ANDROID_SDK_ROOT}/ndk/${ANDROID_NDK_VERSION}"
 ANDROID_AR="${ANDROID_NDK_PATH}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android-ar"
 
-echo "Building Android aarch64..." >&2
+echo "Building boa (release for Android aarch64)..." >&2
 # NOTE(RUST-ANDROID-ENV-VARS-AARCH64)
 AARCH64_COMPILER_AND_LINKER="${ANDROID_NDK_PATH}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android${ANDROID_COMPILE_SDK_VERSION}-clang"
 # SEE: https://github.com/rust-embedded/cross/blob/2f1ef07fdaf92ba31e6d6ce0ab4c5dca63ca0aa7/docker/Dockerfile.aarch64-linux-android#L26
@@ -241,7 +241,7 @@ export AR_aarch64_linux_android="${ANDROID_AR}"
 export CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER="${AARCH64_COMPILER_AND_LINKER}"
 boa-cargo-build --target aarch64-linux-android --release
 
-echo "Building Android x86_64..." >&2
+echo "Building boa (release for Android x86_64)..." >&2
 # NOTE(RUST-ANDROID-ENV-VARS-X8664)
 X86_64_COMPILER_AND_LINKER="${ANDROID_NDK_PATH}/toolchains/llvm/prebuilt/linux-x86_64/bin/x86_64-linux-android${ANDROID_COMPILE_SDK_VERSION}-clang"
 export CC_x86_64_linux_android="${X86_64_COMPILER_AND_LINKER}"
@@ -266,11 +266,11 @@ echo "use tooling/linting that ensures that warnings omitted in incremental" >&2
 echo "fail build." >&2
 echo >&2
 
-echo "Linting Flutter..."
+echo "Linting clod..."
 flutter analyze --fatal-infos --fatal-warnings >/dev/null
 
-echo "Bulding Linux..."
+echo "Bulding clod (debug for Linux)..."
 flutter build linux --debug >/dev/null
 
-echo "Bulding APK..."
+echo "Bulding clod (debug APK for Android)..."
 flutter build apk --debug >/dev/null
