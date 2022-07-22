@@ -21,10 +21,6 @@ export LC_ALL=C
 SLIPPAGE_BOTH_PROJECT_AND_DIR_NAME="lop"
 SLIPPAGE_LOP_LAUNCHPAD_DIR="/tmp/${SLIPPAGE_BOTH_PROJECT_AND_DIR_NAME}"
 
-function slippage-clean() {
-  rm --force --recursive "${SLIPPAGE_LOP_LAUNCHPAD_DIR}"
-}
-
 function slippage-on-exit() {
   # FIXME: `$?` can incorrectly be zero/success. For example, when the script is
   # just run then followed by `Ctrl+C`.
@@ -45,8 +41,6 @@ function slippage-on-exit() {
   else
     echo "===================PRE-COMMIT CHECKS FAILED===================" >&2
   fi
-
-  slippage-clean
 }
 
 trap slippage-on-exit EXIT
@@ -77,7 +71,7 @@ if ! flock --exclusive --nonblock "${SLIPPAGE_LOCK_FD}"; then
   exit 1
 fi
 
-slippage-clean
+rm --force --recursive "${SLIPPAGE_LOP_LAUNCHPAD_DIR}"
 mkdir "${SLIPPAGE_LOP_LAUNCHPAD_DIR}"
 # NOTE: `/..` used in `cp` destrination as otherwise we'd have an accidentaly
 # additional directory-level.
