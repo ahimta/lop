@@ -266,9 +266,7 @@ echo "Linting Flutter..."
 flutter analyze --fatal-infos --fatal-warnings >/dev/null
 
 echo "Bulding Linux..."
-flutter build linux >/dev/null
+flutter build linux --debug >/dev/null
 
 echo "Bulding APK..."
 flutter build apk --debug >/dev/null
-flutter build apk --profile >/dev/null
-flutter build apk --release >/dev/null
