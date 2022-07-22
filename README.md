@@ -136,8 +136,8 @@ rustup completions bash cargo > ~/.local/share/bash-completion/completions/cargo
 
 ```bash
 CONTAINER_COMMAND=podman \
-  PRE_COMMIT_CHECK=0 \
   IS_IN_CONTAINER=0 \
+  PRE_COMMIT_CHECK=0 \
   RUN_IN_CONTAINER=1 \
   ./scripts/continuous-integration.sh
 ```
