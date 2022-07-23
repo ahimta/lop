@@ -80,35 +80,34 @@ USER lop:lop
 WORKDIR /home/lop
 ARG LOCAL_HOME=/home/lop
 
-# NOTE: This is the latest version that seems to work with Rust.
-ARG LOCAL_ANDROID_BUILD_TOOLS_VERSION=29.0.2
 ARG LOCAL_ANDROID_SDK_ROOT=$LOCAL_HOME/Android/Sdk
-# SEE: https://developer.android.com/studio/index.html#downloads
-ARG LOCAL_ANDROID_SDK_CMD_LINE_TOOLS_VERSION=8512546
-ARG LOCAL_ANDROID_SDK_CMD_LINE_TOOLS_VERSION_CHECKSUM_SHA384=0d3b02daf15259980aed5845972fe6d7fcead35550c6dae4a9eb17adcf3ef97be3dd6825bd467c29c9dc34071e5d3c2e
+ARG ANDROID_SDK_CMDLINE_TOOLS_VERSION
+ARG ANDROID_SDK_CMDLINE_TOOLS_VERSION_CHECKSUM_SHA384
+ARG ANDROID_BUILD_TOOLS_VERSION
 ARG ANDROID_COMPILE_SDK_VERSION
 ARG ANDROID_NDK_VERSION
 
 RUN ${LOCAL_SET_SHELL_SAFE_OPTIONS}; \
   echo Installing Android SDK/NDK...; \
-  wget -qq --output-document=android-sdk.zip \
-  http://dl.google.com/android/repository/commandlinetools-linux-${LOCAL_ANDROID_SDK_CMD_LINE_TOOLS_VERSION}_latest.zip; \
-  echo "${LOCAL_ANDROID_SDK_CMD_LINE_TOOLS_VERSION_CHECKSUM_SHA384} android-sdk.zip" | sha384sum --check --quiet --strict -; \
-  unzip -qq android-sdk.zip -d android-sdk; \
-  rm android-sdk.zip; \
+  wget -qq --output-document=android-cmdline-tools.zip \
+  http://dl.google.com/android/repository/commandlinetools-linux-${ANDROID_SDK_CMDLINE_TOOLS_VERSION}_latest.zip; \
+  echo "${ANDROID_SDK_CMDLINE_TOOLS_VERSION_CHECKSUM_SHA384} android-cmdline-tools.zip" | sha384sum --check --quiet --strict -; \
+  unzip -qq android-cmdline-tools.zip -d android-cmdline-tools; \
+  rm android-cmdline-tools.zip; \
   # NOTE: This is the expected path as implied by this error message:
   # Error: Could not determine SDK root.
   # Error: Either specify it explicitly with --sdk_root= or move this package into its expected location: <sdk>/cmdline-tools/latest/
   mkdir --parents ${LOCAL_ANDROID_SDK_ROOT}/cmdline-tools; \
-  mv android-sdk/cmdline-tools ${LOCAL_ANDROID_SDK_ROOT}/cmdline-tools/latest; \
-  rmdir android-sdk;
+  mv android-cmdline-tools/cmdline-tools ${LOCAL_ANDROID_SDK_ROOT}/cmdline-tools/latest; \
+  rmdir android-cmdline-tools;
 ENV PATH "${PATH}:${LOCAL_ANDROID_SDK_ROOT}/cmdline-tools/latest/bin"
 # SEE: https://developer.android.com/studio/command-line/sdkmanager
 RUN ${LOCAL_SET_SHELL_SAFE_OPTIONS}; \
-  echo y | sdkmanager "platforms;android-${ANDROID_COMPILE_SDK_VERSION}" >/dev/null; \
-  echo y | sdkmanager "platform-tools" >/dev/null; \
-  echo y | sdkmanager "build-tools;${LOCAL_ANDROID_BUILD_TOOLS_VERSION}" >/dev/null; \
+  echo y | sdkmanager "build-tools;${ANDROID_BUILD_TOOLS_VERSION}" >/dev/null; \
   echo y | sdkmanager "ndk;${ANDROID_NDK_VERSION}" >/dev/null; \
+  # NOTE(SOME-ANDROID-TOOLS-ONLY-SUPPORT-INSTALLING-LATEST)
+  echo y | sdkmanager "platform-tools" >/dev/null; \
+  echo y | sdkmanager "platforms;android-${ANDROID_COMPILE_SDK_VERSION}" >/dev/null; \
   echo y | sdkmanager --licenses >/dev/null;
 
 # SEE: https://docs.flutter.dev/release/breaking-changes

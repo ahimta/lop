@@ -12,6 +12,7 @@ Milking the mincut-maxflow cow.
 ## Getting Started
 
 ```bash
+# FIXME: Rewrite readme especially that it grew organically over time.
 sudo apt install -qq --yes \
   curl \
   git \
@@ -99,14 +100,66 @@ flutter config \
   --enable-windows-uwp-desktop
 
 dart --disable-analytics
-# NOTE: Install Google Chrome.
-# SEE: https://www.google.com/chrome
+
+sudo snap install chromium
+# NOTE: We have to export `CHROME_EXECUTABLE` because some tools (e.g., Flutter)
+# require this to detect Chromium and use it.
+echo >> ~/.bashrc
+echo 'export CHROME_EXECUTABLE="$(which chromium)"' >> ~/.bashrc
+export CHROME_EXECUTABLE="$(which chromium)"
+
 sudo snap install --classic code
+
+echo "Installing Android SDK..." >&2
+
+source ./public.env
+
+wget -qq --output-document=android-cmdline-tools.zip \
+  http://dl.google.com/android/repository/commandlinetools-linux-${ANDROID_SDK_CMDLINE_TOOLS_VERSION}_latest.zip
+echo "${ANDROID_SDK_CMDLINE_TOOLS_VERSION_CHECKSUM_SHA384} android-cmdline-tools.zip" | sha384sum --check --quiet --strict -
+unzip -qq android-cmdline-tools.zip -d android-cmdline-tools
+rm android-cmdline-tools.zip
+
+LOCAL_ANDROID_SDK_ROOT="$HOME/Android/Sdk"
+mkdir --parents "${LOCAL_ANDROID_SDK_ROOT}/cmdline-tools"
+mv \
+  android-cmdline-tools/cmdline-tools \
+  "${LOCAL_ANDROID_SDK_ROOT}/cmdline-tools/latest"
+rmdir android-cmdline-tools
+export PATH="${PATH}:${LOCAL_ANDROID_SDK_ROOT}/cmdline-tools/latest/bin"
+
+# NOTE(SOME-ANDROID-TOOLS-ONLY-SUPPORT-INSTALLING-LATEST)
+echo y | sdkmanager "emulator" >/dev/null
+echo y | sdkmanager "system-images;android-31;google_apis;x86_64" >/dev/null
+echo y | sdkmanager "build-tools;${ANDROID_BUILD_TOOLS_VERSION}" >/dev/null
+echo y | sdkmanager "ndk;${ANDROID_NDK_VERSION}" >/dev/null
+# NOTE(SOME-ANDROID-TOOLS-ONLY-SUPPORT-INSTALLING-LATEST)
+echo y | sdkmanager "platform-tools" >/dev/null
+# FIXME: Replace `echo y` with `yes` everywhere.
+echo y | sdkmanager "platforms;android-${ANDROID_COMPILE_SDK_VERSION}" >/dev/null
+echo y | sdkmanager --licenses >/dev/null
+
+echo >> ~/.bashrc
+echo 'export ANDROID_SDK_ROOT="$HOME/Android/Sdk"' >> ~/.bashrc
+export ANDROID_SDK_ROOT="$HOME/Android/Sdk"
+
+# NOTE: The generated Android VM works but may have some minor issues.
+avdmanager --silent create avd \
+  --force \
+  --abi x86_64 \
+  --name android-12.0-api-31 \
+  --package "system-images;android-31;google_apis;x86_64"
+
+echo "Doctoring Flutter (won't detect Android SDK and that's fine)..." >&2
+yes | flutter doctor --android-licenses
+flutter doctor
+
+echo "Everything in the project should build/work correctly now and you" >&2
+echo "should follow 'Continuous Integration' to make sure this is the case." >&2
+
+echo "Installing Android Studio (just to make 'flutter doctor' happy)..." >&2
 sudo snap install --classic android-studio
-flutter doctor --android-licenses
-# FIXME: Android setup done manually using Android Studio. Make it so that at
-# least only command-line tools are installed manually. And extract common
-# variables to `public.env`.
+echo "You have to run Android Studio for `flutter doctor` to detect it." >&2
 flutter doctor
 ```
 
