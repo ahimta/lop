@@ -264,7 +264,8 @@ flutter doctor
     --build \
     --debug \
     --hot;
-  flutter --device-id emulator run --build --debug --hot;
+  ANDROID_DEVICE_ID_PREFIX="emulator";
+  flutter --device-id "${ANDROID_DEVICE_ID_PREFIX}" run --build --debug --hot;
 )
 ```
 
