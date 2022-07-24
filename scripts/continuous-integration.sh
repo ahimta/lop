@@ -272,6 +272,14 @@ echo "use tooling/linting that ensures that warnings omitted in incremental" >&2
 echo "fail build." >&2
 echo >&2
 
+echo "Check clod formatting..."
+flutter format \
+  --set-exit-if-changed \
+  --output none \
+  --line-length 80 \
+  "${PWD}" \
+  >/dev/null
+
 echo "Linting clod..."
 flutter analyze --fatal-infos --fatal-warnings >/dev/null
 
