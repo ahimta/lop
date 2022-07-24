@@ -91,7 +91,7 @@ flutter config \
   --enable-web \
   --enable-windows-desktop \
   --enable-windows-uwp-desktop
-flutter precache --all-platforms
+flutter precache
 dart --disable-analytics
 
 echo "Installing Chromium for Flutter SDK..." >&2
