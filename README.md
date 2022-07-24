@@ -1,39 +1,34 @@
 # Lop
 
-[![Rust](https://github.com/ahimta/lop/actions/workflows/continuous-integration.yml/badge.svg)](https://github.com/ahimta/lop/actions/workflows/continuous-integration.yml)
+[![Continuous Integration](https://github.com/ahimta/lop/actions/workflows/continuous-integration.yml/badge.svg)](https://github.com/ahimta/lop/actions/workflows/continuous-integration.yml)
 
 Milking the mincut-maxflow cow.
 
 ## Recommended Environment
 
-- Ubuntu 22.04 LTS x86-64
+- Ubuntu 22.04 LTS x86_64
 - VS Code (easier debugging and full-support)
 
 ## Getting Started
 
 ```bash
-# FIXME: Rewrite readme especially that it grew organically over time.
+# FIXME: Make everything in readme idempotent.
+# FIXME: Ensure readme includes all procedures (e.g., updating deps.).
+echo "Installing general dependencies..." >&2
+# NOTE: We use `mpv` with script-finished sound notification.
 sudo apt install -qq --yes \
   curl \
   git \
+  mpv \
+  podman \
   shellcheck \
   \
   >/dev/null
 
+echo "Installing VS Code..." >&2
 sudo snap install --classic code
 
-# SEE: https://www.rust-lang.org/learn/get-started
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-source ~/.cargo/env
-
-# NOTE: We use it with script-finished sound notification.
-sudo apt install -qq --yes mpv >/dev/null
-
-ln --force --symbolic ../../scripts/pre-commit.sh ./.git/hooks/pre-commit
-
-# SEE: https://podman.io/getting-started/installation
-sudo apt install -qq --yes podman >/dev/null
-
+echo "Installing Nix..." >&2
 # NOTE: Verify installation page is more of a verified installation: it includes
 # both verification and installation. And in the right order too (verify then
 # install).
@@ -63,11 +58,16 @@ curl \
 # NOTE: `nix` will only be available in new terminal sessions.
 # NOTE: To verify `nix` installation is successfull.
 nix-env --version
-```
 
-## Getting Started (Flutter)
+echo "Installing Rust..." >&2
+# SEE: https://www.rust-lang.org/learn/get-started
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+source ~/.cargo/env
 
-```bash
+echo "Initializing pre-commit hook..." >&2
+ln --force --symbolic ../../scripts/pre-commit.sh ./.git/hooks/pre-commit
+
+echo "Installing Flutter dependencies..." >&2
 sudo apt install -qq --yes \
   clang \
   cmake \
@@ -78,17 +78,10 @@ sudo apt install -qq --yes \
   \
   >/dev/null
 
+echo "Installing Flutter SDK..." >&2
 # SEE: https://docs.flutter.dev/get-started/install/linux#install-flutter-using-snapd
 sudo snap install flutter --classic
-flutter sdk-path
 flutter upgrade
-# NOTE: `precache` downloads all platform-specific files eagerly.
-flutter precache
-mkdir --parents ~/.local/share/bash-completion/completions
-# NOTE: Command fails due to a mysterious permission error. And only seems to
-# work when run from home directory.
-flutter bash-completion > ~/.local/share/bash-completion/completions/flutter
-
 flutter config \
   --no-analytics \
   --enable-android \
@@ -98,9 +91,10 @@ flutter config \
   --enable-web \
   --enable-windows-desktop \
   --enable-windows-uwp-desktop
-
+flutter precache --all-platforms
 dart --disable-analytics
 
+echo "Installing Chromium for Flutter SDK..." >&2
 sudo snap install chromium
 # NOTE: We have to export `CHROME_EXECUTABLE` because some tools (e.g., Flutter)
 # require this to detect Chromium and use it.
@@ -108,9 +102,7 @@ echo >> ~/.bashrc
 echo 'export CHROME_EXECUTABLE="$(which chromium)"' >> ~/.bashrc
 export CHROME_EXECUTABLE="$(which chromium)"
 
-sudo snap install --classic code
-
-echo "Installing Android SDK..." >&2
+echo "Installing Android SDK for Flutter SDK..." >&2
 
 source ./public.env
 
@@ -143,6 +135,7 @@ echo >> ~/.bashrc
 echo 'export ANDROID_SDK_ROOT="$HOME/Android/Sdk"' >> ~/.bashrc
 export ANDROID_SDK_ROOT="$HOME/Android/Sdk"
 
+echo "Creating Android VM for Flutter SDK..." >&2
 # NOTE: The generated Android VM works but may have some minor issues.
 avdmanager --silent create avd \
   --force \
@@ -166,45 +159,45 @@ flutter doctor
 ## Continuous Integration
 
 ```bash
-# NOTE: This is the core and includes all checks, builds, tests, etc...
+# NOTE: Using host.
 CONTAINER_COMMAND=podman \
   IS_IN_CONTAINER=0 \
   PRE_COMMIT_CHECK=0 \
   RUN_IN_CONTAINER=0 \
   ./scripts/continuous-integration.sh
-```
 
-## BASH Completions
-
-```bash
-# NOTE: Make sure first to run continuous-integration/build once so that all
-# tools, for which BASH completions will be generated, have already been
-# installed.
-mkdir --parents ~/.local/share/bash-completion/completions
-rustup completions bash > ~/.local/share/bash-completion/completions/rustup
-rustup completions bash cargo > ~/.local/share/bash-completion/completions/cargo
-```
-
-## Using Podman/Docker
-
-```bash
+# NOTE: Using podman/docker.
 CONTAINER_COMMAND=podman \
   IS_IN_CONTAINER=0 \
   PRE_COMMIT_CHECK=0 \
   RUN_IN_CONTAINER=1 \
   ./scripts/continuous-integration.sh
-```
 
-## Using Nix (not functional and only as a starting point)
-
-```bash
+# NOTE: Using Nix (not functional and only as a starting point).
 nix-shell \
   --pure \
   --packages rustc cargo \
   --run ./scripts/continuous-integration.sh
-
 # NOTE: For a shell.
 nix-shell --pure --packages rustc cargo
+```
+
+## BASH Completions
+
+```bash
+# NOTE: Make sure first to run continuous-integration once so that all tools,
+# for which BASH completions will be generated, have already been installed.
+
+echo "Setting up Rust BASH-completions..." >&2
+mkdir --parents ~/.local/share/bash-completion/completions
+rustup completions bash > ~/.local/share/bash-completion/completions/rustup
+rustup completions bash cargo > ~/.local/share/bash-completion/completions/cargo
+
+echo "Setting up Flutter BASH-completions..." >&2
+mkdir --parents ~/.local/share/bash-completion/completions
+# NOTE: Command fails due to a mysterious permission error. And only seems to
+# work when run from home directory.
+flutter bash-completion --overwrite > ~/.local/share/bash-completion/completions/flutter
 ```
 
 ## Debugging
@@ -213,38 +206,66 @@ Using VS Code by simply toggling breakpoints and running the debugger (F5).
 
 ## Editor/IDE Support
 
-Full VS Code support including debugging and checks/checks/builds/tests
-(Ctrl+Shift+B this also saves all files before running). This, of course,
-requires installing project recommended extensions.
+Full VS Code support including debugging and checks/builds/tests (Ctrl+Shift+B
+also saves all files before running). This, of course, requires installing
+project recommended extensions.
 
 ## Snippets
 
 ```bash
-rustup update
-cargo update
-cargo doc --open
+flutter upgrade --verify-only
+flutter upgrade
+yes | flutter doctor --android-licenses
+flutter doctor
 
-cargo fmt
-cargo check
-cargo build
-cargo test
+(
+  cd boa;
 
-cargo fix --edition
-```
+  rustup check;
+  rustup update;
 
-## Snippets (Flutter)
+  cargo clean;
 
-```bash
-flutter pub add english_words
-flutter pub remove english_words
+  cargo tree;
 
-flutter pub outdated
-flutter pub upgrade --dry-run
-flutter pub upgrade
-flutter pub upgrade --dry-run --major-versions
-flutter pub upgrade --major-versions
+  cargo add --dry-run --no-default-features itertools@^0.10.3;
+  cargo add --no-default-features itertools@^0.10.3;
 
-LD_LIBRARY_PATH=../boa/target/release flutter run --device-id linux
+  cargo add --dry-run --no-default-features --dev pretty_assertions@^1.2.1;
+  cargo add --no-default-features --dev pretty_assertions@^1.2.1;
+
+  cargo update --dry-run;
+  cargo update;
+)
+
+(
+  cd clod;
+
+  flutter clean;
+
+  flutter pub deps;
+
+  flutter pub add --dry-run ffi:^2.0.1;
+  flutter pub add ffi:^2.0.1;
+
+  flutter pub add --dev --dry-run flutter_lints:^2.0.0;
+  flutter pub add --dev flutter_lints:^2.0.0;
+
+  flutter pub remove --dry-run ffi;
+  flutter pub remove ffi;
+
+  flutter pub outdated;
+  flutter pub upgrade --dry-run;
+  flutter pub upgrade;
+  flutter pub upgrade --dry-run --major-versions;
+  flutter pub upgrade --major-versions;
+
+  LD_LIBRARY_PATH=../boa/target/release flutter --device-id linux run \
+    --build \
+    --debug \
+    --hot;
+  flutter --device-id emulator run --build --debug --hot;
+)
 ```
 
 ## Record of Setup of Already Generated Configuration
@@ -253,48 +274,56 @@ LD_LIBRARY_PATH=../boa/target/release flutter run --device-id linux
 # NOTE: Generated file causes warnings when `cargo fmt` is called as most
 # options are only supported in nightly builds. To fix this, we used
 # `rustfmt --help=config` which only includes supported options.
-rustfmt --edition 2021 --print-config default rustfmt.toml
-```
+echo "Setting up Rust formatting..." >&2
+(
+  cd boa &&
+  rustfmt --edition 2021 --print-config default rustfmt.toml
+)
 
-## Record of Setup of Already Generated Configuration (Flutter)
-
-```bash
-flutter create \
-  --template app \
-  --project-name clod \
-  --description "lop frontend." \
-  --org com.lop \
-  --platforms android,ios,linux,macos,windows,web \
-  --android-language kotlin \
-  --ios-language swift \
-  \
-  clod
+echo "Creating Flutter project..." >&2
+(
+  cd clod &&
+  flutter create \
+    --template app \
+    --project-name clod \
+    --description "lop frontend." \
+    --org com.lop \
+    --platforms android,ios,linux,macos,windows,web \
+    --android-language kotlin \
+    --ios-language swift \
+    \
+    clod
+)
 ```
 
 ## General Resources
 
 - [DevDocs (many technologies' docs)](https://devdocs.io)
-- [grep.app (searching all the code in the internet)](https://grep.app)
+- [grep.app (source-code search-engine)](https://grep.app)
 - [TLDR pages (summarized manpages focused on examples)](https://tldr.ostera.io)
 - [linux.die.net (more manpages than available locally)](https://linux.die.net)
-- [man7.org (for superior manpages)](https://www.man7.org)
-- [IBM z/OS Library Functions (POSIX functions not in any other manpages)](https://www.ibm.com/docs/en/zos/2.5.0?topic=reference-library-functions)
-- [flutter.dev](https://flutter.dev)
+- [man7.org (far superior manpages)](https://man7.org/linux/man-pages)
+- [The Linux Programming Interface](https://man7.org/tlpi)
+- [IBM z/OS Library Functions (POSIX functions not typically other manpages)](https://www.ibm.com/docs/en/zos/2.5.0?topic=reference-library-functions)
+- [Flutter Developers](https://flutter.dev)
 - [Rust by Example](https://doc.rust-lang.org/rust-by-example)
 - [The Rustonomicon](https://doc.rust-lang.org/nomicon)
 - [Premier League - Results Page (can easily be used to convert to our format)](https://www.premierleague.com/results)
-- [Programming Rust: Fast, Safe Systems Development](https://read.amazon.com/?asin=B0979PWD4Z&language=en-US)
+- [Programming Rust: Fast, Safe Systems Development, 2nd Edition](https://www.amazon.com/dp/B0979PWD4Z)
 - [Rust Official Formatter](https://github.com/rust-lang/rustfmt)
+- [DelftStack (excellent tutorials & howtos)](https://www.delftstack.com)
+- [Android Developers](https://developer.android.com/)
+- [The Power of Ten Rules](https://en.wikipedia.org/wiki/The_Power_of_10:_Rules_for_Developing_Safety-Critical_Code)
 
 ## Academic Resources
 
-- [All Course Assignments](https://introcs.cs.princeton.edu/java/assignments/)
+- [Course Homepage](https://algs4.cs.princeton.edu)
 - [Baseball Elimination Assignment](https://www.cs.princeton.edu/courses/archive/spring04/cos226/assignments/baseball.html)
 - [Mincut/Maxflow Reduction Assignments](https://www.cs.princeton.edu/courses/archive/spring03/cs226/assignments/assign.html)
 - [Course on Coursera - Part 1](https://www.coursera.org/learn/algorithms-part1)
 - [Course on Coursera - Part 2](https://www.coursera.org/learn/algorithms-part2)
 - [Lectures on Official Booksite](https://algs4.cs.princeton.edu/lectures/)
-- [Lections on Oreilly](https://www.oreilly.com/library/view/algorithms-24-part-lecture/9780134384528/)
+- [Lectures on OReilly](https://www.oreilly.com/library/view/algorithms-24-part-lecture/9780134384528/)
 - [Mincut/Maxflow Slides](https://algs4.cs.princeton.edu/lectures/keynote/64MaxFlow-2x2.pdf)
 - [Course Code](https://algs4.cs.princeton.edu/code/)
 - [Ford Fulkerson Code](https://algs4.cs.princeton.edu/code/edu/princeton/cs/algs4/FordFulkerson.java.html)
@@ -303,12 +332,13 @@ flutter create \
 
 ## Possible Usecases/Ideas
 
-- Pandemic contagion depending on quarantine/curfew decisions
-- Tournament elimination
-- Job/request matching
-- And much much more that can be found from the academic-resources section here
+- Pandemic contagion depending on quarantine/curfew decisions.
+- Tournament elimination.
+- Job/request matching.
+- And much much more that can be found from the academic-resources section.
 
 ## Credits
 
 All credits for algorithm used (Ford Fulkerson) core-implementation (originally
-in Java) goes to [Prof. Robert Sedgewick](<https://en.wikipedia.org/wiki/Robert_Sedgewick_(computer_scientist)>).
+in Java) goes to
+[Prof. Robert Sedgewick](<https://en.wikipedia.org/wiki/Robert_Sedgewick_(computer_scientist)>).
