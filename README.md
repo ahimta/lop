@@ -121,20 +121,20 @@ rmdir android-cmdline-tools
 export PATH="${PATH}:${LOCAL_ANDROID_SDK_ROOT}/cmdline-tools/latest/bin"
 
 # NOTE(SOME-ANDROID-TOOLS-ONLY-SUPPORT-INSTALLING-LATEST)
-echo y | sdkmanager "emulator" >/dev/null
-echo y | sdkmanager "system-images;android-31;google_apis;x86_64" >/dev/null
-echo y | sdkmanager "build-tools;${ANDROID_BUILD_TOOLS_VERSION}" >/dev/null
-echo y | sdkmanager "ndk;${ANDROID_NDK_VERSION}" >/dev/null
+yes | sdkmanager "emulator" >/dev/null
+yes | sdkmanager "system-images;android-31;google_apis;x86_64" >/dev/null
+yes | sdkmanager "build-tools;${ANDROID_BUILD_TOOLS_VERSION}" >/dev/null
+yes | sdkmanager "ndk;${ANDROID_NDK_VERSION}" >/dev/null
 # NOTE(SOME-ANDROID-TOOLS-ONLY-SUPPORT-INSTALLING-LATEST)
-echo y | sdkmanager "platform-tools" >/dev/null
-# FIXME: Replace `echo y` with `yes` everywhere.
-echo y | sdkmanager "platforms;android-${ANDROID_COMPILE_SDK_VERSION}" >/dev/null
-echo y | sdkmanager --licenses >/dev/null
+yes | sdkmanager "platform-tools" >/dev/null
+yes | sdkmanager "platforms;android-${ANDROID_COMPILE_SDK_VERSION}" >/dev/null
+yes | sdkmanager --licenses >/dev/null
 
 echo >> ~/.bashrc
 echo 'export ANDROID_SDK_ROOT="$HOME/Android/Sdk"' >> ~/.bashrc
 export ANDROID_SDK_ROOT="$HOME/Android/Sdk"
 
+# FIXME: Use `flutter emulators` instead. And add to snippets along with some `Tools & Devices` commands in `flutter --help`.
 echo "Creating Android VM for Flutter SDK..." >&2
 # NOTE: The generated Android VM works but may have some minor issues.
 avdmanager --silent create avd \

@@ -103,12 +103,12 @@ RUN ${LOCAL_SET_SHELL_SAFE_OPTIONS}; \
 ENV PATH "${PATH}:${LOCAL_ANDROID_SDK_ROOT}/cmdline-tools/latest/bin"
 # SEE: https://developer.android.com/studio/command-line/sdkmanager
 RUN ${LOCAL_SET_SHELL_SAFE_OPTIONS}; \
-  echo y | sdkmanager "build-tools;${ANDROID_BUILD_TOOLS_VERSION}" >/dev/null; \
-  echo y | sdkmanager "ndk;${ANDROID_NDK_VERSION}" >/dev/null; \
+  yes | sdkmanager "build-tools;${ANDROID_BUILD_TOOLS_VERSION}" >/dev/null; \
+  yes | sdkmanager "ndk;${ANDROID_NDK_VERSION}" >/dev/null; \
   # NOTE(SOME-ANDROID-TOOLS-ONLY-SUPPORT-INSTALLING-LATEST)
-  echo y | sdkmanager "platform-tools" >/dev/null; \
-  echo y | sdkmanager "platforms;android-${ANDROID_COMPILE_SDK_VERSION}" >/dev/null; \
-  echo y | sdkmanager --licenses >/dev/null;
+  yes | sdkmanager "platform-tools" >/dev/null; \
+  yes | sdkmanager "platforms;android-${ANDROID_COMPILE_SDK_VERSION}" >/dev/null; \
+  yes | sdkmanager --licenses >/dev/null;
 
 # SEE: https://docs.flutter.dev/release/breaking-changes
 # SEE: https://docs.flutter.dev/development/tools/sdk/release-notes
