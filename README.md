@@ -260,6 +260,9 @@ flutter doctor
   flutter pub upgrade --dry-run --major-versions;
   flutter pub upgrade --major-versions;
 
+  flutter symbolize --help
+  flutter logs
+
   LD_LIBRARY_PATH=../boa/target/release flutter --device-id linux run \
     --build \
     --debug \
