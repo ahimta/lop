@@ -122,7 +122,9 @@ export PATH="${PATH}:${LOCAL_ANDROID_SDK_ROOT}/cmdline-tools/latest/bin"
 
 # NOTE(SOME-ANDROID-TOOLS-ONLY-SUPPORT-INSTALLING-LATEST)
 yes | sdkmanager "emulator" >/dev/null
-yes | sdkmanager "system-images;android-31;google_apis;x86_64" >/dev/null
+# NOTE: The system-image here is significant to work with Flutter which its main
+# requirement seems to be `google_apis_playstore`.
+yes | sdkmanager "system-images;android-31;google_apis_playstore;x86_64" >/dev/null
 yes | sdkmanager "build-tools;${ANDROID_BUILD_TOOLS_VERSION}" >/dev/null
 yes | sdkmanager "ndk;${ANDROID_NDK_VERSION}" >/dev/null
 # NOTE(SOME-ANDROID-TOOLS-ONLY-SUPPORT-INSTALLING-LATEST)
@@ -134,26 +136,21 @@ echo >> ~/.bashrc
 echo 'export ANDROID_SDK_ROOT="$HOME/Android/Sdk"' >> ~/.bashrc
 export ANDROID_SDK_ROOT="$HOME/Android/Sdk"
 
-# FIXME: Use `flutter emulators` instead. And add to snippets along with some `Tools & Devices` commands in `flutter --help`.
-echo "Creating Android VM for Flutter SDK..." >&2
-# NOTE: The generated Android VM works but may have some minor issues.
-avdmanager --silent create avd \
-  --force \
-  --abi x86_64 \
-  --name android-12.0-api-31 \
-  --package "system-images;android-31;google_apis;x86_64"
-
 echo "Doctoring Flutter (won't detect Android SDK and that's fine)..." >&2
 yes | flutter doctor --android-licenses
 flutter doctor
 
 echo "Everything in the project should build/work correctly now and you" >&2
 echo "should follow 'Continuous Integration' to make sure this is the case." >&2
-
+# FIXME: Configure flutter with Android SDK path and ensure it works without Android Studio.
 echo "Installing Android Studio (just to make 'flutter doctor' happy)..." >&2
 sudo snap install --classic android-studio
 echo "You have to run Android Studio for `flutter doctor` to detect it." >&2
 flutter doctor
+
+echo "Creating Android device/emulator for Flutter SDK..." >&2
+flutter emulators
+flutter emulators --create --name android-emulator-device
 ```
 
 ## Continuous Integration
