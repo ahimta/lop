@@ -16,6 +16,7 @@
   "extensions": {
     "recommendations": [
       "dart-code.flutter",
+      "eamodio.gitlens",
       "editorconfig.editorconfig",
       "esbenp.prettier-vscode",
       "mikestead.dotenv",
