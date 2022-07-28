@@ -272,6 +272,12 @@ flutter doctor
 ## Record of Setup of Already Generated Configuration
 
 ```bash
+echo "Creating Rust project..." >&2
+(
+  cd boa &&
+  cargo init --lib --vcs none --edition 2021 --name boa
+)
+
 # NOTE: Generated file causes warnings when `cargo fmt` is called as most
 # options are only supported in nightly builds. To fix this, we used
 # `rustfmt --help=config` which only includes supported options.
