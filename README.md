@@ -349,3 +349,17 @@ echo "Creating Flutter project..." >&2
 All credits for algorithm used (Ford Fulkerson) core-implementation (originally
 in Java) goes to
 [Prof. Robert Sedgewick](<https://en.wikipedia.org/wiki/Robert_Sedgewick_(computer_scientist)>).
+
+## TODO
+
+- Resolve fixmes.
+- Review all comments.
+- Handle boa errors gracefully (without panic).
+- Use teams' logos.
+- Try newer versions for everything and document if they don't work.
+- Better sounds for success/failure that are part of the project.
+- Non-blocking UI using isolates.
+- Use /var/lock iff possible.
+- Review FHS to possibly find something better than /tmp (probably /var).
+- Use container uid/gid trick.
+- Add cert c and tldp to resources and https://spinroot.com/p10.
