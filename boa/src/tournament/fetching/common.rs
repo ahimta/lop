@@ -293,7 +293,7 @@ pub(super) trait TournamentProvider {
   fn test_helper_download_tournaments() -> Vec<(Arc<String>, Vec<String>)> {
     use std::fs;
 
-    return vec![(
+    vec![(
       Arc::new(String::from(Self::TEST_TOURNAMENT_NAME)),
       fs::read_to_string(format!(
         "data/{}-{}",
@@ -304,6 +304,6 @@ pub(super) trait TournamentProvider {
       .lines()
       .map(string::ToString::to_string)
       .collect(),
-    )];
+    )]
   }
 }
