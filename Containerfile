@@ -20,14 +20,14 @@ LABEL author="Abdullah Alansari <ahimta@gmail.com>"
 # our use-cases. Especially as the image/container isn't used in production
 # devices/environments.
 
-# NOTE: Using BASH was considered instead of default DASH/SH because Podman
-# complains that they are not part of the OCI image format.
+# NOTE: Using BASH was considered but we sticked with the default (DASH/SH) as
+# otherwise Podman complains about something related to the OCI image format.
 # SEE: https://docs.docker.com/engine/reference/builder/#shell
 
 # NOTE(SAFER-BASH-AGAINST-LAX-BEHAVIOR)
 # NOTE: Most lightweight shells don't support `pipefail` so we must keep in mind
-# that commands that use a pipe only fail if the last command fail.
-# NOTE: We use short options because long options don't with base-image.
+# that commands that use a pipe only fail if the last command fails.
+# NOTE: We use short options since long options don't work with the base-image.
 # 1. `-e` instad of `-o errexit` set first to catch errors with other `set`s.
 # 2. `-C` instad of `-o noclobber`.
 # 3. `-u` instad of `-o noglob`.
@@ -37,7 +37,7 @@ LABEL author="Abdullah Alansari <ahimta@gmail.com>"
 ARG LOCAL_SET_SHELL_SAFE_OPTIONS="set -e ; set -Cfu"
 
 # NOTE(SIMPLE-LOCALE-FOR-CONSISTENT-BEHAVIOR)
-# SEE: https://unix.stackexchange.com/a/87763.
+# SEE: https://unix.stackexchange.com/a/87763
 ENV LANG="C"
 ENV LANGUAGE="C"
 ENV LC_ALL="C"
@@ -91,7 +91,6 @@ ARG ANDROID_SDK_CMDLINE_TOOLS_VERSION_CHECKSUM_SHA384
 ARG ANDROID_BUILD_TOOLS_VERSION
 ARG ANDROID_COMPILE_SDK_VERSION
 ARG ANDROID_NDK_VERSION
-
 RUN \
   ${LOCAL_SET_SHELL_SAFE_OPTIONS}; \
   \
@@ -121,11 +120,11 @@ RUN \
 
 # SEE: https://docs.flutter.dev/release/breaking-changes
 # SEE: https://docs.flutter.dev/development/tools/sdk/release-notes
+# SEE: https://flutter.dev/docs/get-started/install/linux
 ARG LOCAL_FLUTTER_SDK_VERSION="3.3.10"
+# NOTE: Can use `sha384sum <flutter-sdk-file-path>` to get checksum.
 ARG LOCAL_FLUTTER_SDK_CHECKSUM_SHA384="56bf7e8135ac47a0bd0df15602fdd54e1bed845d08f6166720ff9f5d048aa947638338fa6e0c4c5a9b3c7116dcb0d91b"
 ARG LOCAL_FLUTTER_SDK_ROOT="${LOCAL_HOME}/flutter"
-
-# SEE: https://flutter.dev/docs/get-started/install/linux
 RUN \
   ${LOCAL_SET_SHELL_SAFE_OPTIONS}; \
   \
@@ -134,9 +133,7 @@ RUN \
   "https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_${LOCAL_FLUTTER_SDK_VERSION}-stable.tar.xz"; \
   echo "${LOCAL_FLUTTER_SDK_CHECKSUM_SHA384} flutter-sdk.tar.xz" | sha384sum --check --quiet --strict -; \
   tar xf flutter-sdk.tar.xz; \
-  rm flutter-sdk.tar.xz; \
-  # NOTE: Just check that the file was extracted in the right location.
-  ls "${LOCAL_FLUTTER_SDK_ROOT}" >/dev/null;
+  rm flutter-sdk.tar.xz;
 ENV PATH="${PATH}:${LOCAL_FLUTTER_SDK_ROOT}/bin"
 RUN \
   ${LOCAL_SET_SHELL_SAFE_OPTIONS}; \
@@ -146,11 +143,13 @@ RUN \
   flutter precache >/dev/null; \
   yes | flutter doctor --android-licenses >/dev/null; \
   # NOTE: Only `Flutter` and `Android toolchain` need to be available. We can
-  # enforce this, easily (maybe using grep), programmatically so this must be
-  # checked manually whenever this file changes.
+  # enforce this easily (maybe using grep) programmatically. For now, this must
+  # be checked manually whenever this file changes.
   flutter doctor;
 
-# NOTE: This is mostly for optimization and doing as much as possible once.
+# NOTE: This section is for optimization and doing as much as possible once.
+# This optimization is very effective and reduces container runs significantly.
+# FIXME: Build everything else (e.g., flutter) for faster builds.
 COPY \
   --chown=lop:lop \
   \
@@ -187,7 +186,6 @@ RUN \
   echo 'pub fn get_tournaments() {' >> src/lib.rs; \
   echo 'println!("Hello, world!");' >> src/lib.rs; \
   echo '}' >> src/lib.rs; \
-  # FIXME: Build everything else (e.g., flutter) for faster builds.
   cargo --quiet build --no-default-features --jobs "$(nproc)"; \
   cargo --quiet test --jobs "$(nproc)" --no-default-features >/dev/null; \
   cargo --quiet build --no-default-features --jobs "$(nproc)" --release; \
@@ -205,10 +203,10 @@ ARG PRE_COMMIT_CHECK
 RUN \
   ${LOCAL_SET_SHELL_SAFE_OPTIONS}; \
   \
+  if [ "${PRE_COMMIT_CHECK}" = "1" ]; then \
   # NOTE(GIT-RESET-FOR-PRE-COMMIT-CHECK): We don't do `git restore --staged .`
   # here because it discards changes about to be committed. This is important
   # for pre-commit checks and maybe even useful for other usecases.
-  if [ "${PRE_COMMIT_CHECK}" = "1" ]; then \
   git restore .; \
   git submodule --quiet foreach --recursive 'git restore .'; \
   git clean -dx --force --quiet; \

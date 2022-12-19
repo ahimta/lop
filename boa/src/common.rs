@@ -27,10 +27,11 @@ pub struct Tournament {
   pub teams: BTreeSet<Arc<Team>>,
   pub remaining_points: Option<HashMap<(TeamId, TeamId), usize>>,
   constructor_guard: PhantomData<()>,
+  // NOTE(TOURNAMENT-FIELDS-CHANGE-DETECTOR)
 }
 impl PartialEq for Tournament {
   #[must_use]
-  // NOTE(MUST-CHANGE-WHENEVER-STRUCT-FIELDS-CHANGE)
+  // NOTE(TOURNAMENT-FIELDS-CHANGE-DETECTOR)
   fn eq(&self, other: &Self) -> bool {
     if !cfg!(test) {
       return self.name == other.name;
@@ -126,8 +127,8 @@ impl Tournament {
             .into_grouping_map()
             .sum();
         if remaining_points_value.is_empty() || teams.is_empty() {
-          // NOTE: This is important to check as otherwise the validation may
-          // break/not-run due to empty-collection.
+          // NOTE: This is important to check as otherwise parts of the
+          // validation may break/not-run due to empty-collection.
           assert!(
             remaining_points_value.is_empty() && teams.is_empty(),
             "Invalid remaining-points & teams lengths ({:?}, {:?}).",
@@ -178,10 +179,11 @@ pub struct Team {
   pub elimination_status: Option<EliminationStatus>,
 
   constructor_guard: PhantomData<()>,
+  // NOTE(TEAM-FIELDS-CHANGE-DETECTOR)
 }
 impl PartialEq for Team {
   #[must_use]
-  // NOTE(MUST-CHANGE-WHENEVER-STRUCT-FIELDS-CHANGE)
+  // NOTE(TEAM-FIELDS-CHANGE-DETECTOR)
   fn eq(&self, other: &Self) -> bool {
     if !cfg!(test) {
       return self.name == other.name;

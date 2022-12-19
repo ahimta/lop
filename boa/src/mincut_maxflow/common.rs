@@ -106,7 +106,7 @@ impl FlowNode {
 // NOTE: `Flow` can be constructed directly (no constructor-guard) because any
 // value for it is valid and its operators handle all cases and panic for
 // degenerate cases and it's very hard to beat the current model without adding
-// undue complexity.
+// unnecessary complexity.
 #[must_use]
 #[derive(Clone, Copy, Debug)]
 pub(crate) enum Flow {
@@ -186,8 +186,7 @@ impl ops::Sub for Flow {
   #[must_use]
   fn sub(self, other: Self) -> Self {
     match (self, other) {
-      // NOTE(ACCIDENTAL-FLOW-BLACKHOLE): This behavior is important to prevent
-      // accidentally moving flow to an infinity blackhole.
+      // NOTE(ACCIDENTAL-FLOW-BLACKHOLE)
       (Self::Infinite, Self::NegativeExcess(_)) => {
         panic!("Can't subtract negative-excess from infinity.")
       },

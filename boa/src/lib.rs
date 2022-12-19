@@ -91,6 +91,8 @@ pub extern "C" fn boa_get_tournaments(
     // deallocation would fail with a misaligned pointer on Android x86_64 (and
     // probably any Linux system). This is to be expected as it might be
     // considered an empty allocation (which has some subtleties).
+    // FIXME: Need testing to confirm the above note is correct and test empty
+    // cases.
     *tournaments = if *tournaments_count == 0 {
       ptr::null()
     } else {

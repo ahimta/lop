@@ -4,7 +4,6 @@
 set -o errexit
 source ./scripts/_base.sh
 
-
 IS_IN_CONTAINER="${IS_IN_CONTAINER:?"IS_IN_CONTAINER env. var. missing!"}"
 if [[ "${IS_IN_CONTAINER}" != "0" && "${IS_IN_CONTAINER}" != "1" ]]; then
   echo "Invalid 'IS_IN_CONTAINER' env. var. (${IS_IN_CONTAINER})" >&2
@@ -122,17 +121,16 @@ if [[ "${RUN_IN_CONTAINER}" = "1" ]]; then
     exit 1
   fi
 
-  # NOTE: This avoids the common occurrence of changing `Containerfile` and
-  # forgetting to call build and Docker/Podman caching should only do
-  # anything for build if `Containerfile` changes.
   "${CONTAINER_COMMAND}" build \
     --tag lop \
+    \
     --build-arg PRE_COMMIT_CHECK="${PRE_COMMIT_CHECK}" \
     --build-arg ANDROID_SDK_CMDLINE_TOOLS_VERSION="${ANDROID_SDK_CMDLINE_TOOLS_VERSION}" \
     --build-arg ANDROID_SDK_CMDLINE_TOOLS_VERSION_CHECKSUM_SHA384="${ANDROID_SDK_CMDLINE_TOOLS_VERSION_CHECKSUM_SHA384}" \
     --build-arg ANDROID_BUILD_TOOLS_VERSION="${ANDROID_BUILD_TOOLS_VERSION}" \
     --build-arg ANDROID_COMPILE_SDK_VERSION="${ANDROID_COMPILE_SDK_VERSION}" \
     --build-arg ANDROID_NDK_VERSION="${ANDROID_NDK_VERSION}" \
+    \
     --file ./Containerfile \
     .
   "${CONTAINER_COMMAND}" run --rm lop
@@ -209,11 +207,11 @@ echo "Linting boa..." >&2
 # SEE: https://github.com/rust-lang/rust-clippy
 # NOTE: `clippy::nursery` is in development but used because it has some very
 # useful lints and only its broken `redundant_pub_crate` is disabled.
-# NOTE: We also disable `clippy::multiple-crate-versions` since this is caused
-# by upstream dependencies and we have little control over it.
-# NOTE: We disable `double-must-use` because it requires global knowledge and
-# ensuring that only a single must-use is used. Which is just an invitation for
-# errors.
+# NOTE: We disable the following lint categories:
+# 1. `clippy::multiple-crate-versions`: Since its errors are caused by upstream
+# dependencies and we have little control over them.
+# 2. `double-must-use`: Because it requires global knowledge and ensuring that
+# only a single must-use is used. Which is just an invitation for errors.
 boa-cargo clippy --quiet -- \
   -D warnings \
   \

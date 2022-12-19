@@ -1,4 +1,4 @@
-# NOTE: We couldn't file a complete reference for `rust-toolchain.toml` and this
+# NOTE: We couldn't find a complete reference for `rust-toolchain.toml` and this
 # is the best we have.
 # SEE: https://rust-lang.github.io/rustup/overrides.html#the-toolchain-file
 

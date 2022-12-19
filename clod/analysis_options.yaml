@@ -39,7 +39,7 @@ linter:
     # 2. We should focus on understanding rules, learn why they exists, and get used to writing code that obey them.
     # 3. Make sure that all of them are treated as errors to avoid missing a warning that happens in tricky scenario with users that we can't anticipate.
     # 4. Focus on issues that are impossible to detect by machines.
-    # 5. Careful analysis of benign lint errors may take more time than fixing them. And even they may become malign in an unforseen scenario or if an obviously related or a non-obviously related part of the code change.
+    # 5. Careful analysis of benign lint errors may take more time than fixing them. And even they may become malign in an unforseen scenario or if an obviously related or a non-obviously related part of the code changes.
     # SEE: https://github.com/dart-lang/lints/blob/main/lib/core.yaml
     # SEE: https://github.com/dart-lang/lints/blob/main/lib/recommended.yaml
     # SEE: https://github.com/flutter/packages/blob/master/packages/flutter_lints/lib/flutter.yaml

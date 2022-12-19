@@ -51,8 +51,8 @@
         "type": "process",
         "group": {
           // NOTE: We use `build` here instead of `test` because it's much
-          // faster and runs instantly (thanks to `isDefault`)
-          // with just `Ctrl+Shift+B`.
+          // faster and runs instantly (thanks to `isDefault`) with just
+          // `Ctrl+Shift+B`.
           // Use `Ctrl+Shift+P` and type `Task: Run Task` for other tasks.
           "kind": "build",
           "isDefault": true

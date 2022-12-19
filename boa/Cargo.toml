@@ -32,7 +32,9 @@ panic = 'abort'
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
-# NOTE: We avoid using default-features as much as possible.
+# NOTE: We avoid using default-features as much as possible to avoid bloat which
+# can cause many issues like not being portable to all environments (e.g.,
+# Android).
 # SEE: https://doc.rust-lang.org/stable/cargo/reference/features.html#dependency-features
 # SEE: https://doc.rust-lang.org/stable/cargo/reference/features.html#command-line-feature-options
 
@@ -53,10 +55,6 @@ itertools = { version = "^0.10.5", default-features = false, features = [
   "use_std",
 ] }
 
-# NOTE: We disable default-features for `reqwest` primarily to avoid
-# `native-tls` feature would require `openssl` for Android which is feasible but
-# adds unnecessary complexity and so we use the `rustls-tls` feature which is
-# much easier to build.
 # SEE: https://docs.rs/reqwest/0.11.13/reqwest/index.html#optional-features
 reqwest = { version = "^0.11.13", default-features = false, features = [
   "blocking",
@@ -66,8 +64,9 @@ reqwest = { version = "^0.11.13", default-features = false, features = [
   "rustls-tls",
 ] }
 
-# NOTE: Must add the "derive" feature (which isn't included in official docs)
-# for the typed examples to work.
+# NOTE: Must add the "derive" feature which isn't included in official docs even
+# though they're required for their typed examples to work. And these example
+# are typical of our use-cases.
 # SEE: https://github.com/serde-rs/json/issues/728#issuecomment-725961686
 # SEE: https://docs.rs/serde/1.0.151
 serde = { version = "^1.0.151", default-features = false, features = [
