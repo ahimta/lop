@@ -1,6 +1,7 @@
 # syntax=docker/dockerfile:1
 # SEE: https://github.com/rust-lang/rust/blob/master/RELEASES.md
 # SEE: https://github.com/rust-lang/rust/releases
+# NOTE(DUPLICATE-RUST-VERSION)
 ARG LOCAL_RUST_VERSION="1.66.0"
 # SEE: https://hub.docker.com/_/rust
 FROM "docker.io/library/rust:${LOCAL_RUST_VERSION}-slim-bullseye"
