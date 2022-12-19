@@ -5,7 +5,7 @@ use std::ops;
 use std::sync::Arc;
 
 pub(super) fn ensure_valid_edge_nodes(from: &FlowNode, to: &FlowNode) {
-  assert!(from != to, "Invalid edge nodes ({:?}, ({:?}).", from, to);
+  assert!(from != to, "Invalid edge nodes ({from:?}, ({to:?}).");
 }
 
 #[must_use]

@@ -280,7 +280,7 @@ pub(super) trait TournamentProvider {
       let timestamp = Utc::now().format("%Y-%m-%dT%H:%M:%S").to_string();
 
       let mut f =
-        File::create(format!("data/{}-{}", Self::TEST_DATA_PREFIX, timestamp))
+        File::create(format!("data/{}-{timestamp}", Self::TEST_DATA_PREFIX))
           .expect("Unable to create file");
       for response in &responses {
         f.write_all(response.as_bytes()).expect("write failed");

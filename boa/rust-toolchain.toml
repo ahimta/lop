@@ -8,7 +8,7 @@
 # SEE: https://stackoverflow.com/questions/70105096/how-to-use-rustup-to-install-use-a-specific-history-version-of-the-component-lik
 
 [toolchain]
-channel = "1.64.0"
+channel = "1.66.0"
 
 # SEE: https://rust-lang.github.io/rustup/concepts/components.html#components
 components = ["clippy", "rustfmt", "rust-analyzer"]

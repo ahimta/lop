@@ -41,8 +41,8 @@ panic = 'abort'
 # though it's the default.
 # SEE: https://doc.rust-lang.org/cargo/reference/specifying-dependencies.html#caret-requirements
 
-# SEE: https://docs.rs/chrono/0.4.22
-chrono = { version = "^0.4.22", default-features = false, features = [
+# SEE: https://docs.rs/chrono/0.4.23
+chrono = { version = "^0.4.23", default-features = false, features = [
   "alloc",
   "std",
   "clock",
@@ -57,8 +57,8 @@ itertools = { version = "^0.10.5", default-features = false, features = [
 # `native-tls` feature would require `openssl` for Android which is feasible but
 # adds unnecessary complexity and so we use the `rustls-tls` feature which is
 # much easier to build.
-# SEE: https://docs.rs/reqwest/0.11.12/reqwest/index.html#optional-features
-reqwest = { version = "^0.11.12", default-features = false, features = [
+# SEE: https://docs.rs/reqwest/0.11.13/reqwest/index.html#optional-features
+reqwest = { version = "^0.11.13", default-features = false, features = [
   "blocking",
   "gzip",
   "brotli",
@@ -69,12 +69,12 @@ reqwest = { version = "^0.11.12", default-features = false, features = [
 # NOTE: Must add the "derive" feature (which isn't included in official docs)
 # for the typed examples to work.
 # SEE: https://github.com/serde-rs/json/issues/728#issuecomment-725961686
-# SEE: https://docs.rs/serde/1.0.145
-serde = { version = "^1.0.145", default-features = false, features = [
+# SEE: https://docs.rs/serde/1.0.151
+serde = { version = "^1.0.151", default-features = false, features = [
   "derive",
 ] }
-# SEE: https://docs.rs/serde_json/1.0.86
-serde_json = { version = "^1.0.86", default-features = false, features = [
+# SEE: https://docs.rs/serde_json/1.0.91
+serde_json = { version = "^1.0.91", default-features = false, features = [
   "std",
 ] }
 

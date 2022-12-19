@@ -64,10 +64,7 @@ pub(super) fn predict_tournament_eliminated_teams(
           (Arc::new(FlowNode::new(&other_team.name)), other_team)
         })
         .collect();
-      let other_teams_nodes: Vec<&Arc<FlowNode>> = other_teams
-        .iter()
-        .map(|(other_team_node, _)| other_team_node)
-        .collect();
+      let other_teams_nodes: Vec<&Arc<FlowNode>> = other_teams.keys().collect();
       let teams_earned_points: HashMap<&Arc<FlowNode>, usize> = other_teams
         .iter()
         .map(|(node, t)| (node, t.earned_points))
@@ -82,10 +79,10 @@ pub(super) fn predict_tournament_eliminated_teams(
         .map(|nodes| (*nodes[0], *nodes[1]))
         .collect();
 
-      let remaining_points = match &tournament.remaining_points {
-        None => panic!("Missing remaining-points"),
-        Some(value) => value,
-      };
+      let remaining_points = tournament
+        .remaining_points
+        .as_ref()
+        .map_or_else(|| panic!("Missing remaining-points"), |value| value);
 
       let remaining_points_edges: Vec<FlowEdge> =
         other_teams_nodes_combinations

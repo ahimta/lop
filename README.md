@@ -231,6 +231,9 @@ flutter doctor
   cargo add --dry-run --no-default-features --dev pretty_assertions@^1.2.1;
   cargo add --no-default-features --dev pretty_assertions@^1.2.1;
 
+  cargo remove --dry-run itertools;
+  cargo remove itertools;
+
   cargo update --dry-run;
   cargo update;
 )

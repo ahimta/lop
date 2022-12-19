@@ -79,9 +79,9 @@ impl Tournament {
       teams.len()
     );
 
-    match &remaining_points {
-      None => {},
-      Some(remaining_points_value) => {
+    remaining_points
+      .as_ref()
+      .map_or((), |remaining_points_value| {
         assert!(
           remaining_points_value.len() >= REMAINING_POINTS_COUNT_MIN
             && remaining_points_value.len() <= REMAINING_POINTS_COUNT_MAX
@@ -142,8 +142,7 @@ impl Tournament {
           remaining_points_value,
           teams,
         );
-      },
-    }
+      });
 
     Self {
       name: Arc::clone(name),
@@ -301,7 +300,7 @@ impl Team {
 
         for eliminating_team in eliminating_teams {
           assert!(
-            eliminating_team.elimination_status == None,
+            eliminating_team.elimination_status.is_none(),
             "Invalid elimination-team ({:?}).",
             eliminating_team,
           );
@@ -327,7 +326,7 @@ impl Team {
   #[must_use]
   pub fn with_rank(team: &Self, rank: usize) -> Self {
     assert!(
-      team.elimination_status == None,
+      team.elimination_status.is_none(),
       "Unexpected elimination-status ({:?})",
       team.elimination_status,
     );
