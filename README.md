@@ -150,6 +150,7 @@ flutter doctor
 
 echo "Creating Android device/emulator for Flutter SDK..." >&2
 flutter emulators
+# NOTE(ANDROID-EMULATOR-DEVICE-ID)
 flutter emulators --create --name android-emulator-device
 ```
 
@@ -267,6 +268,9 @@ flutter doctor
     --build \
     --debug \
     --hot;
+
+  # NOTE(ANDROID-EMULATOR-DEVICE-ID)
+  flutter emulators --launch android-emulator-device;
   ANDROID_DEVICE_ID_PREFIX="emulator";
   flutter --device-id "${ANDROID_DEVICE_ID_PREFIX}" run --build --debug --hot;
 )
