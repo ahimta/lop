@@ -12,7 +12,17 @@
 channel = "1.66.0"
 
 # SEE: https://rust-lang.github.io/rustup/concepts/components.html#components
-components = ["clippy", "rustfmt", "rust-analyzer"]
+components = [
+  "cargo",
+  "clippy",
+  "rls",
+  "rust-analysis",
+  "rust-docs",
+  "rust-src",
+  "rust-std",
+  "rustc",
+  "rustfmt",
+]
 
 targets = [
   "x86_64-unknown-linux-gnu",
