@@ -111,11 +111,11 @@ ENV PATH="${PATH}:${LOCAL_ANDROID_SDK_ROOT}/cmdline-tools/latest/bin"
 RUN \
   ${LOCAL_SET_SHELL_SAFE_OPTIONS}; \
   \
-  yes | sdkmanager "build-tools;${ANDROID_BUILD_TOOLS_VERSION}" >/dev/null; \
-  yes | sdkmanager "ndk;${ANDROID_NDK_VERSION}" >/dev/null; \
+  yes | sdkmanager --install "build-tools;${ANDROID_BUILD_TOOLS_VERSION}" >/dev/null; \
+  yes | sdkmanager --install "ndk;${ANDROID_NDK_VERSION}" >/dev/null; \
   # NOTE(SOME-ANDROID-TOOLS-ONLY-SUPPORT-INSTALLING-LATEST)
-  yes | sdkmanager "platform-tools" >/dev/null; \
-  yes | sdkmanager "platforms;android-${ANDROID_COMPILE_SDK_VERSION}" >/dev/null; \
+  yes | sdkmanager --install "platform-tools" >/dev/null; \
+  yes | sdkmanager --install "platforms;android-${ANDROID_COMPILE_SDK_VERSION}" >/dev/null; \
   yes | sdkmanager --licenses >/dev/null;
 
 # SEE: https://docs.flutter.dev/release/breaking-changes

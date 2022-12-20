@@ -121,15 +121,15 @@ rmdir android-cmdline-tools
 export PATH="${PATH}:${LOCAL_ANDROID_SDK_ROOT}/cmdline-tools/latest/bin"
 
 # NOTE(SOME-ANDROID-TOOLS-ONLY-SUPPORT-INSTALLING-LATEST)
-yes | sdkmanager "emulator" >/dev/null
+yes | sdkmanager --install "emulator" >/dev/null
 # NOTE: The system-image here is significant to work with Flutter which its main
 # requirement seems to be `google_apis_playstore`.
-yes | sdkmanager "system-images;android-31;google_apis_playstore;x86_64" >/dev/null
-yes | sdkmanager "build-tools;${ANDROID_BUILD_TOOLS_VERSION}" >/dev/null
-yes | sdkmanager "ndk;${ANDROID_NDK_VERSION}" >/dev/null
+yes | sdkmanager --install "system-images;android-31;google_apis_playstore;x86_64" >/dev/null
+yes | sdkmanager --install "build-tools;${ANDROID_BUILD_TOOLS_VERSION}" >/dev/null
+yes | sdkmanager --install "ndk;${ANDROID_NDK_VERSION}" >/dev/null
 # NOTE(SOME-ANDROID-TOOLS-ONLY-SUPPORT-INSTALLING-LATEST)
-yes | sdkmanager "platform-tools" >/dev/null
-yes | sdkmanager "platforms;android-${ANDROID_COMPILE_SDK_VERSION}" >/dev/null
+yes | sdkmanager --install "platform-tools" >/dev/null
+yes | sdkmanager --install "platforms;android-${ANDROID_COMPILE_SDK_VERSION}" >/dev/null
 yes | sdkmanager --licenses >/dev/null
 
 echo >> ~/.bashrc
