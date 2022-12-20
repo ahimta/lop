@@ -47,12 +47,13 @@ if [[ \
   exit 1
 fi
 
-# NOTE: The `ANDROID_SDK_ROOT` must be defined and it's typically
+# NOTE(ANDROID-OFFICIAL-ENV-VARIABLES)
+# NOTE: The `ANDROID_HOME` must be defined and it's typically
 # `$HOME/Android/Sdk`. After adding it, you may have to close all VS Code
 # instances.
-ANDROID_SDK_ROOT="${ANDROID_SDK_ROOT:?"ANDROID_SDK_ROOT env. var. missing!"}"
-if [[ ! -d "${ANDROID_SDK_ROOT}" ]]; then
-  echo "Invalid 'ANDROID_SDK_ROOT' env. var. (${ANDROID_SDK_ROOT})" >&2
+ANDROID_HOME="${ANDROID_HOME:?"ANDROID_HOME env. var. missing!"}"
+if [[ ! -d "${ANDROID_HOME}" ]]; then
+  echo "Invalid 'ANDROID_HOME' env. var. (${ANDROID_HOME})" >&2
   echo "Expected path to exist" >&2
   exit 1
 fi
@@ -232,7 +233,7 @@ boa-cargo clippy --quiet -- \
 echo "Building boa (release for Linux x86_64)..." >&2
 boa-cargo-build --target x86_64-unknown-linux-gnu --release
 
-ANDROID_NDK_PATH="${ANDROID_SDK_ROOT}/ndk/${ANDROID_NDK_VERSION}"
+ANDROID_NDK_PATH="${ANDROID_HOME}/ndk/${ANDROID_NDK_VERSION}"
 ANDROID_AR="${ANDROID_NDK_PATH}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android-ar"
 
 echo "Building boa (release for Android aarch64)..." >&2

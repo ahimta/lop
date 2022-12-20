@@ -85,7 +85,13 @@ USER lop:lop
 WORKDIR /home/lop
 ARG LOCAL_HOME="/home/lop"
 
-ARG LOCAL_ANDROID_SDK_ROOT="${LOCAL_HOME}/Android/Sdk"
+ARG LOCAL_ANDROID_HOME="${LOCAL_HOME}/Android/Sdk"
+# NOTE(ANDROID-OFFICIAL-ENV-VARIABLES)
+# SEE: https://developer.android.com/studio/command-line/variables
+ENV ANDROID_HOME="${LOCAL_ANDROID_HOME}"
+ENV ANDROID_USER_HOME="${ANDROID_HOME}/.android"
+ENV ANDROID_EMULATOR_HOME="${ANDROID_HOME}/avd"
+ENV ANDROID_AVD_HOME="${ANDROID_HOME}/.android"
 ARG ANDROID_SDK_CMDLINE_TOOLS_VERSION
 ARG ANDROID_SDK_CMDLINE_TOOLS_VERSION_CHECKSUM_SHA384
 ARG ANDROID_BUILD_TOOLS_VERSION
@@ -103,10 +109,10 @@ RUN \
   # NOTE: This is the expected path as implied by this error message:
   # Error: Could not determine SDK root.
   # Error: Either specify it explicitly with --sdk_root= or move this package into its expected location: <sdk>/cmdline-tools/latest/
-  mkdir --parents "${LOCAL_ANDROID_SDK_ROOT}/cmdline-tools"; \
-  mv android-cmdline-tools/cmdline-tools "${LOCAL_ANDROID_SDK_ROOT}/cmdline-tools/latest"; \
+  mkdir --parents "${LOCAL_ANDROID_HOME}/cmdline-tools"; \
+  mv android-cmdline-tools/cmdline-tools "${LOCAL_ANDROID_HOME}/cmdline-tools/latest"; \
   rmdir android-cmdline-tools;
-ENV PATH="${PATH}:${LOCAL_ANDROID_SDK_ROOT}/cmdline-tools/latest/bin"
+ENV PATH="${PATH}:${LOCAL_ANDROID_HOME}/cmdline-tools/latest/bin"
 # SEE: https://developer.android.com/studio/command-line/sdkmanager
 RUN \
   ${LOCAL_SET_SHELL_SAFE_OPTIONS}; \
@@ -159,7 +165,7 @@ COPY \
   \
   /lop/boa/
 WORKDIR /lop/boa
-ARG LOCAL_ANDROID_NDK_PATH="${LOCAL_ANDROID_SDK_ROOT}/ndk/${ANDROID_NDK_VERSION}"
+ARG LOCAL_ANDROID_NDK_PATH="${LOCAL_ANDROID_HOME}/ndk/${ANDROID_NDK_VERSION}"
 ARG LOCAL_ANDROID_AR="${LOCAL_ANDROID_NDK_PATH}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android-ar"
 # NOTE(RUST-ANDROID-ENV-VARS-AARCH64)
 ARG LOCAL_AARCH64_COMPILER_AND_LINKER="${LOCAL_ANDROID_NDK_PATH}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android${ANDROID_COMPILE_SDK_VERSION}-clang"
@@ -214,9 +220,6 @@ RUN \
   fi; \
   mv /tmp/boa-cached-build-files/target boa/target;
 
-# NOTE: Only `ANDROID_SDK_ROOT` is an official Android environment-variable.
-# SEE: https://developer.android.com/studio/command-line/variables
-ENV ANDROID_SDK_ROOT="${LOCAL_ANDROID_SDK_ROOT}"
 ENV ANDROID_NDK_VERSION="${ANDROID_NDK_VERSION}"
 ENV ANDROID_COMPILE_SDK_VERSION="${ANDROID_COMPILE_SDK_VERSION}"
 # NOTE: Fixed-values for environment variables here are significant.

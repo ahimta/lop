@@ -112,13 +112,24 @@ echo "${ANDROID_SDK_CMDLINE_TOOLS_VERSION_CHECKSUM_SHA384} android-cmdline-tools
 unzip -qq android-cmdline-tools.zip -d android-cmdline-tools
 rm android-cmdline-tools.zip
 
-LOCAL_ANDROID_SDK_ROOT="$HOME/Android/Sdk"
-mkdir --parents "${LOCAL_ANDROID_SDK_ROOT}/cmdline-tools"
+LOCAL_ANDROID_HOME="${HOME}/Android/Sdk"
+mkdir --parents "${LOCAL_ANDROID_HOME}/cmdline-tools"
 mv \
   android-cmdline-tools/cmdline-tools \
-  "${LOCAL_ANDROID_SDK_ROOT}/cmdline-tools/latest"
+  "${LOCAL_ANDROID_HOME}/cmdline-tools/latest"
 rmdir android-cmdline-tools
-export PATH="${PATH}:${LOCAL_ANDROID_SDK_ROOT}/cmdline-tools/latest/bin"
+export PATH="${PATH}:${LOCAL_ANDROID_HOME}/cmdline-tools/latest/bin"
+
+# NOTE(ANDROID-OFFICIAL-ENV-VARIABLES)
+echo >> ~/.bashrc
+echo 'export ANDROID_HOME="${HOME}/Android/Sdk"' >> ~/.bashrc
+export ANDROID_HOME="${HOME}/Android/Sdk"
+echo 'export ANDROID_USER_HOME="${ANDROID_HOME}/.android"' >> ~/.bashrc
+export ANDROID_USER_HOME="${ANDROID_HOME}/.android"
+echo 'export ANDROID_EMULATOR_HOME="${ANDROID_HOME}/.android"' >> ~/.bashrc
+export ANDROID_EMULATOR_HOME="${ANDROID_HOME}/.android"
+echo 'export ANDROID_AVD_HOME="${ANDROID_HOME}/avd"' >> ~/.bashrc
+export ANDROID_AVD_HOME="${ANDROID_HOME}/avd"
 
 # NOTE(SOME-ANDROID-TOOLS-ONLY-SUPPORT-INSTALLING-LATEST)
 yes | sdkmanager --install "emulator" >/dev/null
@@ -131,10 +142,6 @@ yes | sdkmanager --install "ndk;${ANDROID_NDK_VERSION}" >/dev/null
 yes | sdkmanager --install "platform-tools" >/dev/null
 yes | sdkmanager --install "platforms;android-${ANDROID_COMPILE_SDK_VERSION}" >/dev/null
 yes | sdkmanager --licenses >/dev/null
-
-echo >> ~/.bashrc
-echo 'export ANDROID_SDK_ROOT="$HOME/Android/Sdk"' >> ~/.bashrc
-export ANDROID_SDK_ROOT="$HOME/Android/Sdk"
 
 echo "Doctoring Flutter (won't detect Android SDK and that's fine)..." >&2
 yes | flutter doctor --android-licenses
