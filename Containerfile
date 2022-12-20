@@ -192,7 +192,11 @@ RUN \
   echo 'pub fn get_tournaments() {' >> src/lib.rs; \
   echo 'println!("Hello, world!");' >> src/lib.rs; \
   echo '}' >> src/lib.rs; \
-  cargo --quiet build --no-default-features --jobs "$(nproc)"; \
+  # NOTE: We completely silence noisy next line stderr (`2>/dev/null`) but we
+  # need to undo this in case of issues to know what's wrong. The noisiness is
+  # due to the first cargo build doing all kinds of stuff and forcibly priting
+  # info/progress into stderr.
+  cargo --quiet build --no-default-features --jobs "$(nproc)" 2>/dev/null; \
   cargo --quiet test --jobs "$(nproc)" --no-default-features >/dev/null; \
   cargo --quiet build --no-default-features --jobs "$(nproc)" --release; \
   cargo --quiet test --jobs "$(nproc)" --no-default-features --release >/dev/null; \
