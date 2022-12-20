@@ -380,3 +380,6 @@ in Java) goes to
 - Non-blocking UI using isolates.
 - Use /var/lock iff possible.
 - Review FHS to possibly find something better than /tmp (probably /var).
+- Make warm build closer to real build by copying required files and running ci-script.
+- Add note about verbose output for warm build or note-tag for relevant parts.
+- Add FAQ (e.g., why local env., what good is the project).
