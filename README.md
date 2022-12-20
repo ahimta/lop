@@ -276,8 +276,11 @@ flutter doctor
     --debug \
     --hot;
 
+  # NOTE: We use `QEMU_AUDIO_DRV=none` to prevent emulator from holding
+  # audio-device which can cause BlueTooth devices that support multiple devices
+  # to not work on other devices.
   # NOTE(ANDROID-EMULATOR-DEVICE-ID)
-  flutter emulators --launch android-emulator-device;
+  QEMU_AUDIO_DRV=none flutter emulators --launch android-emulator-device;
   ANDROID_DEVICE_ID_PREFIX="emulator";
   flutter --device-id "${ANDROID_DEVICE_ID_PREFIX}" run --build --debug --hot;
 )
