@@ -338,6 +338,8 @@ echo "Creating Flutter project..." >&2
 - [DelftStack (excellent tutorials & howtos)](https://www.delftstack.com)
 - [Android Developers](https://developer.android.com/)
 - [The Power of Ten Rules](https://en.wikipedia.org/wiki/The_Power_of_10:_Rules_for_Developing_Safety-Critical_Code)
+- [The Power of Ten Rules (from Spin)](https://spinroot.com/p10)
+- [SEI CERT Coding Standards](https://wiki.sei.cmu.edu/confluence/display/seccode/SEI+CERT+Coding+Standards)
 
 ## Academic Resources
 
@@ -379,4 +381,3 @@ in Java) goes to
 - Use /var/lock iff possible.
 - Review FHS to possibly find something better than /tmp (probably /var).
 - Use container uid/gid trick.
-- Add cert c and tldp to resources and https://spinroot.com/p10.
