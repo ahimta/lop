@@ -380,4 +380,3 @@ in Java) goes to
 - Non-blocking UI using isolates.
 - Use /var/lock iff possible.
 - Review FHS to possibly find something better than /tmp (probably /var).
-- Use container uid/gid trick.

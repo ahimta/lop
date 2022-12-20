@@ -122,8 +122,12 @@ if [[ "${RUN_IN_CONTAINER}" = "1" ]]; then
     exit 1
   fi
 
+  # NOTE(SAME-FILES-OWNER-IN-HOST-AND-CONTAINER)
   "${CONTAINER_COMMAND}" build \
     --tag lop \
+    \
+    --build-arg UID="$(id --user)" \
+    --build-arg GID="$(id --group)" \
     \
     --build-arg PRE_COMMIT_CHECK="${PRE_COMMIT_CHECK}" \
     --build-arg ANDROID_SDK_CMDLINE_TOOLS_VERSION="${ANDROID_SDK_CMDLINE_TOOLS_VERSION}" \

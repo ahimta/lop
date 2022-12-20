@@ -73,14 +73,17 @@ RUN \
   apt-get clean -qq --yes; \
   rm --recursive --force /var/lib/apt/lists/*;
 
+# NOTE(SAME-FILES-OWNER-IN-HOST-AND-CONTAINER)
+ARG UID
+ARG GID
 # NOTE: We drop all privileges as we no longer need them.
 # NOTE: `--no-log-init` is to avoid a possibly rare case of disk exhaustion.
 # SEE: https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#user
 RUN \
   ${LOCAL_SET_SHELL_SAFE_OPTIONS}; \
   \
-  groupadd --system lop; \
-  useradd --create-home --no-log-init --system --gid lop lop;
+  groupadd --system --gid "${GID}" lop; \
+  useradd --create-home --no-log-init --system --gid lop --uid "${UID}" lop;
 USER lop:lop
 WORKDIR /home/lop
 ARG LOCAL_HOME="/home/lop"
