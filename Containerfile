@@ -122,7 +122,7 @@ RUN \
 # SEE: https://docs.flutter.dev/development/tools/sdk/release-notes
 # SEE: https://flutter.dev/docs/get-started/install/linux
 ARG LOCAL_FLUTTER_SDK_VERSION="3.3.10"
-# NOTE: Can use `sha384sum <flutter-sdk-file-path>` to get checksum.
+# NOTE(SHA384-CMD): Can use `sha384sum <flutter-sdk-file-path>` to get checksum.
 ARG LOCAL_FLUTTER_SDK_CHECKSUM_SHA384="56bf7e8135ac47a0bd0df15602fdd54e1bed845d08f6166720ff9f5d048aa947638338fa6e0c4c5a9b3c7116dcb0d91b"
 ARG LOCAL_FLUTTER_SDK_ROOT="${LOCAL_HOME}/flutter"
 RUN \
