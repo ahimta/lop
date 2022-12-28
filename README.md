@@ -223,6 +223,10 @@ flutter upgrade
 yes | flutter doctor --android-licenses
 flutter doctor
 
+# NOTE: Removing containers/images as they can grow to 100s of GiBs overtime.
+podman system prune --all --force
+podman rmi --all --force
+
 (
   cd boa;
 
