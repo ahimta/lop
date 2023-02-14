@@ -108,7 +108,7 @@ source ./public.env
 
 wget -qq --output-document=android-cmdline-tools.zip \
   http://dl.google.com/android/repository/commandlinetools-linux-${ANDROID_SDK_CMDLINE_TOOLS_VERSION}_latest.zip
-echo "${ANDROID_SDK_CMDLINE_TOOLS_VERSION_CHECKSUM_SHA384} android-cmdline-tools.zip" | sha384sum --check --quiet --strict -
+echo "${ANDROID_SDK_CMDLINE_TOOLS_VERSION_CHECKSUM_SHA384}  android-cmdline-tools.zip" | shasum --algorithm 384 --check --quiet --strict -
 unzip -qq android-cmdline-tools.zip -d android-cmdline-tools
 rm android-cmdline-tools.zip
 

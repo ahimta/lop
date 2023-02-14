@@ -106,7 +106,7 @@ RUN \
   echo Installing Android SDK/NDK...; \
   wget -qq --output-document=android-cmdline-tools.zip \
   "http://dl.google.com/android/repository/commandlinetools-linux-${ANDROID_SDK_CMDLINE_TOOLS_VERSION}_latest.zip"; \
-  echo "${ANDROID_SDK_CMDLINE_TOOLS_VERSION_CHECKSUM_SHA384} android-cmdline-tools.zip" | sha384sum --check --quiet --strict -; \
+  echo "${ANDROID_SDK_CMDLINE_TOOLS_VERSION_CHECKSUM_SHA384}  android-cmdline-tools.zip" | shasum --algorithm 384 --check --quiet --strict -; \
   unzip -qq android-cmdline-tools.zip -d android-cmdline-tools; \
   rm android-cmdline-tools.zip; \
   # NOTE: This is the expected path as implied by this error message:
@@ -131,7 +131,7 @@ RUN \
 # SEE: https://docs.flutter.dev/development/tools/sdk/release-notes
 # SEE: https://flutter.dev/docs/get-started/install/linux
 ARG LOCAL_FLUTTER_SDK_VERSION="3.3.10"
-# NOTE(SHA384-CMD): Can use `sha384sum <flutter-sdk-file-path>` to get checksum.
+# NOTE(SHA384-CMD): Can use `shasum --algorithm 384 <flutter-sdk-file-path>` to get checksum.
 ARG LOCAL_FLUTTER_SDK_CHECKSUM_SHA384="c8e1974fa054837fcdb21b6612412e66a5799a958b1584c79b59b7d41f19b38cd22a01d6703f11e8a37cb95c026fa17f"
 ARG LOCAL_FLUTTER_SDK_ROOT="${LOCAL_HOME}/flutter"
 RUN \
@@ -140,7 +140,7 @@ RUN \
   echo Installing Flutter SDK...; \
   wget -qq --output-document=flutter-sdk.tar.xz \
   "https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_${LOCAL_FLUTTER_SDK_VERSION}-stable.tar.xz"; \
-  echo "${LOCAL_FLUTTER_SDK_CHECKSUM_SHA384} flutter-sdk.tar.xz" | sha384sum --check --quiet --strict -; \
+  echo "${LOCAL_FLUTTER_SDK_CHECKSUM_SHA384}  flutter-sdk.tar.xz" | shasum --algorithm 384 --check --quiet --strict -; \
   tar xf flutter-sdk.tar.xz; \
   rm flutter-sdk.tar.xz;
 ENV PATH="${PATH}:${LOCAL_FLUTTER_SDK_ROOT}/bin"
