@@ -96,21 +96,23 @@ ARG ANDROID_SDK_CMDLINE_TOOLS_VERSION_CHECKSUM_SHA384
 ARG ANDROID_BUILD_TOOLS_VERSION
 ARG ANDROID_COMPILE_SDK_VERSION
 ARG ANDROID_NDK_VERSION
+ARG LOCAL_ANDROID_CLI_TOOLS_ZIP_FILE_NAME="android-cmdline-tools.zip"
+ARG LOCAL_ANDROID_CLI_TOOLS_ZIP_DIR_NAME="android-cmdline-tools"
 RUN \
   ${LOCAL_SET_SHELL_SAFE_OPTIONS}; \
   \
   echo Installing Android SDK/NDK...; \
-  wget -qq --output-document=android-cmdline-tools.zip \
+  wget -qq --output-document="${LOCAL_ANDROID_CLI_TOOLS_ZIP_FILE_NAME}" \
   "http://dl.google.com/android/repository/commandlinetools-linux-${ANDROID_SDK_CMDLINE_TOOLS_VERSION}_latest.zip"; \
-  echo "${ANDROID_SDK_CMDLINE_TOOLS_VERSION_CHECKSUM_SHA384}  android-cmdline-tools.zip" | shasum --algorithm 384 --check --quiet --strict -; \
-  unzip -qq android-cmdline-tools.zip -d android-cmdline-tools; \
-  rm android-cmdline-tools.zip; \
+  echo "${ANDROID_SDK_CMDLINE_TOOLS_VERSION_CHECKSUM_SHA384}  ${LOCAL_ANDROID_CLI_TOOLS_ZIP_FILE_NAME}" | shasum --algorithm 384 --check --quiet --strict -; \
+  unzip -qq "${LOCAL_ANDROID_CLI_TOOLS_ZIP_FILE_NAME}" -d "${LOCAL_ANDROID_CLI_TOOLS_ZIP_DIR_NAME}"; \
+  rm "${LOCAL_ANDROID_CLI_TOOLS_ZIP_FILE_NAME}"; \
   # NOTE: This is the expected path as implied by this error message:
   # Error: Could not determine SDK root.
   # Error: Either specify it explicitly with --sdk_root= or move this package into its expected location: <sdk>/cmdline-tools/latest/
   mkdir --parents "${LOCAL_ANDROID_HOME}/cmdline-tools"; \
-  mv android-cmdline-tools/cmdline-tools "${LOCAL_ANDROID_HOME}/cmdline-tools/latest"; \
-  rmdir android-cmdline-tools;
+  mv "${LOCAL_ANDROID_CLI_TOOLS_ZIP_DIR_NAME}/cmdline-tools" "${LOCAL_ANDROID_HOME}/cmdline-tools/latest"; \
+  rmdir "${LOCAL_ANDROID_CLI_TOOLS_ZIP_DIR_NAME}";
 ENV PATH="${PATH}:${LOCAL_ANDROID_HOME}/cmdline-tools/latest/bin"
 # SEE: https://developer.android.com/studio/command-line/sdkmanager
 RUN \
@@ -130,15 +132,16 @@ ARG LOCAL_FLUTTER_SDK_VERSION="3.3.10"
 # NOTE(SHA384-CMD): Can use `shasum --algorithm 384 <flutter-sdk-file-path>` to get checksum.
 ARG LOCAL_FLUTTER_SDK_CHECKSUM_SHA384="c8e1974fa054837fcdb21b6612412e66a5799a958b1584c79b59b7d41f19b38cd22a01d6703f11e8a37cb95c026fa17f"
 ARG LOCAL_FLUTTER_SDK_ROOT="${LOCAL_HOME}/flutter"
+ARG LOCAL_FLUTTER_SDK_TAR_FILE_NAME="flutter-sdk.tar.xz"
 RUN \
   ${LOCAL_SET_SHELL_SAFE_OPTIONS}; \
   \
   echo Installing Flutter SDK...; \
-  wget -qq --output-document=flutter-sdk.tar.xz \
+  wget -qq --output-document="${LOCAL_FLUTTER_SDK_TAR_FILE_NAME}" \
   "https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_${LOCAL_FLUTTER_SDK_VERSION}-stable.tar.xz"; \
-  echo "${LOCAL_FLUTTER_SDK_CHECKSUM_SHA384}  flutter-sdk.tar.xz" | shasum --algorithm 384 --check --quiet --strict -; \
-  tar xf flutter-sdk.tar.xz; \
-  rm flutter-sdk.tar.xz;
+  echo "${LOCAL_FLUTTER_SDK_CHECKSUM_SHA384}  ${LOCAL_FLUTTER_SDK_TAR_FILE_NAME}" | shasum --algorithm 384 --check --quiet --strict -; \
+  tar xf "${LOCAL_FLUTTER_SDK_TAR_FILE_NAME}"; \
+  rm "${LOCAL_FLUTTER_SDK_TAR_FILE_NAME}";
 ENV PATH="${PATH}:${LOCAL_FLUTTER_SDK_ROOT}/bin"
 RUN \
   ${LOCAL_SET_SHELL_SAFE_OPTIONS}; \
