@@ -126,10 +126,10 @@ echo 'export ANDROID_HOME="${HOME}/Android/Sdk"' >> ~/.bashrc
 export ANDROID_HOME="${HOME}/Android/Sdk"
 echo 'export ANDROID_USER_HOME="${ANDROID_HOME}/.android"' >> ~/.bashrc
 export ANDROID_USER_HOME="${ANDROID_HOME}/.android"
-echo 'export ANDROID_EMULATOR_HOME="${ANDROID_HOME}/.android"' >> ~/.bashrc
-export ANDROID_EMULATOR_HOME="${ANDROID_HOME}/.android"
-echo 'export ANDROID_AVD_HOME="${ANDROID_HOME}/avd"' >> ~/.bashrc
-export ANDROID_AVD_HOME="${ANDROID_HOME}/avd"
+echo 'export ANDROID_EMULATOR_HOME="${ANDROID_USER_HOME}"' >> ~/.bashrc
+export ANDROID_EMULATOR_HOME="${ANDROID_USER_HOME}"
+echo 'export ANDROID_AVD_HOME="${ANDROID_EMULATOR_HOME}/avd"' >> ~/.bashrc
+export ANDROID_AVD_HOME="${ANDROID_EMULATOR_HOME}/avd"
 
 # NOTE(SOME-ANDROID-TOOLS-ONLY-SUPPORT-INSTALLING-LATEST)
 yes | sdkmanager --install "emulator" >/dev/null
