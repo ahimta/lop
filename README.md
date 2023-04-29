@@ -391,3 +391,4 @@ in Java) goes to
 - Make warm build closer to real build by copying required files and running ci-script.
 - Add note about verbose output for warm build or note-tag for relevant parts.
 - Add FAQ (e.g., why local env., what good is the project).
+- Pivot from impractical tournament elimination toward a higher ROI usecase.
